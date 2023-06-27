@@ -1,0 +1,27 @@
+{
+  "name": "@amzn/connect-agent",
+  "version": "1.0.0",
+  "description": "Agent functionality of the Amazon Connect SDK",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo 'no tests'",
+    "build": "tsc",
+    "clean": "rm -rf ./lib",
+    "prepack": "npm run build"
+  },
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git.amazon.com/pkg/AmazonConnectSDK"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "dependencies": {
+    "@amzn/connect-core": "^1.0.0"
+  }
+}

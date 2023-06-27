@@ -1,0 +1,22 @@
+{
+  "scripts": {
+    "agent": "npm run --prefix ./agent",
+    "app": "npm run --prefix ./app",
+    "core": "npm run --prefix ./core",
+    "test": "echo 'no tests'",
+    "clean": "rm -rf ./lib"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.4",
+    "@babel/preset-env": "^7.21.4",
+    "jest": "^29.5.0",
+    "prettier": "^2.8.7",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4"
+  }, 
+  "workspaces": [
+    "agent",
+    "app",
+    "core"
+  ]
+}

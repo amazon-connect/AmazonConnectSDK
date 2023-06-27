@@ -1,0 +1,17 @@
+import { AppConfig, Context } from "@amzn/connect-core";
+import { AmazonConnectAppProvider } from "./app-provider";
+
+export class AppContext extends Context<AmazonConnectAppProvider> {
+  public readonly appInstanceId: string;
+  public readonly appConfig: Readonly<AppConfig>;
+
+  constructor(
+    provider: AmazonConnectAppProvider,
+    appInstanceId: string,
+    appConfig: AppConfig
+  ) {
+    super(provider);
+    this.appInstanceId = appInstanceId;
+    this.appConfig = appConfig;
+  }
+}

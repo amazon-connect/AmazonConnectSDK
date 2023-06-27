@@ -15,12 +15,10 @@ common::{
   },
 
   build: {
-    command: null,
+    command: "run-npm",
 
     env: {
-      PATH: [
-        (env PATH),
-      ],
+       PATH: [ (farm "PeruNPM" "bin"), (env PATH) ],
     },
 
     outputs: {
