@@ -1,5 +1,5 @@
 {
-  "name": "@amzn/connect-core",
+  "name": "@amzn/amazon-connect-sdk-core",
   "version": "1.0.0",
   "description": "Core functionality of the Amazon Connect SDK",
   "publishConfig": {
@@ -19,6 +19,6 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
-    "lib"
+    "lib/**/*"
   ]
 }

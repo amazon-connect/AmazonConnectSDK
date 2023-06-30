@@ -2,6 +2,9 @@
   "name": "@amzn/amazon-connect-sdk",
   "version": "1.0.0",
   "description": "",
+  "npm-pretty-much": {
+    "useWorkspaces": true
+  },
   "scripts": {
     "agent": "npm run --prefix ./agent",
     "app": "npm run --prefix ./app",
@@ -18,8 +21,8 @@
     "typescript": "^5.0.4"
   },
   "workspaces": [
-    "agent",
+    "core",
     "app",
-    "core"
+    "agent"
   ]
 }
