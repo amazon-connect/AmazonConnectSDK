@@ -1,4 +1,7 @@
 {
+  "name": "@amzn/amazon-connect-sdk",
+  "version": "1.0.0",
+  "description": "",
   "scripts": {
     "agent": "npm run --prefix ./agent",
     "app": "npm run --prefix ./app",
@@ -13,7 +16,7 @@
     "prettier": "^2.8.7",
     "ts-loader": "^9.4.2",
     "typescript": "^5.0.4"
-  }, 
+  },
   "workspaces": [
     "agent",
     "app",
