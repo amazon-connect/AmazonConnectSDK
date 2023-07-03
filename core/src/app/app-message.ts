@@ -1,8 +1,4 @@
-import {
-  DownstreamMessage,
-  UpstreamMessage,
-  UpstreamMessageOrigin,
-} from "../messaging";
+import { DownstreamMessage, UpstreamMessage } from "../messaging";
 import { SubscriptionHandlerData } from "../messaging/subscription";
 import { SubscriptionTopic } from "../messaging/subscription/types";
 import { AppConfig } from "./app-config";
@@ -18,7 +14,6 @@ export type AppPublishMessage = {
   type: "appPublish";
   topic: SubscriptionTopic;
   data: SubscriptionHandlerData;
-  messageOrigin?: UpstreamMessageOrigin;
 };
 
 export type AppUpstreamMessage =

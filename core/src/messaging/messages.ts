@@ -2,19 +2,15 @@ import { LogLevel } from "../logging";
 import { ProxySubjectStatus } from "../proxy";
 import { SubscriptionTopic } from "./subscription";
 
-import { HasUpstreamMessageOrigin } from "./upstream-message-origin";
-
-type OptionalUpstreamMessageOrigin = Partial<HasUpstreamMessageOrigin>;
-
 export type SubscribeMessage = {
   type: "subscribe";
   topic: SubscriptionTopic;
-} & OptionalUpstreamMessageOrigin;
+};
 
 export type UnsubscribeMessage = {
   type: "unsubscribe";
   topic: SubscriptionTopic;
-} & OptionalUpstreamMessageOrigin;
+};
 
 export type LogMessage = {
   type: "log";
@@ -25,7 +21,7 @@ export type LogMessage = {
   loggerId: string;
   data?: Record<string, unknown>;
   context: Record<string, unknown>;
-} & OptionalUpstreamMessageOrigin;
+};
 
 export type CloseChannelMessage = {
   type: "closeChannel";

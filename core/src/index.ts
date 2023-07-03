@@ -10,18 +10,13 @@ export * from "./logging";
 
 export type {
   AcknowledgeMessage,
-  AppMessageOrigin,
   CloseChannelMessage,
   DownstreamMessage,
-  HasUpstreamMessageOrigin,
   LogMessage,
   PublishMessage,
-  SiteMessageOrigin,
-  SharedWorkerMessageOrigin,
   SubscribeMessage,
   UnsubscribeMessage,
   UpstreamMessage,
-  UpstreamMessageOrigin,
 } from "./messaging";
 export type {
   ModuleSubscriptionTopic,

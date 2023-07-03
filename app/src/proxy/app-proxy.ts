@@ -75,11 +75,6 @@ export class AppProxy extends Proxy<
     this.channel.port1.postMessage(message);
   }
 
-  protected getUpstreamMessageOrigin(): undefined {
-    // This value is set by the workspace, not in the app
-    return undefined;
-  }
-
   protected handleMessageFromSubject(
     msg: AppDownstreamMessage,
     originalMessageEvent: MessageEvent<any>

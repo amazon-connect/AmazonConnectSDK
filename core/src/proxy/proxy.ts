@@ -4,7 +4,6 @@ import {
   SubscribeMessage,
   PublishMessage,
   UnsubscribeMessage,
-  UpstreamMessageOrigin,
   LogMessage,
 } from "../messaging";
 import {
@@ -60,8 +59,7 @@ export abstract class Proxy<
 
   subscribe<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
-    handler: SubscriptionHandler<THandlerData>,
-    origin?: UpstreamMessageOrigin
+    handler: SubscriptionHandler<THandlerData>
   ): void {
     const sendMessageToSubject = this.subscriptions.get(topic).length < 1;
     this.subscriptions.add(topic, handler as SubscriptionHandler);
@@ -70,7 +68,6 @@ export abstract class Proxy<
       const msg: SubscribeMessage = {
         type: "subscribe",
         topic,
-        messageOrigin: origin ?? this.getUpstreamMessageOrigin(),
       };
 
       this.sendOrQueueMessageToSubject(msg);
@@ -79,8 +76,7 @@ export abstract class Proxy<
 
   unsubscribe<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
-    handler: SubscriptionHandler<THandlerData>,
-    origin?: UpstreamMessageOrigin
+    handler: SubscriptionHandler<THandlerData>
   ): void {
     this.subscriptions.remove(topic, handler as SubscriptionHandler);
 
@@ -88,7 +84,6 @@ export abstract class Proxy<
       const msg: UnsubscribeMessage = {
         type: "unsubscribe",
         topic,
-        messageOrigin: origin ?? this.getUpstreamMessageOrigin(),
       };
 
       this.sendOrQueueMessageToSubject(msg);
@@ -117,7 +112,6 @@ export abstract class Proxy<
       loggerId,
       data,
       context: this.addContextToLogger(),
-      messageOrigin: this.getUpstreamMessageOrigin(),
     };
 
     this.sendOrQueueMessageToSubject(logMsg);
@@ -141,10 +135,6 @@ export abstract class Proxy<
   protected abstract sendMessageToSubject(message: any): void;
 
   protected abstract addContextToLogger(): Record<string, unknown>;
-
-  protected abstract getUpstreamMessageOrigin():
-    | UpstreamMessageOrigin
-    | undefined;
 
   protected consumerMessageHandler(evt: MessageEvent<any>): void {
     const { data } = evt;
