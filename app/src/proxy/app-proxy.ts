@@ -6,7 +6,7 @@ import {
   Proxy,
   SubscriptionHandlerData,
   SubscriptionTopic,
-} from "@amzn/connect-core";
+} from "@amzn/amazon-connect-sdk-core";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
 import { LifecycleManager } from "../lifecycle";
 import { AmazonConnectAppProvider } from "../app-provider";

@@ -22,6 +22,6 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@amzn/connect-core": "^1.0.0"
+    "@amzn/amazon-connect-sdk-app": "^1.0.0"
   }
 }

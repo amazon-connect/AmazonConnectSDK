@@ -2,10 +2,10 @@ import {
   Context,
   SubscriptionHandler,
   SubscriptionHandlerData,
-} from "@amzn/connect-core";
+  SubscriptionTopic,
+} from "@amzn/amazon-connect-sdk-core";
 import { AmazonConnectAppProvider } from "../app-provider";
 import { AppProxy } from "../proxy";
-import { SubscriptionTopic } from "@amzn/connect-core/lib/messaging/subscription/types";
 
 export type MessagingClientConfig = {
   provider?: AmazonConnectAppProvider;

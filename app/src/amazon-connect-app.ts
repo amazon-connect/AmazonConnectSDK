@@ -1,4 +1,4 @@
-import { AmazonConnect } from "@amzn/connect-core";
+import { AmazonConnect } from "@amzn/amazon-connect-sdk-core";
 import { AmazonConnectAppConfig } from "./amazon-connect-app-config";
 import { AmazonConnectAppProvider } from "./app-provider";
 

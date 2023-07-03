@@ -1,4 +1,8 @@
-import { AppConfig, ConnectLogger, LifecycleMessage } from "@amzn/connect-core";
+import {
+  AppConfig,
+  ConnectLogger,
+  LifecycleMessage,
+} from "@amzn/amazon-connect-sdk-core";
 import {
   AppStartHandler,
   AppStopHandler,

@@ -1,4 +1,4 @@
-import { AppConfig, Context } from "@amzn/connect-core";
+import { AppConfig, Context } from "@amzn/amazon-connect-sdk-core";
 import { AmazonConnectAppProvider } from "./app-provider";
 
 export class AppContext extends Context<AmazonConnectAppProvider> {
