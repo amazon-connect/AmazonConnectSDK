@@ -1,8 +1,8 @@
-import { ModuleKey } from "../module";
 import { ModuleContext } from "./module-context";
 import { Proxy } from "../proxy";
 import { AmazonConnectProvider, getGlobalProvider } from "../provider";
 import { ConnectLogger, ConnectLoggerFromContextParams } from "../logging";
+import { AmazonConnectNamespace } from "../amazon-connect-namespace";
 
 export class Context<
   TProvider extends AmazonConnectProvider = AmazonConnectProvider
@@ -17,8 +17,8 @@ export class Context<
     return this.getProvider().getProxy();
   }
 
-  getModuleContext(module: ModuleKey): ModuleContext {
-    return new ModuleContext(this, module);
+  getModuleContext(moduleNamespace: AmazonConnectNamespace): ModuleContext {
+    return new ModuleContext(this, moduleNamespace);
   }
 
   getProvider(): TProvider {

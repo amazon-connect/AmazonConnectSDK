@@ -1,4 +1,4 @@
-import { ModuleKey } from "../module";
+import { AmazonConnectNamespace } from "../amazon-connect-namespace";
 
 export type SiteMessageOrigin = {
   _type: "site";
@@ -8,7 +8,7 @@ export type SiteMessageOrigin = {
 
 export type SharedWorkerMessageOrigin = {
   _type: "sharedWorker";
-  module: ModuleKey;
+  namespace: AmazonConnectNamespace;
 };
 
 export type AppMessageOrigin = {

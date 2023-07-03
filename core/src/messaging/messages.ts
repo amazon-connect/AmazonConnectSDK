@@ -1,19 +1,19 @@
 import { LogLevel } from "../logging";
 import { ProxySubjectStatus } from "../proxy";
+import { SubscriptionTopic } from "./subscription";
 
-import { SubscriptionTopicWithModule } from "./subscription";
 import { HasUpstreamMessageOrigin } from "./upstream-message-origin";
 
 type OptionalUpstreamMessageOrigin = Partial<HasUpstreamMessageOrigin>;
 
 export type SubscribeMessage = {
   type: "subscribe";
-  topic: SubscriptionTopicWithModule;
+  topic: SubscriptionTopic;
 } & OptionalUpstreamMessageOrigin;
 
 export type UnsubscribeMessage = {
   type: "unsubscribe";
-  topic: SubscriptionTopicWithModule;
+  topic: SubscriptionTopic;
 } & OptionalUpstreamMessageOrigin;
 
 export type LogMessage = {
@@ -46,7 +46,7 @@ export type AcknowledgeMessage<
 
 export type PublishMessage = {
   type: "publish";
-  topic: SubscriptionTopicWithModule;
+  topic: SubscriptionTopic;
   data: Record<string, unknown>;
 };
 

@@ -11,7 +11,7 @@ import {
   SubscriptionHandler,
   SubscriptionHandlerData,
   SubscriptionMap,
-  SubscriptionTopicWithModule,
+  SubscriptionTopic,
 } from "../messaging/subscription";
 import {
   ProxyConnectionChangedHandler,
@@ -59,7 +59,7 @@ export abstract class Proxy<
   protected abstract initProxy(): void;
 
   subscribe<THandlerData extends SubscriptionHandlerData>(
-    topic: SubscriptionTopicWithModule,
+    topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>,
     origin?: UpstreamMessageOrigin
   ): void {
@@ -78,7 +78,7 @@ export abstract class Proxy<
   }
 
   unsubscribe<THandlerData extends SubscriptionHandlerData>(
-    topic: SubscriptionTopicWithModule,
+    topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>,
     origin?: UpstreamMessageOrigin
   ): void {

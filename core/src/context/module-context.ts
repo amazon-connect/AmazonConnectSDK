@@ -1,5 +1,5 @@
+import { AmazonConnectNamespace } from "../amazon-connect-namespace";
 import { ConnectLogger, ConnectLoggerFromContextParams } from "../logging";
-import { ModuleKey } from "../module";
 import { ModuleProxy } from "../proxy";
 import { createModuleProxy } from "../proxy";
 import { Context } from "./context";
@@ -7,7 +7,7 @@ import { Context } from "./context";
 export class ModuleContext {
   constructor(
     private readonly engineContext: Context,
-    private readonly module: ModuleKey
+    private readonly moduleNamespace: AmazonConnectNamespace
   ) {}
 
   private moduleProxy: ModuleProxy | undefined;
@@ -15,8 +15,8 @@ export class ModuleContext {
   get proxy(): ModuleProxy {
     if (!this.moduleProxy) {
       const proxy = this.engineContext.getProxy();
-      const module = this.module;
-      this.moduleProxy = createModuleProxy(proxy, module);
+      const moduleNamespace = this.moduleNamespace;
+      this.moduleProxy = createModuleProxy(proxy, moduleNamespace);
     }
     return this.moduleProxy;
   }

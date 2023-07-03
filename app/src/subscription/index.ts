@@ -1,1 +1,1 @@
-export { AppSubscriptionClient } from "./app-subscription-client";
+export { MessagingClient as AppSubscriptionClient } from "./messaging-client";

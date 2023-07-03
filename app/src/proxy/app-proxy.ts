@@ -1,11 +1,11 @@
 import {
   AppDownstreamMessage,
   AppPublishMessage,
-  AppSubscriptionTopic,
   ConnectLogger,
   LifecycleHandlerCompletedMessage,
   Proxy,
   SubscriptionHandlerData,
+  SubscriptionTopic,
 } from "@amzn/connect-core";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
 import { LifecycleManager } from "../lifecycle";
@@ -49,7 +49,7 @@ export class AppProxy extends Proxy<
     this.sendOrQueueMessageToSubject(msg);
   }
 
-  publish(topic: AppSubscriptionTopic, data: SubscriptionHandlerData): void {
+  publish(topic: SubscriptionTopic, data: SubscriptionHandlerData): void {
     const msg: AppPublishMessage = {
       type: "appPublish",
       topic,

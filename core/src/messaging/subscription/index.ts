@@ -1,8 +1,8 @@
 export type {
+  SubscriptionTopic,
   SubscriptionTopicKey,
   SubscriptionTopicParameter,
-  SubscriptionTopicWithModule,
-  SubscriptionTopic,
+  ModuleSubscriptionTopic,
   SubscriptionHandler,
   SubscriptionHandlerData,
 } from "./types";

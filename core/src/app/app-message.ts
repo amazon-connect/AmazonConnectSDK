@@ -4,8 +4,8 @@ import {
   UpstreamMessageOrigin,
 } from "../messaging";
 import { SubscriptionHandlerData } from "../messaging/subscription";
+import { SubscriptionTopic } from "../messaging/subscription/types";
 import { AppConfig } from "./app-config";
-import { AppSubscriptionTopic } from "./app-subscription-topic";
 import { LifecycleStage } from "./lifecycle-stage";
 
 export type LifecycleHandlerCompletedMessage = {
@@ -16,7 +16,7 @@ export type LifecycleHandlerCompletedMessage = {
 
 export type AppPublishMessage = {
   type: "appPublish";
-  topic: AppSubscriptionTopic;
+  topic: SubscriptionTopic;
   data: SubscriptionHandlerData;
   messageOrigin?: UpstreamMessageOrigin;
 };

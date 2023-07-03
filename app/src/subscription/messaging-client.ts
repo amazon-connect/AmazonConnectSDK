@@ -1,48 +1,41 @@
 import {
-  AppSubscriptionTopic,
   Context,
   SubscriptionHandler,
   SubscriptionHandlerData,
-  SubscriptionTopicWithModule,
 } from "@amzn/connect-core";
 import { AmazonConnectAppProvider } from "../app-provider";
 import { AppProxy } from "../proxy";
+import { SubscriptionTopic } from "@amzn/connect-core/lib/messaging/subscription/types";
 
-export type AppSubscriptionClientConfig = {
+export type MessagingClientConfig = {
   provider?: AmazonConnectAppProvider;
 };
 
-export class AppSubscriptionClient {
+export class MessagingClient {
   private readonly provider: AmazonConnectAppProvider | undefined;
 
-  constructor(config?: AppSubscriptionClientConfig) {
+  constructor(config?: MessagingClientConfig) {
     this.provider = config?.provider;
   }
 
   subscribe<THandlerData extends SubscriptionHandlerData>(
-    topic: AppSubscriptionTopic,
+    topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>
   ): void {
     // TODO check to verify app can subscribe to topic on given namespace
 
-    this.getProxy().subscribe(
-      AppSubscriptionClient.getModuleTopic(topic),
-      handler
-    );
+    this.getProxy().subscribe(topic, handler);
   }
 
   unsubscribe<THandlerData extends SubscriptionHandlerData>(
-    topic: AppSubscriptionTopic,
+    topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>
   ): void {
-    this.getProxy().unsubscribe(
-      AppSubscriptionClient.getModuleTopic(topic),
-      handler
-    );
+    this.getProxy().unsubscribe(topic, handler);
   }
 
   publish<THandlerData extends SubscriptionHandlerData>(
-    topic: AppSubscriptionTopic,
+    topic: SubscriptionTopic,
     data: THandlerData
   ): void {
     // TODO check to verify app can publish to topic on given namespace
@@ -58,13 +51,5 @@ export class AppSubscriptionClient {
     // TODO Implement this to not need Context
     if (this.provider) return this.provider;
     else return new Context().getProvider() as AmazonConnectAppProvider;
-  }
-
-  private static getModuleTopic(
-    topic: AppSubscriptionTopic
-  ): SubscriptionTopicWithModule {
-    const { namespace: parameter, key } = topic;
-
-    return { module: "app-subscription", key, parameter };
   }
 }
