@@ -1,7 +1,4 @@
-import {
-  AmazonConnectProvider,
-  AppConfig,
-} from "@amzn/amazon-connect-sdk-core";
+import { AmazonConnectProvider } from "@amzn/amazon-connect-sdk-core";
 import { AmazonConnectAppConfig } from "./amazon-connect-app-config";
 import {
   AppStartHandler,

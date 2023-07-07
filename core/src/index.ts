@@ -29,7 +29,7 @@ export type {
 
 export { SubscriptionMap } from "./messaging/subscription";
 
-export { AmazonConnectProvider } from "./provider";
+export { AmazonConnectProvider, getGlobalProvider } from "./provider";
 
 export { Proxy, createModuleProxy } from "./proxy";
 export type {

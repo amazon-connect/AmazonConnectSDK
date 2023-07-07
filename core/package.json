@@ -6,10 +6,11 @@
     "access": "public"
   },
   "scripts": {
-    "test": "echo 'no tests'",
-    "build": "tsc",
+    "build": "tsc --project tsconfig.build.json",
+    "check-types": "tsc --noEmit",
     "clean": "rm -rf ./lib",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "test": "jest"
   },
   "license": "UNLICENSED",
   "repository": {

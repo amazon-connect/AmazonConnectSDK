@@ -1,5 +1,5 @@
 import {
-  Context,
+  getGlobalProvider,
   SubscriptionHandler,
   SubscriptionHandlerData,
   SubscriptionTopic,
@@ -48,8 +48,7 @@ export class MessagingClient {
   }
 
   private getProvider(): AmazonConnectAppProvider {
-    // TODO Implement this to not need Context
     if (this.provider) return this.provider;
-    else return new Context().getProvider() as AmazonConnectAppProvider;
+    else return getGlobalProvider<AmazonConnectAppProvider>();
   }
 }

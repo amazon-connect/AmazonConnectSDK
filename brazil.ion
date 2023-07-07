@@ -15,7 +15,7 @@ common::{
   },
 
   build: {
-    command: "run-npm",
+    command: "./build.sh",
 
     env: {
        PATH: [ (farm "PeruNPM" "bin"), (env PATH) ],

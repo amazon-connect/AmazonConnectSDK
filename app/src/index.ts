@@ -5,4 +5,4 @@ export { ConnectAppClient } from "./connect-app-client";
 
 // TODO Exclude LifecycleManager
 export * from "./lifecycle";
-export * from "./subscription";
+export * from "./messaging";
