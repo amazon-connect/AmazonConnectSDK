@@ -12,7 +12,7 @@
     "check-types": "npm run --ws check-types",
     "clean": "npm run --ws clean",
     "core": "npm run --prefix ./core",
-    "test": "npm run --ws test"
+    "test": "npm run --ws build && npm run --ws check-types && npm run --ws test"
   },
   "devDependencies": {
     "@babel/core": "^7.22.5",
