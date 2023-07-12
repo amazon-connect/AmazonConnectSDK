@@ -6,7 +6,7 @@ package.AmazonConnectSDK = {
     build-tools = {
         1.0 = {
             NpmPrettyMuch = 1.1;
-            NodeJS = default;
+            NodeJS = 18.x;
         };
     };
 
