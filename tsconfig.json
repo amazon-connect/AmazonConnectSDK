@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "declarationMap" : true,
+    "declarationMap": true,
     "sourceMap": true,
     "strict": true,
     "noImplicitReturns": true,
@@ -9,6 +9,6 @@
     "module": "es6",
     "moduleResolution": "node",
     "target": "es6",
-    "allowJs": true,
+    "allowJs": true
   }
 }

@@ -1,10 +1,12 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
+const { webcrypto } = require("crypto");
+
 module.exports = {
-  testEnvironment: 'node',
+  testEnvironment: "node",
   globals: {
     crypto: {
-      getRandomValues: (arr) => require("crypto").webcrypto.getRandomValues(arr),
-      randomUUID: () => require("crypto").webcrypto.randomUUID(),
-    }
-  }
+      getRandomValues: (arr) => webcrypto.getRandomValues(arr),
+      randomUUID: () => webcrypto.randomUUID(),
+    },
+  },
 };

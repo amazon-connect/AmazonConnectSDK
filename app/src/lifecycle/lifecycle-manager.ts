@@ -197,7 +197,10 @@ export class LifecycleManager {
       } else {
         this.logger.error(
           `An error occurred when handling a ${evt.stage} lifecycle action.`,
-          { appInstanceId, err }
+          {
+            appInstanceId,
+            err,
+          }
         );
       }
     }
