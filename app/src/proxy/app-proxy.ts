@@ -1,6 +1,7 @@
 import {
   AppDownstreamMessage,
   AppPublishMessage,
+  CloseAppMessage,
   ConnectLogger,
   LifecycleHandlerCompletedMessage,
   Proxy,
@@ -46,6 +47,21 @@ export class AppProxy extends Proxy<
       stage,
       appInstanceId,
     };
+    this.sendOrQueueMessageToSubject(msg);
+  }
+
+  tryCloseApp(
+    message: string | undefined,
+    isFatalError: boolean,
+    data?: Record<string, unknown> | Error
+  ) {
+    const msg: CloseAppMessage = {
+      type: "closeApp",
+      isFatalError,
+      message,
+      data,
+    };
+
     this.sendOrQueueMessageToSubject(msg);
   }
 

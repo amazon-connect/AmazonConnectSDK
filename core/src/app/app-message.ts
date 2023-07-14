@@ -16,10 +16,18 @@ export type AppPublishMessage = {
   data: SubscriptionHandlerData;
 };
 
+export type CloseAppMessage = {
+  type: "closeApp";
+  isFatalError: boolean;
+  message?: string;
+  data?: Record<string, unknown> | Error;
+};
+
 export type AppUpstreamMessage =
   | UpstreamMessage
   | LifecycleHandlerCompletedMessage
-  | AppPublishMessage;
+  | AppPublishMessage
+  | CloseAppMessage;
 
 export type LifecycleMessage = {
   type: "appLifecycle";

@@ -10,6 +10,7 @@ import { MessagingClient } from "./messaging-client";
 import { mocked, MockedClass } from "jest-mock";
 
 jest.mock("@amzn/amazon-connect-sdk-core/lib/provider/global-provider");
+jest.mock("@amzn/amazon-connect-sdk-core/lib/logging/connect-logger");
 jest.mock("../lifecycle/lifecycle-manager");
 jest.mock("../proxy/app-proxy");
 
