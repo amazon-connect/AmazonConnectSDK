@@ -84,7 +84,7 @@ To open the workspace, do a file open in VS code or on the command line use:
 code .vscode/AmazonConnectSDK.code-workspace
 ```
 
-At the surface, this may appear similar to opening toe folder or going to `vscode .` in the root folder. However, the workspace is configured to support running jest tests (including debugging) directly in the IDE. This requires the [Jest Extension](https://marketplace.visualstudio.com/items?itemName=Orta.vscode-jest) to be installed in VS Code.
+At the surface, this may appear similar to opening a folder or going to `vscode .` in the root folder. However, the workspace is configured to support running jest tests (including debugging) directly in the IDE. This requires the [Jest Extension](https://marketplace.visualstudio.com/items?itemName=Orta.vscode-jest) to be installed in VS Code.
 
 From there, there are several ways to run tests in the IDE. One way to do this is to right click in a test file and the context menu will offer multiple options about running tests (including debug mode). Breakpoints can also be set right in the browser.
 
