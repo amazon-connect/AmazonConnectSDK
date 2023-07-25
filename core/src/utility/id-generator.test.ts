@@ -1,4 +1,13 @@
+import { webcrypto } from "crypto";
 import { generateStringId, generateUUID } from "./id-generator";
+
+beforeAll(() => {
+  global.crypto = {
+    ...global.crypto,
+    getRandomValues: (arr) => webcrypto.getRandomValues(arr as any),
+    randomUUID: () => webcrypto.randomUUID(),
+  };
+});
 
 describe("generateStringId", () => {
   test("should have length of 1", () => {

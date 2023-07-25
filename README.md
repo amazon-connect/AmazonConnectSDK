@@ -74,6 +74,21 @@ bb publish -w app
 bb publish -w agent
 ```
 
+## Using VS Code
+
+The root of this package has a `vscode` folder that contains a [VS Code Workspace](https://code.visualstudio.com/docs/editor/workspaces) called `AmazonConnectSDK.code-workspace`. The workspace opens all folders in the project. 
+
+To open the workspace, do a file open in VS code or on the command line use:
+
+```
+code .vscode/AmazonConnectSDK.code-workspace
+```
+
+At the surface, this may appear similar to opening toe folder or going to `vscode .` in the root folder. However, the workspace is configured to support running jest tests (including debugging) directly in the IDE. This requires the [Jest Extension](https://marketplace.visualstudio.com/items?itemName=Orta.vscode-jest) to be installed in VS Code.
+
+From there, there are several ways to run tests in the IDE. One way to do this is to right click in a test file and the context menu will offer multiple options about running tests (including debug mode). Breakpoints can also be set right in the browser.
+
+Running with this workspace today currently only allows the single project to be run, but in the future we will look to setup a workspace in other packages that use the SDK that includes the SDK to accomplish the same this and creating the feel of a monorepo across multiple Brazil projects.
 
 ## Setup local development with Agent Workspace and Test App
 

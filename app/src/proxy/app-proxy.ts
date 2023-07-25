@@ -52,12 +52,12 @@ export class AppProxy extends Proxy<
 
   tryCloseApp(
     message: string | undefined,
-    isFatalError: boolean,
+    isFatalError?: boolean,
     data?: Record<string, unknown> | Error
   ) {
     const msg: CloseAppMessage = {
       type: "closeApp",
-      isFatalError,
+      isFatalError: isFatalError ?? false,
       message,
       data,
     };
@@ -78,7 +78,6 @@ export class AppProxy extends Proxy<
   protected initProxy(): void {
     const testMessage = {
       type: "connect-app-host-init",
-      body: { msg: "hello" },
     };
 
     this.updateConnectionStatus({ status: "initializing" });
@@ -87,21 +86,19 @@ export class AppProxy extends Proxy<
     window.parent.postMessage(testMessage, "*", [this.channel.port2]);
     this.appLogger.debug("Send connect message to configure proxy");
   }
+
   protected sendMessageToSubject(message: any): void {
     this.channel.port1.postMessage(message);
   }
 
-  protected handleMessageFromSubject(
-    msg: AppDownstreamMessage,
-    originalMessageEvent: MessageEvent<any>
-  ): void {
+  protected handleMessageFromSubject(msg: AppDownstreamMessage): void {
     switch (msg.type) {
       case "appLifecycle":
         this.lifecycleManager.handleLifecycleChangeMessage(msg);
         break;
 
       default:
-        super.handleMessageFromSubject(msg, originalMessageEvent);
+        super.handleMessageFromSubject(msg);
     }
   }
 

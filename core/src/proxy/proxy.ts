@@ -103,6 +103,10 @@ export abstract class Proxy<
     loggerId: string;
     data?: Record<string, unknown>;
   }): void {
+    // Sanitize guards against a caller provided data object containing a
+    // non-cloneable object which will fail if sent through a message channel
+    const sanitizedData = JSON.parse(JSON.stringify(data));
+
     const logMsg: LogMessage = {
       type: "log",
       level,
@@ -110,7 +114,7 @@ export abstract class Proxy<
       source,
       message,
       loggerId,
-      data,
+      data: sanitizedData,
       context: this.addContextToLogger(),
     };
 
@@ -118,7 +122,13 @@ export abstract class Proxy<
   }
 
   sendLogMessage(message: LogMessage): void {
-    if (message.type !== "log") throw new Error("Invalid log message");
+    if (message.type !== "log") {
+      this.logger.error("Attempted to send invalid log message", {
+        message,
+      });
+      return;
+    }
+
     message.context = { ...message.context, ...this.addContextToLogger() };
 
     this.sendOrQueueMessageToSubject(message);
@@ -137,34 +147,35 @@ export abstract class Proxy<
   protected abstract addContextToLogger(): Record<string, unknown>;
 
   protected consumerMessageHandler(evt: MessageEvent<any>): void {
+    if (!this.isInitialized) {
+      this.logger.error(
+        "Attempted to process message from subject prior to proxy being initializing. Message not processed",
+        { originalMessageEventData: evt.data }
+      );
+      return;
+    }
+
     const { data } = evt;
 
     if (!("type" in data)) {
       // TODO Clean this up... probably safe to ignore without logging
-      this.logger.warn("Unknown inbound message", { evt });
+      this.logger.warn("Unknown inbound message", {
+        originalMessageEventData: data,
+      });
       return;
     }
 
     // Naming of type confusing because outbound to worker is inbound to client
     const msg = data as TDownstreamMessage;
 
-    this.handleMessageFromSubject(msg, evt);
+    this.handleMessageFromSubject(msg);
   }
 
-  protected handleMessageFromSubject(
-    msg: TDownstreamMessage,
-    originalMessageEvent: MessageEvent<any>
-  ) {
-    this.handleDefaultMessageFromSubject(
-      msg as DownstreamMessage,
-      originalMessageEvent
-    );
+  protected handleMessageFromSubject(msg: TDownstreamMessage) {
+    this.handleDefaultMessageFromSubject(msg as DownstreamMessage);
   }
 
-  private handleDefaultMessageFromSubject(
-    msg: DownstreamMessage,
-    originalMessageEvent: MessageEvent<any>
-  ) {
+  private handleDefaultMessageFromSubject(msg: DownstreamMessage) {
     switch (msg.type) {
       case "acknowledge":
         this.handleConnectionAcknowledge();
@@ -173,7 +184,9 @@ export abstract class Proxy<
         this.handlePublish(msg);
         break;
       default:
-        this.logger.error("Unknown inbound message", { originalMessageEvent });
+        this.logger.error("Unknown inbound message", {
+          originalMessageEventData: msg,
+        });
         return;
     }
   }
@@ -206,10 +219,10 @@ export abstract class Proxy<
   ): Promise<void> {
     try {
       await handler(data);
-    } catch (err) {
-      this.logger.error("An error occurred when handling subscription topic", {
+    } catch (error) {
+      this.logger.error("An error occurred when handling subscription", {
         topic,
-        err,
+        error,
       });
     }
   }
@@ -231,6 +244,15 @@ export abstract class Proxy<
     this.logger.debug("Proxy Connection Status Changed", {
       status: evt.status,
     });
-    [...this.connectionStatusChangeHandlers].map((h) => h(evt));
+    [...this.connectionStatusChangeHandlers].forEach((h) => {
+      try {
+        h(evt);
+      } catch (error) {
+        this.logger.error(
+          "An error occurred within a ProxyConnectionChangedHandler",
+          { error }
+        );
+      }
+    });
   }
 }

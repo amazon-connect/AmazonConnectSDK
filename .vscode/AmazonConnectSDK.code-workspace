@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"name": "core",
+			"path": "../core"
+		},
+		{
+			"name": "app",
+			"path": "../app"
+		},
+		{
+			"name": "agent",
+			"path": "../agent"
+		}
+	],
+	"settings": {
+		"jest.disabledWorkspaceFolders": [
+			"AmazonConnectSDK"
+		]
+	}
+}
