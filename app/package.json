@@ -10,7 +10,7 @@
     "check-types": "tsc --noEmit",
     "clean": "rm -rf ./lib",
     "prepack": "npm run build",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "license": "UNLICENSED",
   "repository": {

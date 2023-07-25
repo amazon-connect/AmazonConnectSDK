@@ -4,5 +4,8 @@
     "outDir": "./lib/",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["./src/**/*"]
+  "include": ["./src/**/*"],
+  "typeAcquisition": {
+    "include": ["jest"]
+  }
 }

@@ -18,6 +18,7 @@
     "test": "npm run --ws build && npm run --ws check-types && npm run --ws test"
   },
   "devDependencies": {
+    "@amzn/jest-reporter": "*",
     "@babel/core": "^7.22.5",
     "@babel/preset-env": "^7.22.5",
     "@babel/preset-typescript": "^7.22.5",
