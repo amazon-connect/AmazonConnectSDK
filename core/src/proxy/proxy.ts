@@ -9,7 +9,7 @@ import {
 import {
   SubscriptionHandler,
   SubscriptionHandlerData,
-  SubscriptionMap,
+  SubscriptionSet,
   SubscriptionTopic,
 } from "../messaging/subscription";
 import {
@@ -27,7 +27,7 @@ export abstract class Proxy<
     | DownstreamMessage = DownstreamMessage
 > {
   protected readonly provider: AmazonConnectProvider<TConfig>;
-  private readonly subscriptions: SubscriptionMap<SubscriptionHandler>;
+  private readonly subscriptions: SubscriptionSet<SubscriptionHandler>;
   private readonly connectionStatusChangeHandlers: Set<ProxyConnectionChangedHandler>;
   private readonly logger: ConnectLogger;
   private upstreamMessageQueue: any[];
@@ -45,7 +45,7 @@ export abstract class Proxy<
     this.upstreamMessageQueue = [];
     this.connectionEstablished = false;
     this.isInitialized = false;
-    this.subscriptions = new SubscriptionMap();
+    this.subscriptions = new SubscriptionSet();
     this.connectionStatusChangeHandlers = new Set();
     this.status = "notConnected";
   }
@@ -78,9 +78,9 @@ export abstract class Proxy<
     topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>
   ): void {
-    this.subscriptions.remove(topic, handler as SubscriptionHandler);
+    this.subscriptions.delete(topic, handler as SubscriptionHandler);
 
-    if (this.subscriptions.get(topic).length < 1) {
+    if (this.subscriptions.isEmpty(topic)) {
       const msg: UnsubscribeMessage = {
         type: "unsubscribe",
         topic,

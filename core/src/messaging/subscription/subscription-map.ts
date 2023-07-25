@@ -5,125 +5,119 @@ import {
   SubscriptionTopicParameter,
 } from "./types";
 
-export class SubscriptionMap<T = any> {
-  private readonly simpleSubscriptions: Record<
+export class SubscriptionMap<T> {
+  private readonly simpleSubscriptions: Map<
     AmazonConnectNamespace,
-    Record<SubscriptionTopicKey, Set<T>>
-  > = {};
+    Map<SubscriptionTopicKey, T>
+  > = new Map();
 
-  private readonly paramSubscriptions: Record<
+  private readonly paramSubscriptions: Map<
     string,
-    Record<SubscriptionTopicKey, Record<SubscriptionTopicParameter, Set<T>>>
-  > = {};
+    Map<SubscriptionTopicKey, Map<SubscriptionTopicParameter, T>>
+  > = new Map();
 
-  add({ namespace, key, parameter: param }: SubscriptionTopic, item: T): void {
+  add({ namespace, key, parameter: param }: SubscriptionTopic, value: T): void {
     if (param) {
-      if (!this.paramSubscriptions[namespace]) {
-        this.paramSubscriptions[namespace] = {
-          [key]: { [param]: new Set([item]) },
-        };
+      if (!this.paramSubscriptions.has(namespace)) {
+        this.paramSubscriptions.set(
+          namespace,
+          new Map([[key, new Map([[param, value]])]])
+        );
         return;
       }
-      if (!this.paramSubscriptions[namespace][key]) {
-        this.paramSubscriptions[namespace][key] = {
-          [param]: new Set([item]),
-        };
+      if (!this.paramSubscriptions.get(namespace)?.has(key)) {
+        this.paramSubscriptions
+          .get(namespace)
+          ?.set(key, new Map([[param, value]]));
         return;
       }
-      if (!this.paramSubscriptions[namespace][key][param]) {
-        this.paramSubscriptions[namespace][key][param] = new Set([item]);
-        return;
-      } else this.paramSubscriptions[namespace][key][param].add(item);
+      this.paramSubscriptions.get(namespace)?.get(key)?.set(param, value);
     } else {
-      if (!this.simpleSubscriptions[namespace]) {
-        this.simpleSubscriptions[namespace] = { [key]: new Set([item]) };
+      if (!this.simpleSubscriptions.has(namespace)) {
+        this.simpleSubscriptions.set(namespace, new Map([[key, value]]));
         return;
-      }
-      if (!this.simpleSubscriptions[namespace][key]) {
-        this.simpleSubscriptions[namespace][key] = new Set([item]);
-        return;
-      } else this.simpleSubscriptions[namespace][key].add(item);
+      } else this.simpleSubscriptions.get(namespace)?.set(key, value);
     }
   }
 
-  remove(
-    { namespace, key, parameter: param }: SubscriptionTopic,
-    item: T
-  ): void {
+  delete({ namespace, key, parameter: param }: SubscriptionTopic): void {
     if (param) {
-      if (
-        this.paramSubscriptions[namespace] &&
-        this.paramSubscriptions[namespace][key] &&
-        this.paramSubscriptions[namespace][key][param]
-      ) {
-        this.paramSubscriptions[namespace][key][param].delete(item);
-        if (this.paramSubscriptions[namespace][key][param].size < 1) {
-          delete this.paramSubscriptions[namespace][key][param];
+      if (this.paramSubscriptions.get(namespace)?.get(key)?.delete(param)) {
+        if ((this.paramSubscriptions.get(namespace)?.get(key)?.size ?? 0) < 1) {
+          this.paramSubscriptions.get(namespace)?.delete(key);
 
-          if (Object.keys(this.paramSubscriptions[namespace][key]).length < 1) {
-            delete this.paramSubscriptions[namespace][key];
-            if (Object.keys(this.paramSubscriptions[namespace]).length < 1) {
-              delete this.paramSubscriptions[namespace];
-            }
+          if ((this.paramSubscriptions.get(namespace)?.size ?? 0) < 1) {
+            this.paramSubscriptions.delete(namespace);
           }
         }
       }
     } else {
-      if (
-        this.simpleSubscriptions[namespace] &&
-        this.simpleSubscriptions[namespace][key]
-      ) {
-        this.simpleSubscriptions[namespace][key].delete(item);
-
-        if (this.simpleSubscriptions[namespace][key].size < 1) {
-          delete this.simpleSubscriptions[namespace][key];
-          if (Object.keys(this.simpleSubscriptions[namespace]).length < 1) {
-            delete this.simpleSubscriptions[namespace];
-          }
+      if (this.simpleSubscriptions.get(namespace)?.delete(key)) {
+        if ((this.simpleSubscriptions.get(namespace)?.size ?? 0) < 1) {
+          this.simpleSubscriptions.delete(namespace);
         }
       }
     }
   }
 
-  get({ namespace, key, parameter: param }: SubscriptionTopic): T[] {
+  get({ namespace, key, parameter: param }: SubscriptionTopic): T | undefined {
     if (!param) {
-      if (
-        this.simpleSubscriptions[namespace] &&
-        this.simpleSubscriptions[namespace][key]
-      ) {
-        return [...this.simpleSubscriptions[namespace][key]];
-      }
+      return this.simpleSubscriptions.get(namespace)?.get(key);
     } else {
-      if (
-        this.paramSubscriptions[namespace] &&
-        this.paramSubscriptions[namespace][key] &&
-        this.paramSubscriptions[namespace][key][param]
-      ) {
-        return [...this.paramSubscriptions[namespace][key][param]];
-      }
+      return this.paramSubscriptions.get(namespace)?.get(key)?.get(param);
     }
-    // No Subscriptions
-    return [];
+  }
+
+  getOrAdd(topic: SubscriptionTopic, addFactory: () => T): T {
+    let value = this.get(topic);
+
+    if (!value) {
+      value = addFactory();
+      this.add(topic, value);
+    }
+
+    return value;
+  }
+
+  addOrUpdate(
+    topic: SubscriptionTopic,
+    addFactory: () => T,
+    updateAction: (value: T) => T
+  ): T {
+    let value = this.get(topic);
+
+    if (value) {
+      value = updateAction(value);
+    } else {
+      value = addFactory();
+    }
+    this.add(topic, value);
+    return value;
   }
 
   getAllSubscriptions(): SubscriptionTopic[] {
-    const noParam = Object.keys(this.simpleSubscriptions).flatMap((namespace) =>
-      Object.keys(this.simpleSubscriptions[namespace]).flatMap((key) => ({
-        namespace,
-        key,
-      }))
+    const noParam = Array.from(this.simpleSubscriptions.keys()).flatMap(
+      (namespace) =>
+        Array.from(
+          this.simpleSubscriptions.get(namespace)?.keys() ?? []
+        ).flatMap((key) => ({
+          namespace,
+          key,
+        }))
     );
 
-    const withParam = Object.keys(this.simpleSubscriptions).flatMap(
+    const withParam = Array.from(this.paramSubscriptions.keys()).flatMap(
       (namespace) =>
-        Object.keys(this.simpleSubscriptions[namespace]).flatMap((key) =>
-          Object.keys(this.simpleSubscriptions[namespace][key]).flatMap(
-            (parameter) => ({
-              namespace,
-              key,
-              parameter,
-            })
-          )
+        Array.from(
+          this.paramSubscriptions.get(namespace)?.keys() ?? []
+        ).flatMap((key) =>
+          Array.from(
+            this.paramSubscriptions.get(namespace)?.get(key)?.keys() ?? []
+          ).flatMap((parameter) => ({
+            namespace,
+            key,
+            parameter,
+          }))
         )
     );
 

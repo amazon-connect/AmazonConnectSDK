@@ -27,7 +27,7 @@ export type {
   SubscriptionHandlerData,
 } from "./messaging/subscription";
 
-export { SubscriptionMap } from "./messaging/subscription";
+export { SubscriptionMap, SubscriptionSet } from "./messaging/subscription";
 
 export { AmazonConnectProvider, getGlobalProvider } from "./provider";
 

@@ -8,3 +8,4 @@ export type {
 } from "./types";
 
 export { SubscriptionMap } from "./subscription-map";
+export { SubscriptionSet } from "./subscription-set";
