@@ -105,7 +105,7 @@ export abstract class Proxy<
   }): void {
     // Sanitize guards against a caller provided data object containing a
     // non-cloneable object which will fail if sent through a message channel
-    const sanitizedData = JSON.parse(JSON.stringify(data));
+    const sanitizedData = data ? JSON.parse(JSON.stringify(data)) : undefined;
 
     const logMsg: LogMessage = {
       type: "log",

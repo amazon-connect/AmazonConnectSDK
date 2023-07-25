@@ -273,6 +273,27 @@ describe("log", () => {
     expect(msg.data).toEqual(expect.objectContaining(data));
     expect(msg.context).toEqual(expect.objectContaining(proxyLoggerContext));
   });
+  test("should send a log message with data undefined", () => {
+    const proxyLoggerContext = { foo: "test" };
+    const sut = TestProxy.getReadyTestProxy(proxyLoggerContext);
+    const level = LogLevel.error;
+    const source = "test";
+    const message = "test message";
+    const loggerId = "1234";
+    const data = undefined;
+
+    sut.log({ level, source, message, loggerId, data });
+
+    expect(sut.upstreamMessagesSent).toHaveLength(1);
+    const msg = sut.upstreamMessagesSent[0] as LogMessage;
+    expect(msg.type).toEqual("log");
+    expect(msg.level).toEqual(level);
+    expect(msg.time).toBeDefined();
+    expect(msg.source).toEqual(source);
+    expect(msg.loggerId).toEqual(loggerId);
+    expect(msg.data).toBeUndefined();
+    expect(msg.context).toEqual(expect.objectContaining(proxyLoggerContext));
+  });
 
   test("should strip out data with a a non-cloneable object attached allowing to pass through message channel", async () => {
     const proxyLoggerContext = { foo: "test" };
