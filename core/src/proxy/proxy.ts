@@ -61,7 +61,7 @@ export abstract class Proxy<
     topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>
   ): void {
-    const sendMessageToSubject = this.subscriptions.get(topic).length < 1;
+    const sendMessageToSubject = this.subscriptions.isEmpty(topic);
     this.subscriptions.add(topic, handler as SubscriptionHandler);
 
     if (sendMessageToSubject) {

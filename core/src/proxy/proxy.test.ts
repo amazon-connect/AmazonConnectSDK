@@ -124,7 +124,7 @@ describe("subscribe", () => {
 
     test("should send subscribe message for new subscription", () => {
       const handler: SubscriptionHandler = ({}) => Promise.resolve();
-      mockSubscriptionSet.get.mockReturnValueOnce([]);
+      mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
 
       sut.subscribe(testTopic, handler);
 
@@ -134,18 +134,18 @@ describe("subscribe", () => {
       expect((msg as SubscribeMessage).topic).toEqual(
         expect.objectContaining(testTopic)
       );
-      expect(mockSubscriptionSet.get).toHaveBeenCalledWith(testTopic);
+      expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
       expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
     });
 
     test("should not send subscription message when existing subscription already exists", () => {
-      mockSubscriptionSet.get.mockReturnValueOnce([({}) => Promise.resolve()]);
+      mockSubscriptionSet.isEmpty.mockReturnValueOnce(false);
       const handler: SubscriptionHandler = ({}) => Promise.resolve();
 
       sut.subscribe(testTopic, handler);
 
       expect(sut.upstreamMessagesSent).toHaveLength(0);
-      expect(mockSubscriptionSet.get).toHaveBeenCalledWith(testTopic);
+      expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
       expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
     });
   });
@@ -154,14 +154,14 @@ describe("subscribe", () => {
     const sut = new TestProxy();
     const [mockSubscriptionSet] = SubscriptionSetMock.mock.instances;
     const handler: SubscriptionHandler = ({}) => Promise.resolve();
-    mockSubscriptionSet.get.mockReturnValueOnce([]);
+    mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
 
     sut.init();
 
     sut.subscribe(testTopic, handler);
 
     expect(sut.upstreamMessagesSent).toHaveLength(0);
-    expect(mockSubscriptionSet.get).toHaveBeenCalledWith(testTopic);
+    expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
     expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
   });
 
@@ -169,7 +169,7 @@ describe("subscribe", () => {
     const sut = new TestProxy();
     const handler: SubscriptionHandler = ({}) => Promise.resolve();
     const [mockSubscriptionSet] = SubscriptionSetMock.mock.instances;
-    mockSubscriptionSet.get.mockReturnValueOnce([]);
+    mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
 
     sut.subscribe(testTopic, handler);
     sut.init();
@@ -181,7 +181,7 @@ describe("subscribe", () => {
     expect((msg as SubscribeMessage).topic).toEqual(
       expect.objectContaining(testTopic)
     );
-    expect(mockSubscriptionSet.get).toHaveBeenCalledWith(testTopic);
+    expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
     expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
   });
 });
