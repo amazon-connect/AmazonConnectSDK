@@ -21,4 +21,5 @@ export type ConnectLoggerParams = BaseLoggerParams & {
 
 export type LogOptions = {
   duplicateMessageToConsole?: boolean;
+  remoteIgnore?: boolean;
 };

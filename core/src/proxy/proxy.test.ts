@@ -3,6 +3,7 @@ import { ConnectLogger } from "../logging/connect-logger";
 import {
   AcknowledgeMessage,
   DownstreamMessage,
+  ErrorMessage,
   LogMessage,
   PublishMessage,
   SubscribeMessage,
@@ -16,17 +17,31 @@ import {
   SubscriptionTopic,
 } from "../messaging/subscription";
 import { AmazonConnectProvider } from "../provider";
+import {
+  ProxyConnectionChangedHandler,
+  ProxyConnectionStatus,
+  ProxyConnectionStatusManager,
+} from "./proxy-connection";
+import { UpstreamErrorHandler, UpstreamErrorService } from "./error";
 import { Proxy } from "./proxy";
 import { MockedClass, MockedObject } from "jest-mock";
-import { ProxyError } from "./proxy-connection";
 
 jest.mock("../logging/connect-logger");
 jest.mock("../messaging/subscription/subscription-set");
+jest.mock("./error/upstream-error-service");
+jest.mock("./proxy-connection/proxy-connection-status-manager");
 
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 const SubscriptionSetMock = SubscriptionSet as MockedClass<
   typeof SubscriptionSet<SubscriptionHandler>
 >;
+const UpstreamErrorServiceMock = UpstreamErrorService as MockedClass<
+  typeof UpstreamErrorService
+>;
+const ProxyConnectionStatusManagerMock =
+  ProxyConnectionStatusManager as MockedClass<
+    typeof ProxyConnectionStatusManager
+  >;
 
 class TestProxy extends Proxy {
   public readonly upstreamMessagesSent: UpstreamMessage[];
@@ -37,7 +52,7 @@ class TestProxy extends Proxy {
   }
 
   protected initProxy(): void {
-    this.updateConnectionStatus({ status: "initializing" });
+    this.status.update({ status: "initializing" });
   }
   protected sendMessageToSubject(message: any): void {
     this.upstreamMessagesSent.push(message);
@@ -76,10 +91,6 @@ class TestProxy extends Proxy {
     this.consumerMessageHandler(messageEvent);
   }
 
-  public mockSetProxyStatusToError(error: ProxyError) {
-    this.updateConnectionStatus(error);
-  }
-
   static getReadyTestProxy(loggerContext?: Record<string, unknown>): TestProxy {
     const proxy = new TestProxy(loggerContext);
     proxy.init();
@@ -100,12 +111,23 @@ beforeEach(() => {
 describe("init", () => {
   test("should be not connected when init was not called", () => {
     const sut = new TestProxy();
+    const [proxyConnectionStatusManager] =
+      ProxyConnectionStatusManagerMock.mock.instances;
+    proxyConnectionStatusManager.getStatus.mockReturnValueOnce("notConnected");
 
     expect(sut.connectionStatus).toEqual("notConnected");
   });
 
   test("should be initializing after init is called", () => {
     const sut = new TestProxy();
+    const [proxyConnectionStatusManager] =
+      ProxyConnectionStatusManagerMock.mock.instances;
+    let status: ProxyConnectionStatus;
+    proxyConnectionStatusManager.update.mockImplementation(
+      (evt) => (status = evt.status)
+    );
+    proxyConnectionStatusManager.getStatus.mockImplementation(() => status);
+
     sut.init();
 
     expect(sut.connectionStatus).toEqual("initializing");
@@ -390,6 +412,40 @@ describe("sendLogMessage", () => {
   });
 });
 
+describe("acknowledge", () => {
+  test("should be ready after acknowledge is received", () => {
+    const sut = new TestProxy();
+    const [proxyConnectionStatusManager] =
+      ProxyConnectionStatusManagerMock.mock.instances;
+    const statusHistory: ProxyConnectionStatus[] = [];
+    proxyConnectionStatusManager.update.mockImplementation((evt) =>
+      statusHistory.push(evt.status)
+    );
+    proxyConnectionStatusManager.getStatus.mockImplementation(
+      () => statusHistory[statusHistory.length - 1]
+    );
+
+    sut.init();
+    sut.mockPushAcknowledgeMessage();
+
+    expect(sut.connectionStatus).toEqual("ready");
+    expect(statusHistory).toHaveLength(2);
+    expect(statusHistory[0]).toEqual("initializing");
+    expect(statusHistory[1]).toEqual("ready");
+  });
+
+  test("should throw if acknowledge comes before init is called", () => {
+    const sut = new TestProxy();
+    const [proxyConnectionStatusManager] =
+      ProxyConnectionStatusManagerMock.mock.instances;
+    const [logger] = LoggerMock.mock.instances;
+
+    sut.mockPushAcknowledgeMessage();
+    expect(proxyConnectionStatusManager.update).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalled();
+  });
+});
+
 describe("publish", () => {
   let sut: TestProxy;
   let mockSubscriptionSet: MockedObject<SubscriptionSet<SubscriptionHandler>>;
@@ -459,6 +515,60 @@ describe("publish", () => {
   });
 });
 
+describe("error from upstream", () => {
+  test("should call invoke error service with upstream error when connection is healthy", () => {
+    const sut = TestProxy.getReadyTestProxy();
+    const errorMsg: ErrorMessage = {
+      type: "error",
+      message: "Test Error Message",
+      key: "TestError",
+      status: { initialized: true, startTime: new Date() },
+      isConnectionError: true,
+      details: { foo: 1 },
+    };
+    const [errorService] = UpstreamErrorServiceMock.mock.instances;
+
+    sut.mockPushMessage(errorMsg);
+
+    expect(errorService.invoke).toHaveBeenCalled();
+    const [upstreamError] = errorService.invoke.mock.calls[0];
+
+    expect(upstreamError.message).toEqual(errorMsg.message);
+    expect(upstreamError.key).toEqual(errorMsg.key);
+    expect(upstreamError.isConnectionError).toEqual(errorMsg.isConnectionError);
+    expect(upstreamError.details).toEqual(
+      expect.objectContaining(errorMsg.details)
+    );
+    expect(upstreamError.proxyStatus).toEqual(errorMsg.status);
+  });
+
+  test("should call invoke error service with upstream error when connection has failed", () => {
+    const sut = TestProxy.getReadyTestProxy();
+    const errorMsg: ErrorMessage = {
+      type: "error",
+      message: "Test Error Message",
+      key: "TestError",
+      status: { initialized: true, startTime: new Date() },
+      isConnectionError: false,
+      details: { foo: 1 },
+    };
+    const [errorService] = UpstreamErrorServiceMock.mock.instances;
+
+    sut.mockPushMessage(errorMsg);
+
+    expect(errorService.invoke).toHaveBeenCalled();
+    const [upstreamError] = errorService.invoke.mock.calls[0];
+
+    expect(upstreamError.message).toEqual(errorMsg.message);
+    expect(upstreamError.key).toEqual(errorMsg.key);
+    expect(upstreamError.isConnectionError).toEqual(errorMsg.isConnectionError);
+    expect(upstreamError.details).toEqual(
+      expect.objectContaining(errorMsg.details)
+    );
+    expect(upstreamError.proxyStatus).toEqual(errorMsg.status);
+  });
+});
+
 describe("proxyType", () => {
   test("should return the value defined in the proxy implementation", () => {
     const sut = new TestProxy();
@@ -502,55 +612,52 @@ describe("downstream messages", () => {
     const errorData = logger.error.mock.calls[0][1] as any;
     expect(errorData?.originalMessageEventData).toEqual(invalidMessage);
   });
+});
 
-  describe("connection status", () => {
-    test("should invoke two handlers on status change", () => {
-      const sut = TestProxy.getReadyTestProxy();
-      const err: ProxyError = { status: "error", reason: "testing" };
-      const mockHandler1 = jest.fn();
-      const mockHandler2 = jest.fn();
-      sut.onConnectionStatusChange(mockHandler1);
-      sut.onConnectionStatusChange(mockHandler2);
+describe("Error Handlers", () => {
+  test("should add handler to error service", () => {
+    const sut = new TestProxy();
+    const handler: UpstreamErrorHandler = jest.fn();
+    const [errorService] = UpstreamErrorServiceMock.mock.instances;
 
-      sut.mockSetProxyStatusToError(err);
+    sut.onError(handler);
 
-      expect(mockHandler1).toHaveBeenCalledWith(err);
-      expect(mockHandler2).toHaveBeenCalledWith(err);
-    });
+    expect(errorService.onError).toHaveBeenCalledWith(handler);
+  });
 
-    test("should ignore handler that has been unsubscribed", () => {
-      const sut = TestProxy.getReadyTestProxy();
-      const err: ProxyError = { status: "error", reason: "testing" };
-      const mockHandler1 = jest.fn();
-      const mockHandler2 = jest.fn();
-      sut.onConnectionStatusChange(mockHandler1);
-      sut.onConnectionStatusChange(mockHandler2);
-      sut.offConnectionStatusChange(mockHandler2);
+  test("should remove handler to error service", () => {
+    const sut = new TestProxy();
+    const handler: UpstreamErrorHandler = jest.fn();
+    const [errorService] = UpstreamErrorServiceMock.mock.instances;
 
-      sut.mockSetProxyStatusToError(err);
+    sut.offError(handler);
 
-      expect(mockHandler1).toHaveBeenCalledWith(err);
-      expect(mockHandler2).not.toHaveBeenCalled();
-    });
+    expect(errorService.offError).toHaveBeenCalledWith(handler);
+  });
+});
 
-    test("should catch and log handler error", () => {
-      const sut = TestProxy.getReadyTestProxy();
-      const [logger] = LoggerMock.mock.instances;
-      const err: ProxyError = { status: "error", reason: "testing" };
-      const mockHandler = jest.fn();
-      const handlerError = "handlerError";
-      mockHandler.mockImplementation(() => {
-        throw new Error(handlerError);
-      });
-      sut.onConnectionStatusChange(mockHandler);
+describe("Connection Status Change Handlers", () => {
+  test("should add handler", () => {
+    const sut = new TestProxy();
+    const handler: ProxyConnectionChangedHandler = jest.fn();
+    const [proxyConnectionStatusManager] =
+      ProxyConnectionStatusManagerMock.mock.instances;
 
-      sut.mockSetProxyStatusToError(err);
+    sut.onConnectionStatusChange(handler);
 
-      expect(mockHandler).toHaveBeenCalledWith(err);
-      expect(logger.error).toHaveBeenCalled();
-      const errorData = logger.error.mock.calls[0][1] as any;
-      expect(errorData?.error).toBeInstanceOf(Error);
-      expect(errorData?.error.message).toEqual(handlerError);
-    });
+    expect(proxyConnectionStatusManager.onChange).toHaveBeenCalledWith(handler);
+  });
+
+  test("should remove handler", () => {
+    const sut = new TestProxy();
+    const handler: ProxyConnectionChangedHandler = jest.fn();
+    const [proxyConnectionStatusManager] =
+      ProxyConnectionStatusManagerMock.mock.instances;
+
+    sut.offConnectionStatusChange(handler);
+
+    expect(proxyConnectionStatusManager.offChange).toHaveBeenCalledWith(
+      handler
+    );
   });
 });

@@ -5,6 +5,7 @@ import {
   PublishMessage,
   UnsubscribeMessage,
   LogMessage,
+  ErrorMessage,
 } from "../messaging";
 import {
   SubscriptionHandler,
@@ -14,11 +15,16 @@ import {
 } from "../messaging/subscription";
 import {
   ProxyConnectionChangedHandler,
-  ProxyConnectionEvent,
   ProxyConnectionStatus,
-} from "./proxy-connection";
+} from "./proxy-connection/types";
 import { AmazonConnectProvider } from "../provider";
 import { ConnectLogger, LogLevel } from "../logging";
+import { ProxyConnectionStatusManager } from "./proxy-connection";
+import {
+  UpstreamError,
+  UpstreamErrorHandler,
+  UpstreamErrorService,
+} from "./error";
 
 export abstract class Proxy<
   TConfig extends AmazonConnectConfig = AmazonConnectConfig,
@@ -27,13 +33,13 @@ export abstract class Proxy<
     | DownstreamMessage = DownstreamMessage
 > {
   protected readonly provider: AmazonConnectProvider<TConfig>;
+  protected readonly status: ProxyConnectionStatusManager;
   private readonly subscriptions: SubscriptionSet<SubscriptionHandler>;
-  private readonly connectionStatusChangeHandlers: Set<ProxyConnectionChangedHandler>;
+  private readonly errorService: UpstreamErrorService;
   private readonly logger: ConnectLogger;
   private upstreamMessageQueue: any[];
   private connectionEstablished: boolean;
   private isInitialized: boolean;
-  private status: ProxyConnectionStatus;
 
   constructor(provider: AmazonConnectProvider<TConfig>) {
     this.provider = provider;
@@ -42,12 +48,12 @@ export abstract class Proxy<
       mixin: () => ({ proxyType: this.proxyType }),
     });
 
+    this.status = new ProxyConnectionStatusManager();
+    this.errorService = new UpstreamErrorService();
     this.upstreamMessageQueue = [];
     this.connectionEstablished = false;
     this.isInitialized = false;
     this.subscriptions = new SubscriptionSet();
-    this.connectionStatusChangeHandlers = new Set();
-    this.status = "notConnected";
   }
 
   init(): void {
@@ -183,6 +189,9 @@ export abstract class Proxy<
       case "publish":
         this.handlePublish(msg);
         break;
+      case "error":
+        this.handleError(msg);
+        break;
       default:
         this.logger.error("Unknown inbound message", {
           originalMessageEventData: msg,
@@ -192,7 +201,7 @@ export abstract class Proxy<
   }
 
   private handleConnectionAcknowledge(): void {
-    this.updateConnectionStatus({
+    this.status.update({
       status: "ready",
     });
 
@@ -213,6 +222,24 @@ export abstract class Proxy<
       );
   }
 
+  private handleError(msg: ErrorMessage) {
+    if (msg.isConnectionError) {
+      const { message: reason, type: _, ...details } = msg;
+      this.status.update({ status: "error", reason, details });
+    }
+
+    const err: UpstreamError = {
+      message: msg.message,
+      key: msg.key,
+      details: msg.details,
+      isConnectionError: msg.isConnectionError,
+      connectionStatus: this.connectionStatus,
+      proxyStatus: msg.status,
+    };
+
+    this.errorService.invoke(err);
+  }
+
   private async handleAsyncSubscriptionHandlerInvoke(
     handler: SubscriptionHandler,
     { topic, data }: PublishMessage
@@ -229,30 +256,20 @@ export abstract class Proxy<
 
   public abstract get proxyType(): string;
   public get connectionStatus(): ProxyConnectionStatus {
-    return this.status;
+    return this.status.getStatus();
+  }
+
+  onError(handler: UpstreamErrorHandler): void {
+    this.errorService.onError(handler);
+  }
+  offError(handler: UpstreamErrorHandler): void {
+    this.errorService.offError(handler);
   }
 
   onConnectionStatusChange(handler: ProxyConnectionChangedHandler): void {
-    this.connectionStatusChangeHandlers.add(handler);
+    this.status.onChange(handler);
   }
   offConnectionStatusChange(handler: ProxyConnectionChangedHandler): void {
-    this.connectionStatusChangeHandlers.delete(handler);
-  }
-
-  protected updateConnectionStatus(evt: ProxyConnectionEvent): void {
-    this.status = evt.status;
-    this.logger.debug("Proxy Connection Status Changed", {
-      status: evt.status,
-    });
-    [...this.connectionStatusChangeHandlers].forEach((h) => {
-      try {
-        h(evt);
-      } catch (error) {
-        this.logger.error(
-          "An error occurred within a ProxyConnectionChangedHandler",
-          { error }
-        );
-      }
-    });
+    this.status.offChange(handler);
   }
 }

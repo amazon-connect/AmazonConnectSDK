@@ -40,6 +40,15 @@ export type AcknowledgeMessage<
   status: T;
 };
 
+export type ErrorMessage<T extends ProxySubjectStatus = ProxySubjectStatus> = {
+  type: "error";
+  message: string;
+  isConnectionError: boolean;
+  key: string;
+  status: T;
+  details?: Record<string, unknown>;
+};
+
 export type PublishMessage = {
   type: "publish";
   topic: SubscriptionTopic;
@@ -48,4 +57,4 @@ export type PublishMessage = {
 
 export type DownstreamMessage<
   T extends ProxySubjectStatus = ProxySubjectStatus
-> = AcknowledgeMessage<T> | PublishMessage;
+> = AcknowledgeMessage<T> | PublishMessage | ErrorMessage<T>;

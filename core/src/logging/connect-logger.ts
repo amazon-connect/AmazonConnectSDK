@@ -59,13 +59,15 @@ export class ConnectLogger {
     data?: ConnectLogData,
     options?: LogOptions
   ): void {
-    this.getProxy().log({
-      level,
-      source: this.source,
-      loggerId: this.loggerId,
-      message,
-      data: this.getTransformedData(level, data),
-    });
+    if (!options?.remoteIgnore) {
+      this.getProxy().log({
+        level,
+        source: this.source,
+        loggerId: this.loggerId,
+        message,
+        data: this.getTransformedData(level, data),
+      });
+    }
 
     if (this.applyDuplicateMessageToConsole(level, options)) {
       ConnectLogger.logToConsole(level, message, data);

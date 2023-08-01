@@ -80,7 +80,7 @@ export class AppProxy extends Proxy<
       type: "connect-app-host-init",
     };
 
-    this.updateConnectionStatus({ status: "initializing" });
+    this.status.update({ status: "initializing" });
     this.channel.port1.onmessage = (evt) => this.consumerMessageHandler(evt);
 
     window.parent.postMessage(testMessage, "*", [this.channel.port2]);
