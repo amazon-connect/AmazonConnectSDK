@@ -4,7 +4,7 @@ import { ProxySubjectStatus } from "../proxy-subject-status";
 export type UpstreamError = {
   message: string;
   key: string;
-  isConnectionError: boolean;
+  isFatal: boolean;
   connectionStatus: ProxyConnectionStatus;
   proxyStatus: ProxySubjectStatus;
   details?: Record<string, unknown>;

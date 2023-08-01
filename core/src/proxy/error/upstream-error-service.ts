@@ -13,15 +13,14 @@ export class UpstreamErrorService {
   }
 
   invoke(error: UpstreamError): void {
-    const { message, key, details, isConnectionError, connectionStatus } =
-      error;
+    const { message, key, details, isFatal, connectionStatus } = error;
 
     this.logger.error(
       message,
       {
         key,
         details,
-        isConnectionError,
+        isFatal,
         connectionStatus,
       },
       { duplicateMessageToConsole: true, remoteIgnore: true }

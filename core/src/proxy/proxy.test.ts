@@ -146,7 +146,6 @@ describe("subscribe", () => {
 
     test("should send subscribe message for new subscription", () => {
       const handler: SubscriptionHandler = ({}) => Promise.resolve();
-      mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
 
       sut.subscribe(testTopic, handler);
 
@@ -156,18 +155,6 @@ describe("subscribe", () => {
       expect((msg as SubscribeMessage).topic).toEqual(
         expect.objectContaining(testTopic)
       );
-      expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
-      expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
-    });
-
-    test("should not send subscription message when existing subscription already exists", () => {
-      mockSubscriptionSet.isEmpty.mockReturnValueOnce(false);
-      const handler: SubscriptionHandler = ({}) => Promise.resolve();
-
-      sut.subscribe(testTopic, handler);
-
-      expect(sut.upstreamMessagesSent).toHaveLength(0);
-      expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
       expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
     });
   });
@@ -183,7 +170,6 @@ describe("subscribe", () => {
     sut.subscribe(testTopic, handler);
 
     expect(sut.upstreamMessagesSent).toHaveLength(0);
-    expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
     expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
   });
 
@@ -203,7 +189,6 @@ describe("subscribe", () => {
     expect((msg as SubscribeMessage).topic).toEqual(
       expect.objectContaining(testTopic)
     );
-    expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
     expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
   });
 });
@@ -523,7 +508,7 @@ describe("error from upstream", () => {
       message: "Test Error Message",
       key: "TestError",
       status: { initialized: true, startTime: new Date() },
-      isConnectionError: true,
+      isFatal: true,
       details: { foo: 1 },
     };
     const [errorService] = UpstreamErrorServiceMock.mock.instances;
@@ -535,7 +520,7 @@ describe("error from upstream", () => {
 
     expect(upstreamError.message).toEqual(errorMsg.message);
     expect(upstreamError.key).toEqual(errorMsg.key);
-    expect(upstreamError.isConnectionError).toEqual(errorMsg.isConnectionError);
+    expect(upstreamError.isFatal).toEqual(errorMsg.isFatal);
     expect(upstreamError.details).toEqual(
       expect.objectContaining(errorMsg.details)
     );
@@ -549,7 +534,7 @@ describe("error from upstream", () => {
       message: "Test Error Message",
       key: "TestError",
       status: { initialized: true, startTime: new Date() },
-      isConnectionError: false,
+      isFatal: false,
       details: { foo: 1 },
     };
     const [errorService] = UpstreamErrorServiceMock.mock.instances;
@@ -561,7 +546,7 @@ describe("error from upstream", () => {
 
     expect(upstreamError.message).toEqual(errorMsg.message);
     expect(upstreamError.key).toEqual(errorMsg.key);
-    expect(upstreamError.isConnectionError).toEqual(errorMsg.isConnectionError);
+    expect(upstreamError.isFatal).toEqual(errorMsg.isFatal);
     expect(upstreamError.details).toEqual(
       expect.objectContaining(errorMsg.details)
     );

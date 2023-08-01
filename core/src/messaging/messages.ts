@@ -43,8 +43,8 @@ export type AcknowledgeMessage<
 export type ErrorMessage<T extends ProxySubjectStatus = ProxySubjectStatus> = {
   type: "error";
   message: string;
-  isConnectionError: boolean;
   key: string;
+  isFatal: boolean;
   status: T;
   details?: Record<string, unknown>;
 };

@@ -67,17 +67,14 @@ export abstract class Proxy<
     topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>
   ): void {
-    const sendMessageToSubject = this.subscriptions.isEmpty(topic);
     this.subscriptions.add(topic, handler as SubscriptionHandler);
 
-    if (sendMessageToSubject) {
-      const msg: SubscribeMessage = {
-        type: "subscribe",
-        topic,
-      };
+    const msg: SubscribeMessage = {
+      type: "subscribe",
+      topic,
+    };
 
-      this.sendOrQueueMessageToSubject(msg);
-    }
+    this.sendOrQueueMessageToSubject(msg);
   }
 
   unsubscribe<THandlerData extends SubscriptionHandlerData>(
@@ -223,7 +220,7 @@ export abstract class Proxy<
   }
 
   private handleError(msg: ErrorMessage) {
-    if (msg.isConnectionError) {
+    if (msg.isFatal) {
       const { message: reason, type: _, ...details } = msg;
       this.status.update({ status: "error", reason, details });
     }
@@ -232,7 +229,7 @@ export abstract class Proxy<
       message: msg.message,
       key: msg.key,
       details: msg.details,
-      isConnectionError: msg.isConnectionError,
+      isFatal: msg.isFatal,
       connectionStatus: this.connectionStatus,
       proxyStatus: msg.status,
     };

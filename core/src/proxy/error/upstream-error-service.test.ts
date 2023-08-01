@@ -21,7 +21,7 @@ describe("invoke", () => {
     testErr = {
       message: "Test Error Message",
       key: "testError",
-      isConnectionError: false,
+      isFatal: false,
       connectionStatus: "ready",
       details: { foo: 1 },
       proxyStatus: { initialized: true, startTime: new Date() },
@@ -35,7 +35,7 @@ describe("invoke", () => {
     const [logMessage, logDetails, logOptions] = logger.error.mock.calls[0];
     expect(logMessage).toEqual(testErr.message);
     expect(logDetails?.key).toEqual(testErr.key);
-    expect(logDetails?.isConnectionError).toEqual(testErr.isConnectionError);
+    expect(logDetails?.isFatal).toEqual(testErr.isFatal);
     expect(logDetails?.connectionStatus).toEqual(testErr.connectionStatus);
     expect(logDetails?.details).toEqual(
       expect.objectContaining(testErr.details)
