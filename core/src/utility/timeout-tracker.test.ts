@@ -8,11 +8,14 @@ const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 
 beforeEach(jest.resetAllMocks);
 
+let sut: TimeoutTracker;
+afterEach(() => sut?.complete());
+
 describe("start", () => {
   test("should start a new timer on first start", () => {
     const cancelledHandler = jest.fn();
 
-    const sut = TimeoutTracker.start(cancelledHandler, 5000);
+    sut = TimeoutTracker.start(cancelledHandler, 5000);
 
     expect(sut.getStatus()).toEqual("running");
     expect(sut.isCancelled()).toBeFalsy();
@@ -23,7 +26,7 @@ describe("start", () => {
 describe("complete", () => {
   test("should complete when running", () => {
     const cancelledHandler = jest.fn();
-    const sut = TimeoutTracker.start(cancelledHandler, 5000);
+    sut = TimeoutTracker.start(cancelledHandler, 5000);
 
     const result = sut.complete();
 
@@ -35,7 +38,7 @@ describe("complete", () => {
 
   test("should succeed and take no action when already completed", () => {
     const cancelledHandler = jest.fn();
-    const sut = TimeoutTracker.start(cancelledHandler, 5000);
+    sut = TimeoutTracker.start(cancelledHandler, 5000);
     sut.complete();
 
     const result = sut.complete();
@@ -55,7 +58,7 @@ describe("complete", () => {
       done();
     };
 
-    const sut = TimeoutTracker.start(cancelledHandler, 1);
+    sut = TimeoutTracker.start(cancelledHandler, 1);
   });
 });
 
@@ -69,7 +72,7 @@ describe("when tracker reaches timeout", () => {
       done();
     };
 
-    const sut = TimeoutTracker.start(cancelledHandler, 1);
+    sut = TimeoutTracker.start(cancelledHandler, 1);
   });
 
   test("should log error when cancelled callback throw an error", async () => {
@@ -77,7 +80,7 @@ describe("when tracker reaches timeout", () => {
     const cancelledHandler = jest.fn().mockImplementation(() => {
       throw handlerError;
     });
-    const sut = TimeoutTracker.start(cancelledHandler, 1);
+    sut = TimeoutTracker.start(cancelledHandler, 1);
     const [logger] = LoggerMock.mock.instances;
 
     // Wait for cancel to happen and handler to throw an error
