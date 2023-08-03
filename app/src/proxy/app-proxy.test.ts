@@ -12,19 +12,28 @@ import {
   LogLevel,
   LogMessage,
   SubscriptionTopic,
+  TimeoutTracker,
+  TimeoutTrackerCancelledHandler,
 } from "@amzn/amazon-connect-sdk-core";
 import { AmazonConnectAppProvider } from "../app-provider";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
 import { LifecycleManager } from "../lifecycle";
+import { ErrorService } from "@amzn/amazon-connect-sdk-core/lib/proxy/error";
+import * as connectionTimeout from "./connection-timeout";
 
 jest.mock("@amzn/amazon-connect-sdk-core/lib/logging/connect-logger");
+jest.mock("@amzn/amazon-connect-sdk-core/lib/utility/timeout-tracker");
+jest.mock("@amzn/amazon-connect-sdk-core/lib/proxy/error/error-service");
 
 jest.mock("../lifecycle/lifecycle-manager");
+jest.mock("./connection-timeout");
 
 const LifecycleManagerMock = LifecycleManager as MockedClass<
   typeof LifecycleManager
 >;
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
+const TimeoutTrackerMock = TimeoutTracker as MockedClass<typeof TimeoutTracker>;
+const ErrorServiceMock = ErrorService as MockedClass<typeof ErrorService>;
 
 // About these tests re: MessageChannel
 // ====================================
@@ -41,10 +50,25 @@ const waitForMessageChannel = async (condition: () => boolean) => {
   while (condition()) await new Promise((resolve) => setTimeout(resolve, 1));
 };
 
+const getAppProxyLogger = () => {
+  const idx = LoggerMock.mock.calls.findIndex(
+    ([a]) => typeof a === "object" && a.source === "app.appProxy"
+  );
+
+  if (idx < 0) throw new Error("app proxy logger not found");
+
+  return LoggerMock.mock.instances[idx];
+};
+
 let provider: AmazonConnectAppProvider;
 let sut: AppProxy;
 let subjectPort: MessagePort;
 let mockWindowPostMessage: jest.Mock<any, any, Transferable[]>;
+
+let mockTimeoutTrackerStart: jest.SpyInstance<
+  TimeoutTracker,
+  [TimeoutTrackerCancelledHandler, number]
+>;
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -58,6 +82,11 @@ beforeEach(() => {
   mockWindowPostMessage.mockImplementation((_t, _o, [port]) => {
     subjectPort = port;
   });
+  mockTimeoutTrackerStart = jest
+    .spyOn(TimeoutTracker, "start")
+    .mockImplementation(
+      (onCancelled, ms) => new TimeoutTracker(onCancelled, ms)
+    );
 });
 
 afterEach(() => {
@@ -65,11 +94,23 @@ afterEach(() => {
 });
 
 describe("when performing the init via the provider", () => {
-  beforeEach(() => {
+  test("should set the timeout from config", () => {
+    const timeout = 4000;
+    const configSpy = jest
+      .spyOn(connectionTimeout, "getConnectionTimeout")
+      .mockReturnValue(timeout);
+
     sut = provider.getProxy() as AppProxy;
+
+    expect(mockTimeoutTrackerStart).toHaveBeenCalledWith(
+      expect.anything(),
+      timeout
+    );
+    expect(configSpy).toHaveBeenCalledWith(provider.config);
   });
 
   test("should send postMessage with messageChannel", () => {
+    sut = provider.getProxy() as AppProxy;
     expect(mockWindowPostMessage).toHaveBeenCalledTimes(1);
     const [msg, targetOrigin, [transport]] =
       mockWindowPostMessage.mock.calls[0];
@@ -83,6 +124,8 @@ describe("when performing the init via the provider", () => {
   });
 
   test("should be ready after acknowledge is sent via subject port", async () => {
+    sut = provider.getProxy() as AppProxy;
+    const [connectionTimer] = TimeoutTrackerMock.mock.instances;
     const ackMsg: AcknowledgeMessage = {
       type: "acknowledge",
       status: {
@@ -90,6 +133,7 @@ describe("when performing the init via the provider", () => {
         startTime: new Date(),
       },
     };
+    connectionTimer.complete.mockReturnValue(true);
 
     subjectPort.postMessage(ackMsg);
 
@@ -98,6 +142,69 @@ describe("when performing the init via the provider", () => {
     await waitForMessageChannel(() => sut.connectionStatus === "initializing");
 
     expect(sut.connectionStatus).toEqual("ready");
+    expect(connectionTimer.complete).toHaveBeenCalled();
+  });
+
+  describe("when the workspace connection times out", () => {
+    test("should put the proxy into an error state ", () => {
+      sut = provider.getProxy() as AppProxy;
+      const [[errorHandler]] = TimeoutTrackerMock.mock.calls;
+
+      errorHandler({ timeoutMs: 4000 });
+
+      expect(sut.connectionStatus).toEqual("error");
+    });
+
+    test("should invoke an error on proxy error service", () => {
+      sut = provider.getProxy() as AppProxy;
+      const [errorService] = ErrorServiceMock.mock.instances;
+      const [[errorHandler]] = TimeoutTrackerMock.mock.calls;
+
+      errorHandler({ timeoutMs: 4000 });
+
+      expect(errorService.invoke).toHaveBeenCalledTimes(1);
+      const [errorBody] = errorService.invoke.mock.calls[0];
+      expect(errorBody.isFatal).toBeTruthy();
+      expect(errorBody.key).toEqual("workspaceConnectTimeout");
+      expect(errorBody.details?.timeoutMs).toEqual(4000);
+      expect(errorBody.connectionStatus).toEqual("error");
+    });
+
+    test("should not call complete on the timeout tracker when acknowledge is not sent", () => {
+      sut = provider.getProxy() as AppProxy;
+      const [[errorHandler]] = TimeoutTrackerMock.mock.calls;
+      const [connectionTimer] = TimeoutTrackerMock.mock.instances;
+
+      errorHandler({ timeoutMs: 4000 });
+
+      expect(connectionTimer.complete).not.toHaveBeenCalled();
+    });
+
+    test("should not acknowledge proxy if timeout has passed and acknowledge message is received", async () => {
+      sut = provider.getProxy() as AppProxy;
+      const [connectionTimer] = TimeoutTrackerMock.mock.instances;
+      const logger = getAppProxyLogger();
+      const ackMsg: AcknowledgeMessage = {
+        type: "acknowledge",
+        status: {
+          initialized: true,
+          startTime: new Date(),
+        },
+      };
+      connectionTimer.complete.mockReturnValue(false);
+
+      subjectPort.postMessage(ackMsg);
+
+      // Sending a message through a message channel cannot be awaited.
+      // For testing a loop with a quick delay is required
+      await waitForMessageChannel(
+        () => connectionTimer.complete.mock.calls.length === 0
+      );
+
+      expect(sut.connectionStatus).not.toEqual("ready");
+      expect(connectionTimer.complete).toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalledTimes(1);
+    });
   });
 });
 
@@ -112,7 +219,9 @@ describe("when appProxy is ready", () => {
     });
 
     sut = provider.getProxy() as AppProxy;
+    const [connectionTimer] = TimeoutTrackerMock.mock.instances;
 
+    connectionTimer.complete.mockReturnValueOnce(true);
     const ackMsg: AcknowledgeMessage = {
       type: "acknowledge",
       status: {

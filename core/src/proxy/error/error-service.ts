@@ -1,8 +1,11 @@
+import {
+  AmazonConnectError,
+  AmazonConnectErrorHandler,
+} from "../../amazon-connect-error";
 import { ConnectLogger } from "../../logging";
-import { UpstreamError, UpstreamErrorHandler } from "./types";
 
-export class UpstreamErrorService {
-  private readonly errorHandlers: Set<UpstreamErrorHandler>;
+export class ErrorService {
+  private readonly errorHandlers: Set<AmazonConnectErrorHandler>;
   private readonly logger: ConnectLogger;
 
   constructor() {
@@ -12,7 +15,7 @@ export class UpstreamErrorService {
     });
   }
 
-  invoke(error: UpstreamError): void {
+  invoke(error: AmazonConnectError): void {
     const { message, key, details, isFatal, connectionStatus } = error;
 
     this.logger.error(
@@ -30,19 +33,22 @@ export class UpstreamErrorService {
       try {
         handler(error);
       } catch (handlerError) {
-        this.logger.error("An error occurred within a UpstreamErrorHandler", {
-          handlerError,
-          originalError: error,
-        });
+        this.logger.error(
+          "An error occurred within a AmazonConnectErrorHandler",
+          {
+            handlerError,
+            originalError: error,
+          }
+        );
       }
     });
   }
 
-  onError(handler: UpstreamErrorHandler): void {
+  onError(handler: AmazonConnectErrorHandler): void {
     this.errorHandlers.add(handler);
   }
 
-  offError(handler: UpstreamErrorHandler): void {
+  offError(handler: AmazonConnectErrorHandler): void {
     this.errorHandlers.delete(handler);
   }
 }

@@ -7,10 +7,13 @@ import {
   Proxy,
   SubscriptionHandlerData,
   SubscriptionTopic,
+  TimeoutTracker,
+  TimeoutTrackerCancelledEvent,
 } from "@amzn/amazon-connect-sdk-core";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
 import { LifecycleManager } from "../lifecycle";
 import { AmazonConnectAppProvider } from "../app-provider";
+import { getConnectionTimeout } from "./connection-timeout";
 
 export class AppProxy extends Proxy<
   AmazonConnectAppConfig,
@@ -19,6 +22,7 @@ export class AppProxy extends Proxy<
   private readonly channel: MessageChannel;
   private readonly lifecycleManager: LifecycleManager;
   private readonly appLogger: ConnectLogger;
+  private connectionTimer: TimeoutTracker | undefined;
 
   constructor(
     provider: AmazonConnectAppProvider,
@@ -28,6 +32,7 @@ export class AppProxy extends Proxy<
 
     this.channel = new MessageChannel();
     this.lifecycleManager = lifecycleManager;
+
     this.appLogger = new ConnectLogger({
       source: "app.appProxy",
       provider: provider,
@@ -83,12 +88,32 @@ export class AppProxy extends Proxy<
     this.status.update({ status: "initializing" });
     this.channel.port1.onmessage = (evt) => this.consumerMessageHandler(evt);
 
+    this.connectionTimer = TimeoutTracker.start(
+      this.connectionTimeout.bind(this),
+      getConnectionTimeout(this.provider.config)
+    );
+
     window.parent.postMessage(testMessage, "*", [this.channel.port2]);
     this.appLogger.debug("Send connect message to configure proxy");
   }
 
   protected sendMessageToSubject(message: any): void {
     this.channel.port1.postMessage(message);
+  }
+
+  protected handleConnectionAcknowledge(): void {
+    // ConnectionTimer will always be defined here
+    if (!this.connectionTimer!.complete()) {
+      this.appLogger.error(
+        "Workspace connection acknowledge received after timeout. App is not connected to workspace.",
+        {
+          timeout: this.connectionTimer!.timeoutMs,
+        }
+      );
+      return;
+    }
+
+    super.handleConnectionAcknowledge();
   }
 
   protected handleMessageFromSubject(msg: AppDownstreamMessage): void {
@@ -100,6 +125,22 @@ export class AppProxy extends Proxy<
       default:
         super.handleMessageFromSubject(msg);
     }
+  }
+
+  private connectionTimeout(evt: TimeoutTrackerCancelledEvent) {
+    this.status.update({
+      status: "error",
+      reason: "Workspace connection timeout",
+      details: { ...evt },
+    });
+
+    this.publishError({
+      message: "App failed to connect to workspace in the alloted time",
+      key: "workspaceConnectTimeout",
+      details: { ...evt },
+      isFatal: true,
+      proxyStatus: { initialized: false },
+    });
   }
 
   protected addContextToLogger(): Record<string, unknown> {

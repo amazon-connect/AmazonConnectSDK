@@ -24,7 +24,6 @@ export abstract class AmazonConnect {
     setGlobalProvider(provider);
 
     this.isInitialized = true;
-    logger.info("Initialization complete");
 
     // Getting the proxy sets up the connection with subject
     provider.getProxy();

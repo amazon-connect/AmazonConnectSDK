@@ -1,6 +1,6 @@
 import { AmazonConnectConfig } from "../amazon-connect-config";
+import { AmazonConnectErrorHandler } from "../amazon-connect-error";
 import { Proxy, ProxyFactory } from "../proxy";
-import { UpstreamErrorHandler } from "../proxy/error";
 
 export type AmazonConnectProviderParams<TConfig extends AmazonConnectConfig> = {
   config: TConfig;
@@ -41,11 +41,11 @@ export class AmazonConnectProvider<
     return { ...this._config };
   }
 
-  onError(handler: UpstreamErrorHandler): void {
+  onError(handler: AmazonConnectErrorHandler): void {
     this.getProxy().onError(handler);
   }
 
-  offError(handler: UpstreamErrorHandler): void {
+  offError(handler: AmazonConnectErrorHandler): void {
     this.getProxy().offError(handler);
   }
 }

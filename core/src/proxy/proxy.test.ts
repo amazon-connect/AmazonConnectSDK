@@ -22,22 +22,21 @@ import {
   ProxyConnectionStatus,
   ProxyConnectionStatusManager,
 } from "./proxy-connection";
-import { UpstreamErrorHandler, UpstreamErrorService } from "./error";
+import { ErrorService } from "./error";
 import { Proxy } from "./proxy";
 import { MockedClass, MockedObject } from "jest-mock";
+import { AmazonConnectErrorHandler } from "../amazon-connect-error";
 
 jest.mock("../logging/connect-logger");
 jest.mock("../messaging/subscription/subscription-set");
-jest.mock("./error/upstream-error-service");
+jest.mock("./error/error-service");
 jest.mock("./proxy-connection/proxy-connection-status-manager");
 
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 const SubscriptionSetMock = SubscriptionSet as MockedClass<
   typeof SubscriptionSet<SubscriptionHandler>
 >;
-const UpstreamErrorServiceMock = UpstreamErrorService as MockedClass<
-  typeof UpstreamErrorService
->;
+const ErrorServiceMock = ErrorService as MockedClass<typeof ErrorService>;
 const ProxyConnectionStatusManagerMock =
   ProxyConnectionStatusManager as MockedClass<
     typeof ProxyConnectionStatusManager
@@ -511,7 +510,7 @@ describe("error from upstream", () => {
       isFatal: true,
       details: { foo: 1 },
     };
-    const [errorService] = UpstreamErrorServiceMock.mock.instances;
+    const [errorService] = ErrorServiceMock.mock.instances;
 
     sut.mockPushMessage(errorMsg);
 
@@ -537,7 +536,7 @@ describe("error from upstream", () => {
       isFatal: false,
       details: { foo: 1 },
     };
-    const [errorService] = UpstreamErrorServiceMock.mock.instances;
+    const [errorService] = ErrorServiceMock.mock.instances;
 
     sut.mockPushMessage(errorMsg);
 
@@ -602,8 +601,8 @@ describe("downstream messages", () => {
 describe("Error Handlers", () => {
   test("should add handler to error service", () => {
     const sut = new TestProxy();
-    const handler: UpstreamErrorHandler = jest.fn();
-    const [errorService] = UpstreamErrorServiceMock.mock.instances;
+    const handler: AmazonConnectErrorHandler = jest.fn();
+    const [errorService] = ErrorServiceMock.mock.instances;
 
     sut.onError(handler);
 
@@ -612,8 +611,8 @@ describe("Error Handlers", () => {
 
   test("should remove handler to error service", () => {
     const sut = new TestProxy();
-    const handler: UpstreamErrorHandler = jest.fn();
-    const [errorService] = UpstreamErrorServiceMock.mock.instances;
+    const handler: AmazonConnectErrorHandler = jest.fn();
+    const [errorService] = ErrorServiceMock.mock.instances;
 
     sut.offError(handler);
 

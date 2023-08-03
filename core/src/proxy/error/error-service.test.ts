@@ -1,7 +1,7 @@
 import { ConnectLogger } from "../../logging";
 import { MockedClass, MockedObject } from "jest-mock";
-import { UpstreamErrorService } from "./upstream-error-service";
-import { UpstreamError } from "./types";
+import { ErrorService } from "./error-service";
+import { AmazonConnectError } from "../../amazon-connect-error";
 
 jest.mock("../../logging/connect-logger");
 
@@ -10,12 +10,12 @@ const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 beforeEach(() => jest.resetAllMocks());
 
 describe("invoke", () => {
-  let sut: UpstreamErrorService;
+  let sut: ErrorService;
   let logger: MockedObject<ConnectLogger>;
-  let testErr: UpstreamError;
+  let testErr: AmazonConnectError;
 
   beforeEach(() => {
-    sut = new UpstreamErrorService();
+    sut = new ErrorService();
     logger = LoggerMock.mock.instances[0];
 
     testErr = {

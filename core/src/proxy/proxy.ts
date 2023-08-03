@@ -20,11 +20,11 @@ import {
 import { AmazonConnectProvider } from "../provider";
 import { ConnectLogger, LogLevel } from "../logging";
 import { ProxyConnectionStatusManager } from "./proxy-connection";
+import { ErrorService } from "./error";
 import {
-  UpstreamError,
-  UpstreamErrorHandler,
-  UpstreamErrorService,
-} from "./error";
+  AmazonConnectError,
+  AmazonConnectErrorHandler,
+} from "../amazon-connect-error";
 
 export abstract class Proxy<
   TConfig extends AmazonConnectConfig = AmazonConnectConfig,
@@ -35,7 +35,7 @@ export abstract class Proxy<
   protected readonly provider: AmazonConnectProvider<TConfig>;
   protected readonly status: ProxyConnectionStatusManager;
   private readonly subscriptions: SubscriptionSet<SubscriptionHandler>;
-  private readonly errorService: UpstreamErrorService;
+  private readonly errorService: ErrorService;
   private readonly logger: ConnectLogger;
   private upstreamMessageQueue: any[];
   private connectionEstablished: boolean;
@@ -49,7 +49,7 @@ export abstract class Proxy<
     });
 
     this.status = new ProxyConnectionStatusManager();
-    this.errorService = new UpstreamErrorService();
+    this.errorService = new ErrorService();
     this.upstreamMessageQueue = [];
     this.connectionEstablished = false;
     this.isInitialized = false;
@@ -197,7 +197,7 @@ export abstract class Proxy<
     }
   }
 
-  private handleConnectionAcknowledge(): void {
+  protected handleConnectionAcknowledge(): void {
     this.status.update({
       status: "ready",
     });
@@ -225,16 +225,24 @@ export abstract class Proxy<
       this.status.update({ status: "error", reason, details });
     }
 
-    const err: UpstreamError = {
+    this.publishError({
       message: msg.message,
       key: msg.key,
       details: msg.details,
       isFatal: msg.isFatal,
-      connectionStatus: this.connectionStatus,
       proxyStatus: msg.status,
+    });
+  }
+
+  protected publishError(
+    error: Omit<AmazonConnectError, "connectionStatus">
+  ): void {
+    const fullError: AmazonConnectError = {
+      ...error,
+      connectionStatus: this.connectionStatus,
     };
 
-    this.errorService.invoke(err);
+    this.errorService.invoke(fullError);
   }
 
   private async handleAsyncSubscriptionHandlerInvoke(
@@ -256,10 +264,10 @@ export abstract class Proxy<
     return this.status.getStatus();
   }
 
-  onError(handler: UpstreamErrorHandler): void {
+  onError(handler: AmazonConnectErrorHandler): void {
     this.errorService.onError(handler);
   }
-  offError(handler: UpstreamErrorHandler): void {
+  offError(handler: AmazonConnectErrorHandler): void {
     this.errorService.offError(handler);
   }
 

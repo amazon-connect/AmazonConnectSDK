@@ -1,4 +1,6 @@
-export type ProxySubjectStatus = {
-  initialized: boolean;
-  startTime: Date;
-};
+export type ProxySubjectStatus =
+  | { initialized: false }
+  | {
+      initialized: true;
+      startTime: Date;
+    };

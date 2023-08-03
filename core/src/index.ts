@@ -1,6 +1,10 @@
 export { AmazonConnect } from "./amazon-connect";
 export type { AmazonConnectConfig } from "./amazon-connect-config";
 export type { AmazonConnectNamespace } from "./amazon-connect-namespace";
+export type {
+  AmazonConnectError,
+  AmazonConnectErrorHandler,
+} from "./amazon-connect-error";
 export * from "./app";
 
 export { ConnectClient, ConnectClientConfig } from "./client";
