@@ -7,7 +7,6 @@ import { createModuleProxy } from "./module-proxy-factory";
 import { Proxy } from "./proxy";
 
 jest.mock("../logging/connect-logger");
-// jest.mock("./proxy");
 
 class TestProxy extends Proxy {
   constructor() {

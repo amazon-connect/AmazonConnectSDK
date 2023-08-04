@@ -1,356 +1,556 @@
+import { MockedClass, MockedObject } from "jest-mock";
+
 import { ConnectLogger } from "./connect-logger";
-import * as util from "../utility";
-import {
-  AmazonConnectProvider,
-  AmazonConnectProviderParams,
-} from "../provider";
-import { AmazonConnectConfig } from "../amazon-connect-config";
+import * as util from "../utility/id-generator";
+import * as globalProvider from "../provider";
+import * as consoleWriter from "./log-data-console-writer";
+import { AmazonConnectProvider } from "../provider";
 import { LogLevel } from "./log-level";
 import { Proxy } from "../proxy";
+import { ProxyLogData } from "../proxy/proxy-log-data";
+import { LogDataTransformer } from "./log-data-transformer";
+import { ConnectLogData } from "./logger-types";
+import { AmazonConnectConfig } from "../amazon-connect-config";
+
+jest.mock("../utility/id-generator");
+jest.mock("../provider/global-provider");
+jest.mock("../proxy/proxy");
+jest.mock("./log-data-transformer");
+jest.mock("./log-data-console-writer");
+
+const LogDataTransformerMock = LogDataTransformer as MockedClass<
+  typeof LogDataTransformer
+>;
+
+class TestProxy extends Proxy {
+  constructor(provider: AmazonConnectProvider) {
+    super(provider);
+  }
+
+  protected initProxy(): void {
+    throw new Error("Method not implemented.");
+  }
+  protected sendMessageToSubject(message: any): void {
+    throw new Error("Method not implemented.");
+  }
+  protected addContextToLogger(): Record<string, unknown> {
+    throw new Error("Method not implemented.");
+  }
+  public get proxyType(): string {
+    throw new Error("Method not implemented.");
+  }
+}
+
+const testSource = "test-logger";
+const testLoggerId = "12345678";
+const testMessage = "test-message";
+const testData = { foo: 1 };
+const transformTestData = { foo: 1, bar: 2 };
+
+let provider: AmazonConnectProvider;
+let proxyLogSpy: jest.SpyInstance<void, [ProxyLogData]>;
+let consoleWriteSpy: jest.SpyInstance<
+  void,
+  [
+    level: LogLevel | undefined,
+    message: string,
+    data?: ConnectLogData | undefined
+  ]
+>;
+
+const proxyFactory = (p: AmazonConnectProvider) => {
+  const proxy = new TestProxy(p);
+  proxyLogSpy = jest.spyOn(proxy, "log");
+  return proxy;
+};
 
 beforeEach(() => {
   jest.resetAllMocks();
-  const testLoggerId = "12345678";
-  jest.spyOn(util, "generateStringId").mockImplementation(() => testLoggerId);
-});
-jest.mock("../utility");
-jest.mock("../provider");
-jest.mock("../proxy");
-
-const testProvider = new AmazonConnectProvider(
-  {} as unknown as AmazonConnectProviderParams<AmazonConnectConfig>
-);
-const testConnectLoggerParams = {
-  source: "test",
-  provider: testProvider,
-  options: {
-    duplicateMessageToConsole: false,
-  },
-  mixin: () => {
-    return {
-      data: {
-        testKey: "testValue",
-      },
-      level: 5,
-    };
-  },
-};
-const testLoggerId = "12345678";
-jest.spyOn(util, "generateStringId");
-
-describe("ConnectLogger", () => {
-  test("should call generateStringId when initialized with string param", () => {
-    const testConnectLogger = new ConnectLogger("test");
-
-    expect(util.generateStringId).toHaveBeenCalled();
-  });
-
-  test("should call generateStringId when initialized with ConnectLoggerParams", () => {
-    const testConnectLogger = new ConnectLogger(testConnectLoggerParams);
-
-    expect(util.generateStringId).toHaveBeenCalled();
-  });
+  jest.spyOn(util, "generateStringId").mockReturnValue(testLoggerId);
+  const test = jest.spyOn(consoleWriter, "logToConsole");
+  consoleWriteSpy = jest.spyOn(consoleWriter, "logToConsole");
 });
 
-describe("trace", () => {
-  test("should call log with type trace", () => {
-    const testConnectLogger = new ConnectLogger(testConnectLoggerParams);
-    jest.spyOn(testConnectLogger, "log").mockImplementation(() => {});
+describe("when not using any provider level options level options", () => {
+  beforeEach(() => {
+    provider = new AmazonConnectProvider({
+      config: {},
+      proxyFactory,
+    });
+  });
 
-    testConnectLogger.trace("testMessage");
+  describe("when the logger is created with a source string", () => {
+    beforeEach(() => {
+      jest.spyOn(globalProvider, "getGlobalProvider").mockReturnValue(provider);
+    });
 
-    expect(testConnectLogger.log).toHaveBeenCalledWith(
-      LogLevel.trace,
-      "testMessage",
-      undefined,
-      undefined
-    );
+    test("should log a trace message", () => {
+      const sut = new ConnectLogger(testSource);
+      const [logDataTransformer] = LogDataTransformerMock.mock.instances;
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+
+      sut.trace(testMessage, testData, {});
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.trace,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
+        LogLevel.trace,
+        testData
+      );
+    });
+
+    test("should log a debug message", () => {
+      const sut = new ConnectLogger(testSource);
+      const [logDataTransformer] = LogDataTransformerMock.mock.instances;
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+
+      sut.debug(testMessage, testData, {});
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.debug,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
+        LogLevel.debug,
+        testData
+      );
+    });
+
+    test("should log a info message", () => {
+      const sut = new ConnectLogger(testSource);
+      const [logDataTransformer] = LogDataTransformerMock.mock.instances;
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+
+      sut.info(testMessage, testData, {});
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.info,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
+        LogLevel.info,
+        testData
+      );
+    });
+
+    test("should log a warn message", () => {
+      const sut = new ConnectLogger(testSource);
+      const [logDataTransformer] = LogDataTransformerMock.mock.instances;
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+
+      sut.warn(testMessage, testData, {});
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.warn,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
+        LogLevel.warn,
+        testData
+      );
+    });
+
+    test("should log a error message", () => {
+      const sut = new ConnectLogger(testSource);
+      const [logDataTransformer] = LogDataTransformerMock.mock.instances;
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+
+      sut.error(testMessage, testData, {});
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.error,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
+        LogLevel.error,
+        testData
+      );
+    });
+
+    test("should log a message by setting an info level", () => {
+      const sut = new ConnectLogger(testSource);
+      const [logDataTransformer] = LogDataTransformerMock.mock.instances;
+
+      const testErrorMessage = "error";
+      const testErrorData = { err: true };
+      const testTransformedErrorData = { err: true, foo: 1 };
+
+      logDataTransformer.getTransformedData
+        .mockReturnValueOnce(transformTestData)
+        .mockReturnValueOnce(testTransformedErrorData);
+
+      sut.log(LogLevel.info, testMessage, testData, {});
+      sut.log(LogLevel.error, testErrorMessage, testErrorData);
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.info,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.error,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testErrorMessage,
+        data: testTransformedErrorData,
+      });
+    });
+
+    test("should log two entries in a row", () => {
+      const sut = new ConnectLogger(testSource);
+      const [logDataTransformer] = LogDataTransformerMock.mock.instances;
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+
+      sut.log(LogLevel.info, testMessage, testData, {});
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.info,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
+        LogLevel.info,
+        testData
+      );
+    });
+  });
+
+  describe("when setting a provider and using default options", () => {
+    let sut: ConnectLogger;
+    let logDataTransformer: MockedObject<LogDataTransformer>;
+
+    beforeEach(() => {
+      sut = new ConnectLogger({ source: testSource, provider });
+      logDataTransformer = LogDataTransformerMock.mock.instances[0];
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+    });
+
+    test("should be able to send a log message", () => {
+      sut.log(LogLevel.info, testMessage, testData, {});
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.info,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
+        LogLevel.info,
+        testData
+      );
+    });
+
+    test("should not send to remote when log message remoteIgnore is true", () => {
+      sut.log(LogLevel.info, testMessage, testData, { remoteIgnore: true });
+
+      expect(proxyLogSpy).not.toHaveBeenCalled();
+    });
+
+    test("should not send trace to console when duplicateMessageToConsole is false", () => {
+      sut.log(LogLevel.trace, testMessage, testData, {
+        duplicateMessageToConsole: false,
+      });
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.trace,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(consoleWriteSpy).not.toHaveBeenCalled();
+    });
+
+    test("should not send error to console even when duplicateMessageToConsole is false", () => {
+      sut.log(LogLevel.error, testMessage, testData, {
+        duplicateMessageToConsole: false,
+      });
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.error,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(consoleWriteSpy).toHaveBeenCalledWith(
+        LogLevel.error,
+        testMessage,
+        transformTestData
+      );
+    });
+
+    test("should send to trace console when duplicateMessageToConsole is true", () => {
+      sut.log(LogLevel.trace, testMessage, testData, {
+        duplicateMessageToConsole: true,
+      });
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.trace,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(consoleWriteSpy).toHaveBeenCalledWith(
+        LogLevel.trace,
+        testMessage,
+        transformTestData
+      );
+    });
+  });
+
+  describe("when setting custom logger options", () => {
+    test("should ignore remote when set logger level", () => {
+      provider = new AmazonConnectProvider({
+        config: {},
+        proxyFactory,
+      });
+      const sut = new ConnectLogger({
+        source: testSource,
+        provider,
+        options: { remoteIgnore: true },
+      });
+      const logDataTransformer = LogDataTransformerMock.mock.instances[0];
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+
+      sut.log(LogLevel.trace, testMessage, testData);
+
+      expect(proxyLogSpy).not.toBeCalled();
+    });
+
+    test("should ignore remote when set logger level even when log entry is false", () => {
+      provider = new AmazonConnectProvider({
+        config: {},
+        proxyFactory,
+      });
+      const sut = new ConnectLogger({
+        source: testSource,
+        provider,
+        options: { remoteIgnore: true },
+      });
+      const logDataTransformer = LogDataTransformerMock.mock.instances[0];
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+
+      sut.log(LogLevel.trace, testMessage, testData, {
+        remoteIgnore: false,
+      });
+
+      expect(proxyLogSpy).not.toBeCalled();
+    });
+
+    test("should ignore remote logger is set to false but entry is set to true", () => {
+      provider = new AmazonConnectProvider({
+        config: {},
+        proxyFactory,
+      });
+      const sut = new ConnectLogger({
+        source: testSource,
+        provider,
+        options: { remoteIgnore: false },
+      });
+      const logDataTransformer = LogDataTransformerMock.mock.instances[0];
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+
+      sut.log(LogLevel.trace, testMessage, testData, {
+        remoteIgnore: true,
+      });
+
+      expect(proxyLogSpy).not.toBeCalled();
+    });
+
+    describe("when the logger logToConsole level is set to info", () => {
+      let sut: ConnectLogger;
+
+      beforeEach(() => {
+        sut = new ConnectLogger({
+          source: testSource,
+          provider,
+          options: { minLogToConsoleLevelOverride: LogLevel.info },
+        });
+        const logDataTransformer = LogDataTransformerMock.mock.instances[0];
+        logDataTransformer.getTransformedData.mockReturnValueOnce(
+          transformTestData
+        );
+      });
+
+      test("should log warn to console", () => {
+        sut.log(LogLevel.warn, testMessage, testData, {
+          remoteIgnore: true,
+        });
+
+        expect(consoleWriteSpy).toHaveBeenCalledWith(
+          LogLevel.warn,
+          testMessage,
+          transformTestData
+        );
+      });
+
+      test("should log info to console", () => {
+        sut.log(LogLevel.info, testMessage, testData, {
+          remoteIgnore: true,
+        });
+
+        expect(consoleWriteSpy).toHaveBeenCalledWith(
+          LogLevel.info,
+          testMessage,
+          transformTestData
+        );
+      });
+
+      test("should not log debug to console", () => {
+        sut.log(LogLevel.debug, testMessage, testData, {
+          remoteIgnore: true,
+        });
+
+        expect(consoleWriteSpy).not.toHaveBeenCalled();
+      });
+    });
   });
 });
 
-describe("debug", () => {
-  test("should call log with type debug", () => {
-    const testConnectLogger = new ConnectLogger(testConnectLoggerParams);
-    jest.spyOn(testConnectLogger, "log").mockImplementation(() => {});
-
-    testConnectLogger.debug("testMessage");
-
-    expect(testConnectLogger.log).toHaveBeenCalledWith(
-      LogLevel.debug,
-      "testMessage",
-      undefined,
-      undefined
-    );
-  });
-});
-
-describe("info", () => {
-  test("should call log with type info", () => {
-    const testConnectLogger = new ConnectLogger(testConnectLoggerParams);
-    jest.spyOn(testConnectLogger, "log").mockImplementation(() => {});
-
-    testConnectLogger.info("testMessage");
-
-    expect(testConnectLogger.log).toHaveBeenCalledWith(
-      LogLevel.info,
-      "testMessage",
-      undefined,
-      undefined
-    );
-  });
-});
-
-describe("warn", () => {
-  test("should call log with type warn", () => {
-    const testConnectLogger = new ConnectLogger(testConnectLoggerParams);
-    jest.spyOn(testConnectLogger, "log").mockImplementation(() => {});
-
-    testConnectLogger.warn("testMessage");
-
-    expect(testConnectLogger.log).toHaveBeenCalledWith(
-      LogLevel.warn,
-      "testMessage",
-      undefined,
-      undefined
-    );
-  });
-});
-
-describe("error", () => {
-  test("should call log with type error", () => {
-    const testConnectLogger = new ConnectLogger(testConnectLoggerParams);
-    jest.spyOn(testConnectLogger, "log").mockImplementation(() => {});
-
-    testConnectLogger.error("testMessage");
-
-    expect(testConnectLogger.log).toHaveBeenCalledWith(
-      LogLevel.error,
-      "testMessage",
-      undefined,
-      undefined
-    );
-  });
-});
-
-describe("log", () => {
-  test("should call getProxy().log() with type error and also call console.error", () => {
-    const testConnectLogger = new ConnectLogger(testConnectLoggerParams);
-    let logParams;
-    jest.spyOn(testProvider, "getProxy").mockImplementation(() => {
-      return {
-        log: jest.fn().mockImplementation((params) => {
-          logParams = params;
-        }),
-      } as unknown as Proxy;
+describe("when setting the provider minLogToConsoleLevel to info", () => {
+  beforeEach(() => {
+    provider = new AmazonConnectProvider<AmazonConnectConfig>({
+      proxyFactory,
+      config: { logging: { minLogToConsoleLevel: LogLevel.info } },
     });
-    jest.spyOn(testProvider.getProxy(), "log");
-    jest.spyOn(console, "error").mockImplementation(() => {});
-
-    testConnectLogger.log(LogLevel.error, "testMessage");
-
-    expect(testProvider.getProxy).toHaveBeenCalled();
-    expect(logParams).toEqual({
-      level: LogLevel.error,
-      source: "test",
-      loggerId: testLoggerId,
-      message: "testMessage",
-      data: { data: { testKey: "testValue" }, level: 5 },
-    });
-    expect(console.error).toHaveBeenCalledWith("testMessage", undefined);
   });
 
-  test("should call getProxy().log() with type warn and also call console.warn", () => {
-    const { source, provider, options } = testConnectLoggerParams;
-    const testConnectLogger = new ConnectLogger({
-      source,
-      provider,
-      options,
-    });
-    let logParams;
-    jest.spyOn(testProvider, "getProxy").mockImplementation(() => {
-      return {
-        log: jest.fn().mockImplementation((params) => {
-          logParams = params;
-        }),
-      } as unknown as Proxy;
-    });
-    jest.spyOn(testProvider.getProxy(), "log");
-    jest.spyOn(console, "warn").mockImplementation(() => {});
+  describe("when the logger does not have an override set", () => {
+    let sut: ConnectLogger;
 
-    testConnectLogger.log(LogLevel.warn, "testMessage");
-
-    expect(testProvider.getProxy).toHaveBeenCalled();
-    expect(logParams).toEqual({
-      level: LogLevel.warn,
-      source: "test",
-      loggerId: testLoggerId,
-      message: "testMessage",
-      data: undefined,
+    beforeEach(() => {
+      sut = new ConnectLogger({
+        source: testSource,
+        provider,
+      });
+      const logDataTransformer = LogDataTransformerMock.mock.instances[0];
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
     });
-    expect(console.warn).toHaveBeenCalledWith("testMessage", undefined);
+
+    test("should log warn to console", () => {
+      sut.log(LogLevel.warn, testMessage, testData, {
+        remoteIgnore: true,
+      });
+
+      expect(consoleWriteSpy).toHaveBeenCalledWith(
+        LogLevel.warn,
+        testMessage,
+        transformTestData
+      );
+    });
+
+    test("should log info to console", () => {
+      sut.log(LogLevel.info, testMessage, testData, {
+        remoteIgnore: true,
+      });
+
+      expect(consoleWriteSpy).toHaveBeenCalledWith(
+        LogLevel.info,
+        testMessage,
+        transformTestData
+      );
+    });
+
+    test("should not log debug to console", () => {
+      sut.log(LogLevel.debug, testMessage, testData, {
+        remoteIgnore: true,
+      });
+
+      expect(consoleWriteSpy).not.toHaveBeenCalled();
+    });
   });
 
-  test("should call getProxy().log() with type info and also call console.info", () => {
-    const { source, provider, options } = testConnectLoggerParams;
-    const testConnectLogger = new ConnectLogger({
-      source,
-      provider,
-      options,
-    });
-    let logParams;
-    jest.spyOn(testProvider, "getProxy").mockImplementation(() => {
-      return {
-        log: jest.fn().mockImplementation((params) => {
-          logParams = params;
-        }),
-      } as unknown as Proxy;
-    });
-    jest.spyOn(testProvider.getProxy(), "log");
-    jest.spyOn(console, "info").mockImplementation(() => {});
+  describe("when the logger has a override level set to warn", () => {
+    let sut: ConnectLogger;
 
-    testConnectLogger.log(LogLevel.info, "testMessage");
+    beforeEach(() => {
+      sut = new ConnectLogger({
+        source: testSource,
+        provider,
+        options: { minLogToConsoleLevelOverride: LogLevel.warn },
+      });
+      const logDataTransformer = LogDataTransformerMock.mock.instances[0];
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData
+      );
+    });
 
-    expect(testProvider.getProxy).toHaveBeenCalled();
-    expect(logParams).toEqual({
-      level: LogLevel.info,
-      source: "test",
-      loggerId: testLoggerId,
-      message: "testMessage",
-      data: undefined,
-    });
-    expect(console.info).toHaveBeenCalledWith("testMessage", undefined);
-  });
+    test("should not log debug to console", () => {
+      sut.log(LogLevel.error, testMessage, testData, {
+        remoteIgnore: true,
+      });
 
-  test("should call getProxy().log() with type debug and also call console.debug", () => {
-    const { source, provider, options } = testConnectLoggerParams;
-    const testConnectLogger = new ConnectLogger({
-      source,
-      provider,
-      options,
+      expect(consoleWriteSpy).toHaveBeenCalledWith(
+        LogLevel.error,
+        testMessage,
+        transformTestData
+      );
     });
-    let logParams;
-    jest.spyOn(testProvider, "getProxy").mockImplementation(() => {
-      return {
-        log: jest.fn().mockImplementation((params) => {
-          logParams = params;
-        }),
-      } as unknown as Proxy;
-    });
-    jest.spyOn(testProvider.getProxy(), "log");
-    jest.spyOn(console, "debug").mockImplementation(() => {});
 
-    testConnectLogger.log(LogLevel.debug, "testMessage");
+    test("should log warn to console", () => {
+      sut.log(LogLevel.warn, testMessage, testData, {
+        remoteIgnore: true,
+      });
 
-    expect(testProvider.getProxy).toHaveBeenCalled();
-    expect(logParams).toEqual({
-      level: LogLevel.debug,
-      source: "test",
-      loggerId: testLoggerId,
-      message: "testMessage",
-      data: undefined,
+      expect(consoleWriteSpy).toHaveBeenCalledWith(
+        LogLevel.warn,
+        testMessage,
+        transformTestData
+      );
     });
-    expect(console.debug).toHaveBeenCalledWith("testMessage", undefined);
-  });
 
-  test("should call getProxy().log() with type trace and also call console.trace", () => {
-    const { source, provider, options } = testConnectLoggerParams;
-    const testConnectLogger = new ConnectLogger({
-      source,
-      provider,
-      options,
-    });
-    let logParams;
-    jest.spyOn(testProvider, "getProxy").mockImplementation(() => {
-      return {
-        log: jest.fn().mockImplementation((params) => {
-          logParams = params;
-        }),
-      } as unknown as Proxy;
-    });
-    jest.spyOn(testProvider.getProxy(), "log");
-    jest.spyOn(console, "trace").mockImplementation(() => {});
+    test("should not log info to console", () => {
+      sut.log(LogLevel.info, testMessage, testData, {
+        remoteIgnore: true,
+      });
 
-    testConnectLogger.log(LogLevel.trace, "testMessage");
-
-    expect(testProvider.getProxy).toHaveBeenCalled();
-    expect(logParams).toEqual({
-      level: LogLevel.trace,
-      source: "test",
-      loggerId: testLoggerId,
-      message: "testMessage",
-      data: undefined,
+      expect(consoleWriteSpy).not.toHaveBeenCalled();
     });
-    expect(console.trace).toHaveBeenCalledWith("testMessage", undefined);
-  });
-
-  test("should call getProxy().log() with type log and also call console.log", () => {
-    const { source, provider, options } = testConnectLoggerParams;
-    const testConnectLogger = new ConnectLogger({
-      source,
-      provider,
-      options,
-    });
-    let logParams;
-    jest.spyOn(testProvider, "getProxy").mockImplementation(() => {
-      return {
-        log: jest.fn().mockImplementation((params) => {
-          logParams = params;
-        }),
-      } as unknown as Proxy;
-    });
-    jest.spyOn(testProvider.getProxy(), "log");
-    jest.spyOn(console, "log").mockImplementation(() => {});
-
-    testConnectLogger.log(0 as LogLevel, "testMessage");
-
-    expect(testProvider.getProxy).toHaveBeenCalled();
-    expect(logParams).toEqual({
-      level: 0,
-      source: "test",
-      loggerId: testLoggerId,
-      message: "testMessage",
-      data: undefined,
-    });
-    expect(console.log).toHaveBeenCalledWith("testMessage", undefined);
-  });
-
-  test("should call getProxy().log() with type log and call console.log for logLevel 0 (<5) but not call console.log for invalid logLevel 10", () => {
-    const { source, provider, options } = testConnectLoggerParams;
-    const testConnectLogger = new ConnectLogger({
-      source,
-      provider,
-      options,
-    });
-    let logParams: any[] = [];
-    jest.spyOn(testProvider, "getProxy").mockImplementation(() => {
-      return {
-        log: jest.fn().mockImplementation((params) => {
-          logParams.push(params);
-        }),
-      } as unknown as Proxy;
-    });
-    jest.spyOn(testProvider.getProxy(), "log");
-    jest.spyOn(console, "log").mockImplementation(() => {});
-
-    testConnectLogger.log(0 as LogLevel, "testMessage");
-    testConnectLogger.log(10 as LogLevel, "testMessage");
-
-    expect(testProvider.getProxy).toHaveBeenCalled();
-    expect(logParams[0]).toEqual({
-      level: 0,
-      source: "test",
-      loggerId: testLoggerId,
-      message: "testMessage",
-      data: undefined,
-    });
-    expect(logParams[1]).toEqual({
-      level: 10,
-      source: "test",
-      loggerId: testLoggerId,
-      message: "testMessage",
-      data: undefined,
-    });
-    expect(console.log).toHaveBeenCalledTimes(1);
-    expect(console.log).toHaveBeenCalledWith("testMessage", undefined);
   });
 });

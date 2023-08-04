@@ -10,7 +10,7 @@ export type ConnectLoggerMixin = (
 type BaseLoggerParams = {
   source: string;
   mixin?: ConnectLoggerMixin;
-  options?: LogOptions;
+  options?: LoggerOptions;
 };
 
 export type ConnectLoggerFromContextParams = string | BaseLoggerParams;
@@ -19,7 +19,12 @@ export type ConnectLoggerParams = BaseLoggerParams & {
   provider?: AmazonConnectProvider;
 };
 
-export type LogOptions = {
+export type LogEntryOptions = {
   duplicateMessageToConsole?: boolean;
+  remoteIgnore?: boolean;
+};
+
+export type LoggerOptions = {
+  minLogToConsoleLevelOverride?: LogLevel;
   remoteIgnore?: boolean;
 };

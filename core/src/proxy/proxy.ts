@@ -25,6 +25,7 @@ import {
   AmazonConnectError,
   AmazonConnectErrorHandler,
 } from "../amazon-connect-error";
+import { ProxyLogData } from "./proxy-log-data";
 
 export abstract class Proxy<
   TConfig extends AmazonConnectConfig = AmazonConnectConfig,
@@ -93,19 +94,7 @@ export abstract class Proxy<
     }
   }
 
-  log({
-    level,
-    source,
-    message,
-    loggerId,
-    data,
-  }: {
-    level: LogLevel;
-    source: string;
-    message: string;
-    loggerId: string;
-    data?: Record<string, unknown>;
-  }): void {
+  log({ level, source, message, loggerId, data }: ProxyLogData): void {
     // Sanitize guards against a caller provided data object containing a
     // non-cloneable object which will fail if sent through a message channel
     const sanitizedData = data ? JSON.parse(JSON.stringify(data)) : undefined;
