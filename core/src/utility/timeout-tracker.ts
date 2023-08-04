@@ -77,12 +77,10 @@ export class TimeoutTracker {
           "Cancel operation for TimerTracker invoked after already completed. No action."
         );
         break;
-      case "cancelled":
-        throw new Error(
-          "Cancel operation in TimerTracker invoked multiple times."
-        );
       default:
-        throw new Error(`Unknown TimeoutStatus ${this.status}`);
+        throw new Error(
+          "Cancel operation in TimerTracker called during an unexpected time."
+        );
     }
   }
 

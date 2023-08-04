@@ -3,8 +3,13 @@ import { AmazonConnectConfig } from "../amazon-connect-config";
 import { Proxy } from "../proxy";
 
 jest.mock("../logging/connect-logger");
+jest.mock("../proxy/proxy");
 
 class TestProxy extends Proxy {
+  constructor() {
+    super(new AmazonConnectProvider({ config: {}, proxyFactory: () => this }));
+  }
+
   protected initProxy(): void {
     throw new Error("Method not implemented.");
   }
@@ -16,10 +21,6 @@ class TestProxy extends Proxy {
   }
   public get proxyType(): string {
     throw new Error("Method not implemented.");
-  }
-
-  constructor(private readonly loggerContext?: Record<string, unknown>) {
-    super(new AmazonConnectProvider({ config: {}, proxyFactory: () => this }));
   }
 }
 
@@ -53,6 +54,16 @@ describe("AmazonConnectProvider", () => {
 
     expect.hasAssertions();
   });
+
+  test("should create proxy when valid params are passed", () => {
+    const config = {} as AmazonConnectConfig;
+    const proxyFactory = () => new TestProxy();
+
+    const result = new AmazonConnectProvider({ config, proxyFactory });
+
+    expect(result).toBeDefined();
+    expect(result.config).toEqual(config);
+  });
 });
 
 describe("getProxy", () => {
@@ -85,5 +96,37 @@ describe("get config", () => {
     });
 
     expect(sut.config).toEqual({ logging: undefined });
+  });
+
+  describe("onError", () => {
+    test("should add error handler to proxy error handler", () => {
+      const testProxy = new TestProxy();
+      const sut = new AmazonConnectProvider({
+        proxyFactory: () => testProxy,
+        config: {} as AmazonConnectConfig,
+      });
+      const handler = jest.fn();
+      const onErrorMock = jest.spyOn(testProxy, "onError");
+
+      sut.onError(handler);
+
+      expect(onErrorMock).toHaveBeenCalledWith(handler);
+    });
+  });
+
+  describe("offError", () => {
+    test("should remove error handler to proxy error handler", () => {
+      const testProxy = new TestProxy();
+      const sut = new AmazonConnectProvider({
+        proxyFactory: () => testProxy,
+        config: {} as AmazonConnectConfig,
+      });
+      const handler = jest.fn();
+      const offErrorMock = jest.spyOn(testProxy, "offError");
+
+      sut.offError(handler);
+
+      expect(offErrorMock).toHaveBeenCalledWith(handler);
+    });
   });
 });
