@@ -36,16 +36,25 @@ export class LifecycleManager {
   private readonly stopHandlers: Set<AppStopHandler>;
   private readonly state: LifecycleAppState;
   private readonly logger: ConnectLogger;
+  private isCreated: boolean;
+  private isDestroyed: boolean;
 
   constructor(provider: AmazonConnectAppProvider) {
     this.provider = provider;
     this.startHandlers = new Set();
     this.stopHandlers = new Set();
     this.state = { isRunning: false };
+    this.isCreated = false;
+    this.isDestroyed = false;
 
     this.logger = new ConnectLogger({
       source: "app.lifecycleManager",
       provider,
+      mixin: () => ({
+        state: this.state,
+        isCreated: this.isCreated,
+        isDestroyed: this.isDestroyed,
+      }),
     });
   }
 
@@ -111,25 +120,67 @@ export class LifecycleManager {
   }
 
   private async handleCreate(params: LifecycleChangeParams): Promise<void> {
-    this.logger.info("Begin Lifecycle Create", {
-      appConfig: params.context.appConfig,
+    if (this.isDestroyed) {
+      this.logger.error("An attempt was Create after a Destroy. No Action", {
+        appInstanceId: params.context.appInstanceId,
+      });
+      return;
+    }
+
+    if (this.isCreated) {
+      this.logger.error(
+        "An attempt was invoke Create after it was already invoked. No Action",
+        { appInstanceId: params.context.appInstanceId }
+      );
+      return;
+    }
+
+    this.logger.debug("Begin Lifecycle Create", {
+      appInstanceId: params.context.appInstanceId,
     });
-    await this.handleLifecycleChange(
+    if (!this.provider.config?.onCreate) {
+      const msg =
+        "App did not specify an onCreated handler. This is required. Closing app";
+      const data = { appInstanceId: params.context.appInstanceId };
+      this.logger.error(msg, { appInstanceId: params.context.appInstanceId });
+      this.provider.sendFatalError(msg, data);
+      return;
+    }
+
+    const { success } = await this.handleLifecycleChange(
       { ...params, stage: "create" },
       (e) => this.provider.config.onCreate(e),
       true
     );
 
-    this.sendLifecycleHandlerCompletedMessage(
-      params.context.appInstanceId,
-      "create"
-    );
+    if (success) {
+      this.isCreated = true;
+      this.sendLifecycleHandlerCompletedMessage(
+        params.context.appInstanceId,
+        "create"
+      );
+    }
   }
 
   private async handleStart(params: LifecycleChangeParams): Promise<void> {
+    if (this.isDestroyed) {
+      this.logger.error("An attempt was Start after a Destroy. No Action", {
+        appInstanceId: params.context.appInstanceId,
+      });
+      return;
+    }
+
+    if (!this.isCreated) {
+      this.logger.error(
+        "An attempt was invoke Start before Create. No Action",
+        { appInstanceId: params.context.appInstanceId }
+      );
+      return;
+    }
+
     this.state.isRunning = true;
     this.logger.info("Begin Lifecycle Start");
-    await Promise.all(
+    const handlerRunResult = await Promise.all(
       [...this.startHandlers].map((h) =>
         this.handleLifecycleChange(
           { ...params, stage: "start" },
@@ -138,15 +189,31 @@ export class LifecycleManager {
         )
       )
     );
+
     this.logger.debug("Completed all start handlers", {
       count: this.startHandlers.size,
+      errorCount: handlerRunResult.filter(({ success }) => !success).length,
     });
   }
 
   private async handleStop(params: LifecycleChangeParams): Promise<void> {
+    if (this.isDestroyed) {
+      this.logger.error("An attempt was Stop after a Destroy. No Action", {
+        appInstanceId: params.context.appInstanceId,
+      });
+      return;
+    }
+
+    if (!this.isCreated) {
+      this.logger.error("An attempt was invoke Stop before Create. No Action", {
+        appInstanceId: params.context.appInstanceId,
+      });
+      return;
+    }
+
     this.state.isRunning = false;
     this.logger.info("Begin Lifecycle Stop");
-    await Promise.all(
+    const handlerRunResult = await Promise.all(
       [...this.stopHandlers].map((h) =>
         this.handleLifecycleChange(
           { ...params, stage: "stop" },
@@ -158,66 +225,87 @@ export class LifecycleManager {
 
     this.logger.debug("Completed all stop handlers", {
       count: this.stopHandlers.size,
+      errorCount: handlerRunResult.filter(({ success }) => !success).length,
     });
   }
 
   private async handleDestroy(params: LifecycleChangeParams): Promise<void> {
+    if (this.isDestroyed) {
+      this.logger.error(
+        "An attempt was invoke Destroy multiple times. No Action",
+        {
+          appInstanceId: params.context.appInstanceId,
+        }
+      );
+      return;
+    }
+
+    if (!this.isCreated) {
+      this.logger.error(
+        "An attempt was invoke Destroy before Create. No Action",
+        {
+          appInstanceId: params.context.appInstanceId,
+        }
+      );
+      return;
+    }
+
+    this.isDestroyed = true;
+    this.state.isRunning = false;
     this.logger.info("Begin Lifecycle Destroy");
     const { config } = this.provider;
 
-    await this.handleLifecycleChange(
+    const { success } = await this.handleLifecycleChange(
       { ...params, stage: "destroy" },
       (e) => (config.onDestroy ? config.onDestroy(e) : Promise.resolve()),
       true
     );
 
-    this.sendLifecycleHandlerCompletedMessage(
-      params.context.appInstanceId,
-      "destroy"
-    );
+    if (success) {
+      this.sendLifecycleHandlerCompletedMessage(
+        params.context.appInstanceId,
+        "destroy"
+      );
+    }
   }
 
   private async handleLifecycleChange<TEvent extends LifecycleStageChangeEvent>(
     evt: TEvent,
     action: LifecycleStageChangeHandler<TEvent>,
     isFatal: boolean
-  ): Promise<void> {
+  ): Promise<{ success: boolean }> {
+    let success = false;
     try {
       await action(evt);
-    } catch (err) {
+      success = true;
+    } catch (error) {
       const { appInstanceId } = evt.context;
 
       if (isFatal) {
-        this.logger.error(
-          `An fatal error occurred when handling a ${evt.stage} lifecycle action. Closing app`,
-          { appInstanceId, err }
-        );
+        const msg = `An fatal error occurred when handling a ${evt.stage} lifecycle action. Closing app`;
 
-        // TODO Implement calling error
+        this.logger.error(msg, { appInstanceId, error });
+
+        this.provider.sendFatalError(msg, error as Error);
       } else {
         this.logger.error(
           `An error occurred when handling a ${evt.stage} lifecycle action.`,
           {
             appInstanceId,
-            err,
+            error,
           }
         );
       }
     }
+    return { success };
   }
 
   private getLifecycleChangeParams(): LifecycleChangeParams {
-    if (
-      !this.state.isRunning ||
-      (this.state.appInstanceId && this.state.appConfig)
-    )
-      throw new Error("Can only get params when app is running");
-
     return {
       context: new AppContext(
         this.provider,
-        this.state.appInstanceId,
-        this.state.appConfig
+        this.state.appInstanceId!,
+        this.state.appConfig!
       ),
     };
   }

@@ -43,17 +43,17 @@ export class SubscriptionMap<T> {
   delete({ namespace, key, parameter: param }: SubscriptionTopic): void {
     if (param) {
       if (this.paramSubscriptions.get(namespace)?.get(key)?.delete(param)) {
-        if ((this.paramSubscriptions.get(namespace)?.get(key)?.size ?? 0) < 1) {
+        if (this.paramSubscriptions.get(namespace)!.get(key)!.size < 1) {
           this.paramSubscriptions.get(namespace)?.delete(key);
 
-          if ((this.paramSubscriptions.get(namespace)?.size ?? 0) < 1) {
+          if (this.paramSubscriptions.get(namespace)!.size < 1) {
             this.paramSubscriptions.delete(namespace);
           }
         }
       }
     } else {
       if (this.simpleSubscriptions.get(namespace)?.delete(key)) {
-        if ((this.simpleSubscriptions.get(namespace)?.size ?? 0) < 1) {
+        if (this.simpleSubscriptions.get(namespace)!.size < 1) {
           this.simpleSubscriptions.delete(namespace);
         }
       }
@@ -98,26 +98,25 @@ export class SubscriptionMap<T> {
   getAllSubscriptions(): SubscriptionTopic[] {
     const noParam = Array.from(this.simpleSubscriptions.keys()).flatMap(
       (namespace) =>
-        Array.from(
-          this.simpleSubscriptions.get(namespace)?.keys() ?? []
-        ).flatMap((key) => ({
-          namespace,
-          key,
-        }))
+        Array.from(this.simpleSubscriptions.get(namespace)!.keys()).flatMap(
+          (key) => ({
+            namespace,
+            key,
+          })
+        )
     );
 
     const withParam = Array.from(this.paramSubscriptions.keys()).flatMap(
       (namespace) =>
-        Array.from(
-          this.paramSubscriptions.get(namespace)?.keys() ?? []
-        ).flatMap((key) =>
-          Array.from(
-            this.paramSubscriptions.get(namespace)?.get(key)?.keys() ?? []
-          ).flatMap((parameter) => ({
-            namespace,
-            key,
-            parameter,
-          }))
+        Array.from(this.paramSubscriptions.get(namespace)!.keys()).flatMap(
+          (key) =>
+            Array.from(
+              this.paramSubscriptions.get(namespace)!.get(key)!.keys()
+            ).flatMap((parameter) => ({
+              namespace,
+              key,
+              parameter,
+            }))
         )
     );
 

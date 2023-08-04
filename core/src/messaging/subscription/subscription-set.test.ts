@@ -20,6 +20,12 @@ test("should add a value", () => {
   expect(sut.get(topic1)).toContain(expected);
 });
 
+test("should get an empty array when attempting to get a topic not defined", () => {
+  const results = sut.get(topic1);
+
+  expect(results).toHaveLength(0);
+});
+
 test("should only have one value when same value is added multiple times", () => {
   const expected1 = 1;
   const expected2 = 2;

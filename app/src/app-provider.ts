@@ -23,10 +23,6 @@ export class AmazonConnectAppProvider extends AmazonConnectProvider<AmazonConnec
   }
 
   private createProxy(provider: AmazonConnectProvider): AppProxy {
-    if (this !== provider) {
-      throw new Error("AmazonConnectProvider mismatch");
-    }
-
     return new AppProxy(this, this.lifecycleManager);
   }
 
