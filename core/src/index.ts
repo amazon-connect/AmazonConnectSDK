@@ -5,7 +5,6 @@ export type {
   AmazonConnectError,
   AmazonConnectErrorHandler,
 } from "./amazon-connect-error";
-export * from "./app";
 
 export { ConnectClient, ConnectClientConfig } from "./client";
 export { Context, ModuleContext } from "./context";

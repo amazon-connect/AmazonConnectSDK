@@ -2,8 +2,10 @@ import {
   AppDownstreamMessage,
   AppPublishMessage,
   CloseAppMessage,
-  ConnectLogger,
   LifecycleHandlerCompletedMessage,
+} from "@amzn/amazon-connect-sdk-app-common";
+import {
+  ConnectLogger,
   Proxy,
   SubscriptionHandlerData,
   SubscriptionTopic,

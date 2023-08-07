@@ -1,14 +1,16 @@
 import { MockedClass } from "jest-mock";
-import { AppProxy } from "./app-proxy";
 import {
-  AcknowledgeMessage,
   AppConfig,
   AppPublishMessage,
   AppUpstreamMessage,
   CloseAppMessage,
-  ConnectLogger,
   LifecycleHandlerCompletedMessage,
   LifecycleMessage,
+} from "@amzn/amazon-connect-sdk-app-common";
+
+import {
+  AcknowledgeMessage,
+  ConnectLogger,
   LogLevel,
   LogMessage,
   SubscriptionTopic,
@@ -16,6 +18,7 @@ import {
   TimeoutTrackerCancelledHandler,
 } from "@amzn/amazon-connect-sdk-core";
 import { AmazonConnectAppProvider } from "../app-provider";
+import { AppProxy } from "./app-proxy";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
 import { LifecycleManager } from "../lifecycle";
 import { ErrorService } from "@amzn/amazon-connect-sdk-core/lib/proxy/error";

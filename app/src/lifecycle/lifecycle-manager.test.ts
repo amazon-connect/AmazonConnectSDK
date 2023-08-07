@@ -2,10 +2,10 @@ import { MockedClass, MockedObject } from "jest-mock";
 
 import {
   AppConfig,
-  ConnectLogger,
   LifecycleMessage,
   LifecycleStage,
-} from "@amzn/amazon-connect-sdk-core";
+} from "@amzn/amazon-connect-sdk-app-common";
+import { ConnectLogger } from "@amzn/amazon-connect-sdk-core";
 import { AmazonConnectAppProvider } from "../app-provider";
 import { AppProxy } from "../proxy";
 import {

@@ -35,6 +35,7 @@
   },
   "workspaces": [
     "core",
+    "app-common",
     "app",
     "agent"
   ]

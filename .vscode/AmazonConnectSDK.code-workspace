@@ -8,6 +8,10 @@
 			"path": "../core"
 		},
 		{
+			"name": "app-common",
+			"path": "../app-common"
+		},
+		{
 			"name": "app",
 			"path": "../app"
 		},
@@ -18,7 +22,8 @@
 	],
 	"settings": {
 		"jest.disabledWorkspaceFolders": [
-			"AmazonConnectSDK"
+			"AmazonConnectSDK",
+			"app-common"
 		]
 	}
 }

@@ -1,6 +1,9 @@
-import { DownstreamMessage, UpstreamMessage } from "../messaging";
-import { SubscriptionHandlerData } from "../messaging/subscription";
-import { SubscriptionTopic } from "../messaging/subscription/types";
+import {
+  DownstreamMessage,
+  SubscriptionHandlerData,
+  SubscriptionTopic,
+  UpstreamMessage,
+} from "@amzn/amazon-connect-sdk-core";
 import { AppConfig } from "./app-config";
 import { LifecycleStage } from "./lifecycle-stage";
 
