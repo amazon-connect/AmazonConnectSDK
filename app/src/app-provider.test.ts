@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { ConnectLogger } from "@amzn/amazon-connect-sdk-core";
-import { AmazonConnectAppConfig } from "./amazon-connect-app-config";
-
 import { MockedClass } from "jest-mock";
+
+import { AmazonConnectAppConfig } from "./amazon-connect-app-config";
 import { AmazonConnectAppProvider } from "./app-provider";
-import { AppProxy } from "./proxy";
 import { AppStartHandler, AppStopHandler, LifecycleManager } from "./lifecycle";
+import { AppProxy } from "./proxy";
 
 jest.mock("./lifecycle/lifecycle-manager");
 jest.mock("@amzn/amazon-connect-sdk-core/lib/logging/connect-logger");

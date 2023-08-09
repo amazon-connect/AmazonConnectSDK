@@ -16,7 +16,7 @@ class TestProxy extends Proxy {
   protected initProxy(): void {
     throw new Error("Method not implemented.");
   }
-  protected sendMessageToSubject(message: any): void {
+  protected sendMessageToSubject(): void {
     throw new Error("Method not implemented.");
   }
   protected addContextToLogger(): Record<string, unknown> {

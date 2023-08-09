@@ -1,6 +1,7 @@
 import {
   AppDownstreamMessage,
   AppPublishMessage,
+  AppUpstreamMessage,
   CloseAppMessage,
   LifecycleHandlerCompletedMessage,
 } from "@amzn/amazon-connect-sdk-app-common";
@@ -12,13 +13,15 @@ import {
   TimeoutTracker,
   TimeoutTrackerCancelledEvent,
 } from "@amzn/amazon-connect-sdk-core";
+
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
-import { LifecycleManager } from "../lifecycle";
 import { AmazonConnectAppProvider } from "../app-provider";
+import { LifecycleManager } from "../lifecycle";
 import { getConnectionTimeout } from "./connection-timeout";
 
 export class AppProxy extends Proxy<
   AmazonConnectAppConfig,
+  AppUpstreamMessage,
   AppDownstreamMessage
 > {
   private readonly channel: MessageChannel;
@@ -99,7 +102,7 @@ export class AppProxy extends Proxy<
     this.appLogger.debug("Send connect message to configure proxy");
   }
 
-  protected sendMessageToSubject(message: any): void {
+  protected sendMessageToSubject(message: AppUpstreamMessage): void {
     this.channel.port1.postMessage(message);
   }
 
@@ -121,7 +124,14 @@ export class AppProxy extends Proxy<
   protected handleMessageFromSubject(msg: AppDownstreamMessage): void {
     switch (msg.type) {
       case "appLifecycle":
-        this.lifecycleManager.handleLifecycleChangeMessage(msg);
+        this.lifecycleManager
+          .handleLifecycleChangeMessage(msg)
+          .catch((error: unknown) => {
+            this.appLogger.error(
+              "An error occurred when invoking handleLifecycleChangeMessage",
+              { error }
+            );
+          });
         break;
 
       default:

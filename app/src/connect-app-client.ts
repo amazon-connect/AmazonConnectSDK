@@ -1,4 +1,5 @@
 import { Context } from "@amzn/amazon-connect-sdk-core";
+
 import { AmazonConnectAppProvider } from "./app-provider";
 import {
   AppStartHandler,

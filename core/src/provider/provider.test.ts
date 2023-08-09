@@ -1,6 +1,6 @@
-import { AmazonConnectProvider, AmazonConnectProviderParams } from "./provider";
 import { AmazonConnectConfig } from "../amazon-connect-config";
 import { Proxy } from "../proxy";
+import { AmazonConnectProvider, AmazonConnectProviderParams } from "./provider";
 
 jest.mock("../logging/connect-logger");
 jest.mock("../proxy/proxy");
@@ -13,7 +13,7 @@ class TestProxy extends Proxy {
   protected initProxy(): void {
     throw new Error("Method not implemented.");
   }
-  protected sendMessageToSubject(message: any): void {
+  protected sendMessageToSubject(): void {
     throw new Error("Method not implemented.");
   }
   protected addContextToLogger(): Record<string, unknown> {
@@ -31,11 +31,11 @@ beforeEach(() => {
 describe("AmazonConnectProvider", () => {
   test("should throw error when initialized without proxy factory", () => {
     try {
-      const sut = new AmazonConnectProvider(
+      new AmazonConnectProvider(
         {} as unknown as AmazonConnectProviderParams<AmazonConnectConfig>
       );
-    } catch (e: any) {
-      expect(e.message).toEqual(
+    } catch (e: unknown) {
+      expect((e as { message: string }).message).toEqual(
         "Attempted to get Proxy before setting up factory"
       );
     }
@@ -44,12 +44,14 @@ describe("AmazonConnectProvider", () => {
   });
   test("should throw error when initialized without config", () => {
     try {
-      const sut = new AmazonConnectProvider({
+      new AmazonConnectProvider({
         config: undefined as unknown as AmazonConnectConfig,
         proxyFactory: () => new TestProxy(),
       });
-    } catch (e: any) {
-      expect(e.message).toEqual("Failed to include config");
+    } catch (e: unknown) {
+      expect((e as { message: string }).message).toEqual(
+        "Failed to include config"
+      );
     }
 
     expect.hasAssertions();
@@ -70,7 +72,7 @@ describe("getProxy", () => {
   test("should call proxy.init() only once on multiple getProxy calls", () => {
     const testProxy = new TestProxy();
     const proxyFactoryMock = jest.fn(() => testProxy);
-    jest.spyOn(proxyFactoryMock(), "init").mockImplementation(() => {});
+    const initSpy = jest.spyOn(testProxy, "init");
     const sut = new AmazonConnectProvider({
       config: {},
       proxyFactory: proxyFactoryMock,
@@ -80,7 +82,7 @@ describe("getProxy", () => {
     sut.getProxy();
 
     expect(proxyFactoryMock).toHaveBeenCalled();
-    expect(proxyFactoryMock().init).toHaveBeenCalledTimes(1);
+    expect(initSpy).toHaveBeenCalledTimes(1);
   });
 });
 

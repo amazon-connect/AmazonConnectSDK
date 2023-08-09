@@ -4,6 +4,7 @@ import {
   SubscriptionHandlerData,
   SubscriptionTopic,
 } from "@amzn/amazon-connect-sdk-core";
+
 import { AmazonConnectAppProvider } from "../app-provider";
 import { AppProxy } from "../proxy";
 
@@ -22,8 +23,6 @@ export class MessagingClient {
     topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>
   ): void {
-    // TODO check to verify app can subscribe to topic on given namespace
-
     this.getProxy().subscribe(topic, handler);
   }
 
@@ -38,8 +37,6 @@ export class MessagingClient {
     topic: SubscriptionTopic,
     data: THandlerData
   ): void {
-    // TODO check to verify app can publish to topic on given namespace
-
     this.getProxy().publish(topic, data);
   }
 

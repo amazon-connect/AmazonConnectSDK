@@ -1,11 +1,13 @@
-import { MockedClass, MockedObject } from "jest-mock";
-
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   AppConfig,
   LifecycleMessage,
-  LifecycleStage,
 } from "@amzn/amazon-connect-sdk-app-common";
 import { ConnectLogger } from "@amzn/amazon-connect-sdk-core";
+import { MockedClass, MockedObject } from "jest-mock";
+
+import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
 import { AmazonConnectAppProvider } from "../app-provider";
 import { AppProxy } from "../proxy";
 import {
@@ -14,7 +16,6 @@ import {
   AppStartEvent,
 } from "./lifecycle-change";
 import { LifecycleManager } from "./lifecycle-manager";
-import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
 
 jest.mock("@amzn/amazon-connect-sdk-core/lib/logging/connect-logger");
 jest.mock("../proxy/app-proxy");
@@ -271,9 +272,12 @@ describe("when triggering the Create lifecycle event", () => {
 });
 
 describe("when triggering the Start lifecycle event", () => {
-  const getReportFromLog: () => { count: number; errorCount: number } = () => {
+  const getReportFromLog = () => {
     const logger = getLifecycleManagerLogger();
-    return logger.debug.mock.lastCall![1] as any;
+    return logger.debug.mock.lastCall![1] as {
+      count: number;
+      errorCount: number;
+    };
   };
 
   beforeEach(() => {
@@ -454,9 +458,12 @@ describe("when triggering the Start lifecycle event", () => {
 });
 
 describe("when triggering the Stop lifecycle event", () => {
-  const getReportFromLog: () => { count: number; errorCount: number } = () => {
+  const getReportFromLog = () => {
     const logger = getLifecycleManagerLogger();
-    return logger.debug.mock.lastCall![1] as any;
+    return logger.debug.mock.lastCall![1] as {
+      count: number;
+      errorCount: number;
+    };
   };
 
   beforeEach(() => {
@@ -927,25 +934,4 @@ test("should have not running state before any lifecycle events occur", () => {
   expect(state.isRunning).toBeFalsy();
   expect(state.appInstanceId).toBeUndefined();
   expect(state.appConfig).toBeUndefined();
-});
-
-test("should throw for unknown stage name", async () => {
-  const msg: LifecycleMessage = {
-    type: "appLifecycle",
-    stage: "invalidStage" as LifecycleStage,
-    appInstanceId,
-    appConfig,
-  };
-  provider = new AmazonConnectAppProvider({} as AmazonConnectAppConfig);
-  proxy = provider.getProxy() as MockedObject<AppProxy>;
-  sut = AppProxyMock.mock.calls[0][1];
-
-  try {
-    await sut.handleLifecycleChangeMessage(msg);
-  } catch (err) {
-    expect(err).toBeInstanceOf(Error);
-    expect((err as Error).message).toContain(msg.stage);
-  }
-
-  expect.hasAssertions();
 });

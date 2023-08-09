@@ -1,8 +1,8 @@
-import { ModuleContext } from "./module-context";
-import { Proxy } from "../proxy";
-import { AmazonConnectProvider, getGlobalProvider } from "../provider";
-import { ConnectLogger, ConnectLoggerFromContextParams } from "../logging";
 import { AmazonConnectNamespace } from "../amazon-connect-namespace";
+import { ConnectLogger, ConnectLoggerFromContextParams } from "../logging";
+import { AmazonConnectProvider, getGlobalProvider } from "../provider";
+import { Proxy } from "../proxy";
+import { ModuleContext } from "./module-context";
 
 export class Context<
   TProvider extends AmazonConnectProvider = AmazonConnectProvider

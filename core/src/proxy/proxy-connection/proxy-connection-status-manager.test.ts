@@ -1,6 +1,7 @@
+import { MockedClass } from "jest-mock";
+
 import { ConnectLogger } from "../../logging";
 import { ProxyConnectionStatusManager } from "./proxy-connection-status-manager";
-import { MockedClass } from "jest-mock";
 import { ProxyError, ProxyInitializing, ProxyReady } from "./types";
 
 jest.mock("../../logging/connect-logger");
@@ -74,8 +75,9 @@ describe("when calling update", () => {
     sut.update(err);
 
     expect(mockHandler).toHaveBeenCalledWith(err);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.error).toHaveBeenCalled();
-    const errorData = logger.error.mock.calls[0][1] as any;
+    const errorData = logger.error.mock.calls[0][1] as { error: Error };
     expect(errorData?.error).toBeInstanceOf(Error);
     expect(errorData?.error.message).toEqual(handlerError);
   });

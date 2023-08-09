@@ -1,3 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { MockedClass, MockedObject } from "jest-mock";
+
+import { AmazonConnectErrorHandler } from "../amazon-connect-error";
 import { LogLevel } from "../logging";
 import { ConnectLogger } from "../logging/connect-logger";
 import {
@@ -17,15 +24,13 @@ import {
   SubscriptionTopic,
 } from "../messaging/subscription";
 import { AmazonConnectProvider } from "../provider";
+import { ErrorService } from "./error";
+import { Proxy } from "./proxy";
 import {
   ProxyConnectionChangedHandler,
   ProxyConnectionStatus,
   ProxyConnectionStatusManager,
 } from "./proxy-connection";
-import { ErrorService } from "./error";
-import { Proxy } from "./proxy";
-import { MockedClass, MockedObject } from "jest-mock";
-import { AmazonConnectErrorHandler } from "../amazon-connect-error";
 
 jest.mock("../logging/connect-logger");
 jest.mock("../messaging/subscription/subscription-set");
@@ -53,8 +58,9 @@ class TestProxy extends Proxy {
   protected initProxy(): void {
     this.status.update({ status: "initializing" });
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected sendMessageToSubject(message: any): void {
-    this.upstreamMessagesSent.push(message);
+    this.upstreamMessagesSent.push(message as UpstreamMessage);
   }
   protected addContextToLogger(): Record<string, unknown> {
     return this.loggerContext ?? {};
@@ -144,7 +150,7 @@ describe("subscribe", () => {
     });
 
     test("should send subscribe message for new subscription", () => {
-      const handler: SubscriptionHandler = ({}) => Promise.resolve();
+      const handler: SubscriptionHandler = () => Promise.resolve();
 
       sut.subscribe(testTopic, handler);
 
@@ -161,7 +167,7 @@ describe("subscribe", () => {
   test("should not send subscribe before proxy connection acknowledged", () => {
     const sut = new TestProxy();
     const [mockSubscriptionSet] = SubscriptionSetMock.mock.instances;
-    const handler: SubscriptionHandler = ({}) => Promise.resolve();
+    const handler: SubscriptionHandler = () => Promise.resolve();
     mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
 
     sut.init();
@@ -174,7 +180,7 @@ describe("subscribe", () => {
 
   test("should send subscribe after proxy connection acknowledged", () => {
     const sut = new TestProxy();
-    const handler: SubscriptionHandler = ({}) => Promise.resolve();
+    const handler: SubscriptionHandler = () => Promise.resolve();
     const [mockSubscriptionSet] = SubscriptionSetMock.mock.instances;
     mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
 
@@ -203,7 +209,7 @@ describe("unsubscribe", () => {
     });
 
     test("should send unsubscribe message when no subscriptions remain", () => {
-      const handler: SubscriptionHandler = ({}) => Promise.resolve();
+      const handler: SubscriptionHandler = () => Promise.resolve();
       mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
 
       sut.unsubscribe(testTopic, handler);
@@ -223,7 +229,7 @@ describe("unsubscribe", () => {
 
     test("should not send unsubscribe message when other subscription exists", () => {
       mockSubscriptionSet.isEmpty.mockReturnValueOnce(false);
-      const handler: SubscriptionHandler = ({}) => Promise.resolve();
+      const handler: SubscriptionHandler = () => Promise.resolve();
 
       sut.unsubscribe(testTopic, handler);
 
@@ -238,7 +244,7 @@ describe("unsubscribe", () => {
 
   test("should send unsubscribe after proxy connection acknowledged", () => {
     const sut = new TestProxy();
-    const handler: SubscriptionHandler = ({}) => Promise.resolve();
+    const handler: SubscriptionHandler = () => Promise.resolve();
     const [mockSubscriptionSet] = SubscriptionSetMock.mock.instances;
     mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
 
@@ -391,7 +397,7 @@ describe("sendLogMessage", () => {
 
     expect(sut.upstreamMessagesSent).toHaveLength(0);
     expect(logger.error).toHaveBeenCalled();
-    const errorData = logger.error.mock.calls[0][1] as any;
+    const errorData = logger.error.mock.calls[0][1] as { message: any };
     expect(errorData?.message).toEqual(expect.objectContaining(msg));
   });
 });
@@ -493,7 +499,10 @@ describe("publish", () => {
     }
 
     expect(logger.error).toHaveBeenCalled();
-    const errorData = logger.error.mock.calls[0][1] as any;
+    const errorData = logger.error.mock.calls[0][1] as {
+      topic: any;
+      error: any;
+    };
     expect(errorData?.topic).toEqual(testTopic);
     expect(errorData?.error).toEqual("test error");
   });

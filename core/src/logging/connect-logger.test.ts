@@ -1,16 +1,17 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass, MockedObject } from "jest-mock";
 
-import { ConnectLogger } from "./connect-logger";
-import * as util from "../utility/id-generator";
+import { AmazonConnectConfig } from "../amazon-connect-config";
 import * as globalProvider from "../provider";
-import * as consoleWriter from "./log-data-console-writer";
 import { AmazonConnectProvider } from "../provider";
-import { LogLevel } from "./log-level";
 import { Proxy } from "../proxy";
 import { ProxyLogData } from "../proxy/proxy-log-data";
+import * as util from "../utility/id-generator";
+import { ConnectLogger } from "./connect-logger";
+import * as consoleWriter from "./log-data-console-writer";
 import { LogDataTransformer } from "./log-data-transformer";
+import { LogLevel } from "./log-level";
 import { ConnectLogData } from "./logger-types";
-import { AmazonConnectConfig } from "../amazon-connect-config";
 
 jest.mock("../utility/id-generator");
 jest.mock("../provider/global-provider");
@@ -30,7 +31,7 @@ class TestProxy extends Proxy {
   protected initProxy(): void {
     throw new Error("Method not implemented.");
   }
-  protected sendMessageToSubject(message: any): void {
+  protected sendMessageToSubject(): void {
     throw new Error("Method not implemented.");
   }
   protected addContextToLogger(): Record<string, unknown> {
@@ -67,11 +68,11 @@ const proxyFactory = (p: AmazonConnectProvider) => {
 beforeEach(() => {
   jest.resetAllMocks();
   jest.spyOn(util, "generateStringId").mockReturnValue(testLoggerId);
-  const test = jest.spyOn(consoleWriter, "logToConsole");
+  jest.spyOn(consoleWriter, "logToConsole");
   consoleWriteSpy = jest.spyOn(consoleWriter, "logToConsole");
 });
 
-describe("when not using any provider level options level options", () => {
+describe("when not using any provider level options", () => {
   beforeEach(() => {
     provider = new AmazonConnectProvider({
       config: {},

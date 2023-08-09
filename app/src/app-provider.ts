@@ -3,6 +3,7 @@ import {
   ConnectLogData,
   ConnectLogger,
 } from "@amzn/amazon-connect-sdk-core";
+
 import { AmazonConnectAppConfig } from "./amazon-connect-app-config";
 import {
   AppStartHandler,
@@ -17,12 +18,12 @@ export class AmazonConnectAppProvider extends AmazonConnectProvider<AmazonConnec
   private readonly logger: ConnectLogger;
 
   constructor(config: AmazonConnectAppConfig) {
-    super({ config, proxyFactory: (p) => this.createProxy(p) });
+    super({ config, proxyFactory: () => this.createProxy() });
     this.lifecycleManager = new LifecycleManager(this);
     this.logger = new ConnectLogger({ provider: this, source: "app.provider" });
   }
 
-  private createProxy(provider: AmazonConnectProvider): AppProxy {
+  private createProxy(): AppProxy {
     return new AppProxy(this, this.lifecycleManager);
   }
 

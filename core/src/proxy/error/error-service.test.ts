@@ -1,7 +1,9 @@
-import { ConnectLogger } from "../../logging";
+/* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass, MockedObject } from "jest-mock";
-import { ErrorService } from "./error-service";
+
 import { AmazonConnectError } from "../../amazon-connect-error";
+import { ConnectLogger } from "../../logging";
+import { ErrorService } from "./error-service";
 
 jest.mock("../../logging/connect-logger");
 
@@ -93,9 +95,12 @@ describe("invoke", () => {
     expect(logDetails?.key).toEqual(testErr.key);
     expect(logOptions?.duplicateMessageToConsole).toBeTruthy();
     expect(logOptions?.remoteIgnore).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_m, errorData, handlerErrorLogOptions] = logger.error.mock.calls[1];
     expect(errorData?.handlerError).toBeInstanceOf(Error);
-    expect((errorData?.handlerError as any).message).toEqual(handlerError);
+    expect((errorData?.handlerError as { message: string }).message).toEqual(
+      handlerError
+    );
     expect(errorData?.originalError).toEqual(expect.objectContaining(testErr));
     expect(handlerErrorLogOptions?.duplicateMessageToConsole).toBeUndefined();
     expect(handlerErrorLogOptions?.remoteIgnore).toBeUndefined();

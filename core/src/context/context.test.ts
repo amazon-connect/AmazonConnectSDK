@@ -1,11 +1,12 @@
-import { Context } from "./";
+/* eslint-disable @typescript-eslint/unbound-method */
+import { AmazonConnectConfig } from "../amazon-connect-config";
 import { ConnectLogger } from "../logging";
 import {
   AmazonConnectProvider,
   AmazonConnectProviderParams,
   getGlobalProvider,
 } from "../provider";
-import { AmazonConnectConfig } from "../amazon-connect-config";
+import { Context } from "./";
 import { ModuleContext } from "./module-context";
 
 jest.mock("../logging");
@@ -33,7 +34,7 @@ describe("getProxy", () => {
 });
 
 describe("getProvider", () => {
-  test("should call getGlobaltProvider without this.provider defined", () => {
+  test("should call getGlobalProvider without this.provider defined", () => {
     const testContext = new Context();
     jest.spyOn(testContext, "getProvider");
 

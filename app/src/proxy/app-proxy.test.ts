@@ -1,4 +1,6 @@
-import { MockedClass } from "jest-mock";
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   AppConfig,
   AppPublishMessage,
@@ -7,7 +9,6 @@ import {
   LifecycleHandlerCompletedMessage,
   LifecycleMessage,
 } from "@amzn/amazon-connect-sdk-app-common";
-
 import {
   AcknowledgeMessage,
   ConnectLogger,
@@ -17,11 +18,13 @@ import {
   TimeoutTracker,
   TimeoutTrackerCancelledHandler,
 } from "@amzn/amazon-connect-sdk-core";
-import { AmazonConnectAppProvider } from "../app-provider";
-import { AppProxy } from "./app-proxy";
-import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
-import { LifecycleManager } from "../lifecycle";
 import { ErrorService } from "@amzn/amazon-connect-sdk-core/lib/proxy/error";
+import { MockedClass } from "jest-mock";
+
+import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
+import { AmazonConnectAppProvider } from "../app-provider";
+import { LifecycleManager } from "../lifecycle";
+import { AppProxy } from "./app-proxy";
 import * as connectionTimeout from "./connection-timeout";
 
 jest.mock("@amzn/amazon-connect-sdk-core/lib/logging/connect-logger");
@@ -66,6 +69,7 @@ const getAppProxyLogger = () => {
 let provider: AmazonConnectAppProvider;
 let sut: AppProxy;
 let subjectPort: MessagePort;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockWindowPostMessage: jest.Mock<any, any, Transferable[]>;
 
 let mockTimeoutTrackerStart: jest.SpyInstance<
@@ -218,6 +222,7 @@ describe("when appProxy is ready", () => {
     upstreamMessages = [];
     mockWindowPostMessage.mockImplementation((_t, _o, [port]) => {
       subjectPort = port;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       subjectPort.onmessage = (msg) => upstreamMessages.push(msg.data);
     });
 
@@ -355,6 +360,7 @@ describe("when appProxy is ready", () => {
         appConfig: {} as AppConfig,
       };
       const lifecycleMock = LifecycleManagerMock.mock.instances[0];
+      lifecycleMock.handleLifecycleChangeMessage.mockResolvedValue();
 
       subjectPort.postMessage(msg);
       await waitForMessageChannel(

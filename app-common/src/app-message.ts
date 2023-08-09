@@ -4,6 +4,7 @@ import {
   SubscriptionTopic,
   UpstreamMessage,
 } from "@amzn/amazon-connect-sdk-core";
+
 import { AppConfig } from "./app-config";
 import { LifecycleStage } from "./lifecycle-stage";
 

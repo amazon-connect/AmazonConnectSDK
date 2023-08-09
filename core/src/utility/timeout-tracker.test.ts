@@ -1,6 +1,8 @@
-import { ConnectLogger } from "../logging";
-import { TimeoutTracker } from "./timeout-tracker";
+/* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass } from "jest-mock";
+
+import { ConnectLogger, LogLevel } from "../logging";
+import { TimeoutTracker } from "./timeout-tracker";
 
 jest.mock("../logging/connect-logger");
 
@@ -10,6 +12,32 @@ beforeEach(jest.resetAllMocks);
 
 let sut: TimeoutTracker;
 afterEach(() => sut?.complete());
+
+describe("constructor", () => {
+  test("should apply timeout to logger mix", () => {
+    const sut = new TimeoutTracker(jest.fn(), 500);
+    const loggerConfig = LoggerMock.mock.calls[0][0];
+    expect(typeof loggerConfig).not.toBe("string");
+    if (typeof loggerConfig === "string") throw Error("ts needs this");
+    const mixin = loggerConfig.mixin!;
+
+    const result = mixin({}, LogLevel.info);
+
+    expect(result.timeoutMs).toEqual(sut.timeoutMs);
+  });
+
+  test("should apply timeout to logger mix", () => {
+    new TimeoutTracker(jest.fn(), 500);
+    const loggerConfig = LoggerMock.mock.calls[0][0];
+    expect(typeof loggerConfig).not.toBe("string");
+    if (typeof loggerConfig === "string") throw Error("ts needs this");
+    const mixin = loggerConfig.mixin!;
+
+    const result = mixin({}, LogLevel.info);
+
+    expect(result.timeoutTrackerStatus).toEqual("running");
+  });
+});
 
 describe("start", () => {
   test("should start a new timer on first start", () => {
@@ -91,6 +119,8 @@ describe("when tracker reaches timeout", () => {
     expect(sut.isCancelled()).toBeTruthy();
     expect(logger.info).toHaveBeenCalledTimes(1);
     expect(logger.error).toHaveBeenCalledTimes(1);
-    expect((logger.error.mock.calls[0][1] as any).error).toEqual(handlerError);
+    expect((logger.error.mock.calls[0][1] as { error: Error }).error).toEqual(
+      handlerError
+    );
   });
 });

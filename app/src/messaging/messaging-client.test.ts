@@ -1,13 +1,15 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import {
+  getGlobalProvider,
   SubscriptionHandler,
   SubscriptionTopic,
-  getGlobalProvider,
 } from "@amzn/amazon-connect-sdk-core";
+import { mocked, MockedClass } from "jest-mock";
+
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
 import { AmazonConnectAppProvider } from "../app-provider";
 import { AppProxy } from "../proxy";
 import { MessagingClient } from "./messaging-client";
-import { mocked, MockedClass } from "jest-mock";
 
 jest.mock("@amzn/amazon-connect-sdk-core/lib/provider/global-provider");
 jest.mock("@amzn/amazon-connect-sdk-core/lib/logging/connect-logger");
@@ -35,7 +37,7 @@ describe("when specifying the provider", () => {
 
   describe("subscribe", () => {
     test("should call subscribe in proxy", () => {
-      const handler: SubscriptionHandler<{}> = () => Promise.resolve();
+      const handler: SubscriptionHandler = () => Promise.resolve();
 
       sut.subscribe(topic, handler);
 
@@ -46,7 +48,7 @@ describe("when specifying the provider", () => {
 
   describe("unsubscribe", () => {
     test("should call unsubscribe in proxy", () => {
-      const handler: SubscriptionHandler<{}> = () => Promise.resolve();
+      const handler: SubscriptionHandler = () => Promise.resolve();
 
       sut.unsubscribe(topic, handler);
 
@@ -76,7 +78,7 @@ describe("when not specifying the provider", () => {
 
   describe("subscribe", () => {
     test("should call subscribe in proxy", () => {
-      const handler: SubscriptionHandler<{}> = () => Promise.resolve();
+      const handler: SubscriptionHandler = () => Promise.resolve();
 
       sut.subscribe(topic, handler);
 
@@ -87,7 +89,7 @@ describe("when not specifying the provider", () => {
 
   describe("unsubscribe", () => {
     test("should call unsubscribe in proxy", () => {
-      const handler: SubscriptionHandler<{}> = () => Promise.resolve();
+      const handler: SubscriptionHandler = () => Promise.resolve();
 
       sut.unsubscribe(topic, handler);
 

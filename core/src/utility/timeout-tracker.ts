@@ -50,8 +50,6 @@ export class TimeoutTracker {
           "Attempted to complete a TimeoutTracker that has already been cancelled"
         );
         return false;
-      default:
-        throw new Error(`Unknown TimeoutStatus ${this.status}`);
     }
   }
 

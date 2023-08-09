@@ -1,11 +1,17 @@
 import { AmazonConnectConfig } from "../amazon-connect-config";
 import {
+  AmazonConnectError,
+  AmazonConnectErrorHandler,
+} from "../amazon-connect-error";
+import { ConnectLogData, ConnectLogger } from "../logging";
+import {
   DownstreamMessage,
-  SubscribeMessage,
-  PublishMessage,
-  UnsubscribeMessage,
-  LogMessage,
   ErrorMessage,
+  LogMessage,
+  PublishMessage,
+  SubscribeMessage,
+  UnsubscribeMessage,
+  UpstreamMessage,
 } from "../messaging";
 import {
   SubscriptionHandler,
@@ -13,22 +19,18 @@ import {
   SubscriptionSet,
   SubscriptionTopic,
 } from "../messaging/subscription";
+import { AmazonConnectProvider } from "../provider";
+import { ErrorService } from "./error";
+import { ProxyConnectionStatusManager } from "./proxy-connection";
 import {
   ProxyConnectionChangedHandler,
   ProxyConnectionStatus,
 } from "./proxy-connection/types";
-import { AmazonConnectProvider } from "../provider";
-import { ConnectLogger, LogLevel } from "../logging";
-import { ProxyConnectionStatusManager } from "./proxy-connection";
-import { ErrorService } from "./error";
-import {
-  AmazonConnectError,
-  AmazonConnectErrorHandler,
-} from "../amazon-connect-error";
 import { ProxyLogData } from "./proxy-log-data";
 
 export abstract class Proxy<
   TConfig extends AmazonConnectConfig = AmazonConnectConfig,
+  TUpstreamMessage extends { type: string } | UpstreamMessage = UpstreamMessage,
   TDownstreamMessage extends
     | { type: string }
     | DownstreamMessage = DownstreamMessage
@@ -38,7 +40,7 @@ export abstract class Proxy<
   private readonly subscriptions: SubscriptionSet<SubscriptionHandler>;
   private readonly errorService: ErrorService;
   private readonly logger: ConnectLogger;
-  private upstreamMessageQueue: any[];
+  private upstreamMessageQueue: TUpstreamMessage[];
   private connectionEstablished: boolean;
   private isInitialized: boolean;
 
@@ -75,7 +77,7 @@ export abstract class Proxy<
       topic,
     };
 
-    this.sendOrQueueMessageToSubject(msg);
+    this.sendOrQueueMessageToSubject(msg as TUpstreamMessage);
   }
 
   unsubscribe<THandlerData extends SubscriptionHandlerData>(
@@ -90,14 +92,16 @@ export abstract class Proxy<
         topic,
       };
 
-      this.sendOrQueueMessageToSubject(msg);
+      this.sendOrQueueMessageToSubject(msg as TUpstreamMessage);
     }
   }
 
   log({ level, source, message, loggerId, data }: ProxyLogData): void {
     // Sanitize guards against a caller provided data object containing a
     // non-cloneable object which will fail if sent through a message channel
-    const sanitizedData = data ? JSON.parse(JSON.stringify(data)) : undefined;
+    const sanitizedData = data
+      ? (JSON.parse(JSON.stringify(data)) as ConnectLogData)
+      : undefined;
 
     const logMsg: LogMessage = {
       type: "log",
@@ -110,7 +114,7 @@ export abstract class Proxy<
       context: this.addContextToLogger(),
     };
 
-    this.sendOrQueueMessageToSubject(logMsg);
+    this.sendOrQueueMessageToSubject(logMsg as TUpstreamMessage);
   }
 
   sendLogMessage(message: LogMessage): void {
@@ -123,10 +127,10 @@ export abstract class Proxy<
 
     message.context = { ...message.context, ...this.addContextToLogger() };
 
-    this.sendOrQueueMessageToSubject(message);
+    this.sendOrQueueMessageToSubject(message as TUpstreamMessage);
   }
 
-  protected sendOrQueueMessageToSubject(message: any): void {
+  protected sendOrQueueMessageToSubject(message: TUpstreamMessage): void {
     if (this.connectionEstablished) {
       this.sendMessageToSubject(message);
     } else {
@@ -134,10 +138,11 @@ export abstract class Proxy<
     }
   }
 
-  protected abstract sendMessageToSubject(message: any): void;
+  protected abstract sendMessageToSubject(message: TUpstreamMessage): void;
 
   protected abstract addContextToLogger(): Record<string, unknown>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected consumerMessageHandler(evt: MessageEvent<any>): void {
     if (!this.isInitialized) {
       this.logger.error(
@@ -147,6 +152,7 @@ export abstract class Proxy<
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { data } = evt;
 
     if (!("type" in data)) {
@@ -196,7 +202,7 @@ export abstract class Proxy<
     // Sends any messages in queue
     while (this.upstreamMessageQueue.length) {
       const msg = this.upstreamMessageQueue.shift();
-      this.sendMessageToSubject(msg);
+      this.sendMessageToSubject(msg as TUpstreamMessage);
     }
   }
 
@@ -210,6 +216,7 @@ export abstract class Proxy<
 
   private handleError(msg: ErrorMessage) {
     if (msg.isFatal) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { message: reason, type: _, ...details } = msg;
       this.status.update({ status: "error", reason, details });
     }

@@ -1,6 +1,7 @@
-import { ModuleContext, Context } from "./";
+/* eslint-disable @typescript-eslint/unbound-method */
 // import { ModuleProxy, ModuleProxy, createModuleProxy } from "../proxy";
 import * as proxy from "../proxy";
+import { Context, ModuleContext } from "./";
 
 beforeEach(() => {
   jest.resetAllMocks();

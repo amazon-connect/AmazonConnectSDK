@@ -1,4 +1,5 @@
 import { LifecycleStage } from "@amzn/amazon-connect-sdk-app-common";
+
 import { AppContext } from "../app-context";
 
 type BaseLifecycleStageChangeEvent<TStage extends LifecycleStage> = {

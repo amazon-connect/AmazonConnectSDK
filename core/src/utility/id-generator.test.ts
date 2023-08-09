@@ -1,9 +1,11 @@
 import { webcrypto } from "crypto";
+
 import { generateStringId, generateUUID } from "./id-generator";
 
 beforeAll(() => {
   global.crypto = {
     ...global.crypto,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
     getRandomValues: (arr) => webcrypto.getRandomValues(arr as any),
     randomUUID: () => webcrypto.randomUUID(),
   };

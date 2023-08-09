@@ -1,5 +1,6 @@
 build/
 node_modules/
-lib/
+*/lib/
 jest.config.js
 coverage/
+*/babel.config.js

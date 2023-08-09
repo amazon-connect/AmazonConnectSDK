@@ -3,16 +3,17 @@ import {
   LifecycleMessage,
 } from "@amzn/amazon-connect-sdk-app-common";
 import { ConnectLogger } from "@amzn/amazon-connect-sdk-core";
+
+import { AppContext } from "../app-context";
+import { AmazonConnectAppProvider } from "../app-provider";
+import { AppProxy } from "../proxy";
 import {
   AppStartHandler,
   AppStopHandler,
   LifecycleStageChangeEvent,
   LifecycleStageChangeHandler,
 } from "./lifecycle-change";
-import { AppContext } from "../app-context";
 import { StartSubscriptionOptions } from "./start-subscription-options";
-import { AmazonConnectAppProvider } from "../app-provider";
-import { AppProxy } from "../proxy";
 
 type LifecycleChangeParams = {
   context: AppContext;
@@ -78,9 +79,6 @@ export class LifecycleManager {
         return this.handleStop(params);
       case "destroy":
         return this.handleDestroy(params);
-
-      default:
-        throw new Error(`Unknown lifecycle state "${msg.stage}"`);
     }
   }
 
@@ -94,6 +92,7 @@ export class LifecycleManager {
     // subscription after the start event fires while app is running
     if (options?.invokeIfRunning) {
       if (this.state.isRunning) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.handleLifecycleChange(
           { ...this.getLifecycleChangeParams(), stage: "start" },
           (e) => handler(e),

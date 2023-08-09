@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { AmazonConnectConfig } from "../amazon-connect-config";
 import { AmazonConnectProvider } from "./provider";
 
@@ -9,16 +12,18 @@ describe("setGlobalProvider", () => {
   test("should throw error when attempting to set a global provider a second time", () => {
     const { setGlobalProvider } = require("./global-provider");
     const provider = new AmazonConnectProvider({
-      proxyFactory: () => ({} as any),
+      proxyFactory: jest.fn(),
       config: {} as AmazonConnectConfig,
     });
     setGlobalProvider(provider);
 
     try {
       setGlobalProvider(provider);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(error).toBeInstanceOf(Error);
-      expect(error.message).toEqual("Global Provider is already set");
+      expect((error as { message: string }).message).toEqual(
+        "Global Provider is already set"
+      );
     }
 
     expect.hasAssertions();
@@ -32,7 +37,7 @@ describe("getGlobalProvider", () => {
       getGlobalProvider,
     } = require("./global-provider");
     const provider = new AmazonConnectProvider({
-      proxyFactory: () => ({} as any),
+      proxyFactory: jest.fn(),
       config: {} as AmazonConnectConfig,
     });
     setGlobalProvider(provider);

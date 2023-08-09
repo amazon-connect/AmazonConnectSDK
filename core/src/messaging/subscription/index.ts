@@ -1,11 +1,10 @@
+export { SubscriptionMap } from "./subscription-map";
+export { SubscriptionSet } from "./subscription-set";
 export type {
-  SubscriptionTopic,
-  SubscriptionTopicKey,
-  SubscriptionTopicParameter,
   ModuleSubscriptionTopic,
   SubscriptionHandler,
   SubscriptionHandlerData,
+  SubscriptionTopic,
+  SubscriptionTopicKey,
+  SubscriptionTopicParameter,
 } from "./types";
-
-export { SubscriptionMap } from "./subscription-map";
-export { SubscriptionSet } from "./subscription-set";

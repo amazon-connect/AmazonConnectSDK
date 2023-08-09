@@ -1,11 +1,11 @@
 {
 	"folders": [
 		{
-			"path": ".."
+			"path": "..",
 		},
 		{
 			"name": "core",
-			"path": "../core"
+			"path": "../core",
 		},
 		{
 			"name": "app-common",
@@ -13,17 +13,20 @@
 		},
 		{
 			"name": "app",
-			"path": "../app"
+			"path": "../app",
 		},
 		{
 			"name": "agent",
-			"path": "../agent"
+			"path": "../agent",
 		}
 	],
 	"settings": {
 		"jest.disabledWorkspaceFolders": [
 			"AmazonConnectSDK",
 			"app-common"
-		]
+		],
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": true,
+		}
 	}
 }
