@@ -1,18 +1,21 @@
+import { AmazonConnectNamespace } from "@amzn/amazon-connect-sdk-core";
+
+export type Permissions = Record<AmazonConnectNamespace, string[]>;
+
 type BaseAppConfig = {
-  appArn: string;
-  name: string;
+  arn: string;
   _type: string;
-  displaySettings?: {
-    minHeight?: string | number;
-    minWidth?: string | number;
-    maxHeight?: string | number;
-    maxWidth?: string | number;
-  };
+  namespace: string;
+  id: string;
+  name: string;
+  description: string;
+  accessUrl: string;
+  subscriptions: Permissions;
+  publications: Permissions;
 };
 
 export type IFrameAppConfig = BaseAppConfig & {
   _type: "iframe";
-  location: string;
 };
 
 // This will provide support for additional types of apps
