@@ -147,7 +147,7 @@ export class AppProxy extends Proxy<
     });
 
     this.publishError({
-      message: "App failed to connect to workspace in the alloted time",
+      message: "App failed to connect to workspace in the allotted time",
       key: "workspaceConnectTimeout",
       details: { ...evt },
       isFatal: true,
