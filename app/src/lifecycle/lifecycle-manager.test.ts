@@ -7,8 +7,8 @@ import {
 import { ConnectLogger } from "@amzn/amazon-connect-sdk-core";
 import { MockedClass, MockedObject } from "jest-mock";
 
+import { AmazonConnectApp } from "../amazon-connect-app";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
-import { AmazonConnectAppProvider } from "../app-provider";
 import { AppProxy } from "../proxy";
 import {
   AppCreateEvent,
@@ -66,7 +66,7 @@ const getLifecycleManagerLogger = () => {
 
 beforeEach(jest.resetAllMocks);
 
-let provider: AmazonConnectAppProvider;
+let provider: AmazonConnectApp;
 let proxy: MockedObject<AppProxy>;
 let sut: LifecycleManager;
 
@@ -75,7 +75,7 @@ describe("when triggering the Create lifecycle event", () => {
 
   beforeEach(() => {
     createHandler = jest.fn();
-    provider = new AmazonConnectAppProvider({
+    provider = new AmazonConnectApp({
       onCreate: createHandler,
     });
     proxy = provider.getProxy() as MockedObject<AppProxy>;
@@ -158,7 +158,7 @@ describe("when triggering the Create lifecycle event", () => {
   describe("when the onCreate handler is omitted by the app", () => {
     beforeEach(() => {
       jest.resetAllMocks();
-      provider = new AmazonConnectAppProvider({} as AmazonConnectAppConfig);
+      provider = new AmazonConnectApp({} as AmazonConnectAppConfig);
       proxy = provider.getProxy() as MockedObject<AppProxy>;
       sut = AppProxyMock.mock.calls[0][1];
     });
@@ -281,7 +281,7 @@ describe("when triggering the Start lifecycle event", () => {
   };
 
   beforeEach(() => {
-    provider = new AmazonConnectAppProvider({
+    provider = new AmazonConnectApp({
       onCreate: () => Promise.resolve(),
     });
     proxy = provider.getProxy() as MockedObject<AppProxy>;
@@ -467,7 +467,7 @@ describe("when triggering the Stop lifecycle event", () => {
   };
 
   beforeEach(() => {
-    provider = new AmazonConnectAppProvider({
+    provider = new AmazonConnectApp({
       onCreate: () => Promise.resolve(),
     });
     proxy = provider.getProxy() as MockedObject<AppProxy>;
@@ -651,7 +651,7 @@ describe("when triggering the Destroy lifecycle event", () => {
     describe("when the destroy handler executes successfully", () => {
       beforeEach(async () => {
         destroyHandler = jest.fn();
-        provider = new AmazonConnectAppProvider({
+        provider = new AmazonConnectApp({
           onCreate: () => Promise.resolve(),
           onDestroy: destroyHandler,
         });
@@ -703,7 +703,7 @@ describe("when triggering the Destroy lifecycle event", () => {
       let error: Error;
       beforeEach(async () => {
         destroyHandler = jest.fn();
-        provider = new AmazonConnectAppProvider({
+        provider = new AmazonConnectApp({
           onCreate: () => Promise.resolve(),
           onDestroy: destroyHandler,
         });
@@ -743,7 +743,7 @@ describe("when triggering the Destroy lifecycle event", () => {
 
     describe("when the onDestroy handler is omitted by the app", () => {
       beforeEach(async () => {
-        provider = new AmazonConnectAppProvider({ onCreate: jest.fn() });
+        provider = new AmazonConnectApp({ onCreate: jest.fn() });
         proxy = provider.getProxy() as MockedObject<AppProxy>;
         sut = AppProxyMock.mock.calls[0][1];
         await sut.handleLifecycleChangeMessage(createMsg);
@@ -772,7 +772,7 @@ describe("when triggering the Destroy lifecycle event", () => {
   describe("when attempting to invoke before Create", () => {
     beforeEach(() => {
       destroyHandler = jest.fn();
-      provider = new AmazonConnectAppProvider({
+      provider = new AmazonConnectApp({
         onCreate: () => Promise.resolve(),
         onDestroy: destroyHandler,
       });
@@ -800,7 +800,7 @@ describe("when triggering the Destroy lifecycle event", () => {
   describe("when attempting to call destroy an additional time", () => {
     beforeEach(async () => {
       destroyHandler = jest.fn();
-      provider = new AmazonConnectAppProvider({
+      provider = new AmazonConnectApp({
         onCreate: () => Promise.resolve(),
         onDestroy: destroyHandler,
       });
@@ -831,7 +831,7 @@ describe("when triggering the Destroy lifecycle event", () => {
 
 describe("when calling onStart with invokeIfRunning", () => {
   beforeEach(() => {
-    provider = new AmazonConnectAppProvider({
+    provider = new AmazonConnectApp({
       onCreate: () => Promise.resolve(),
     });
     proxy = provider.getProxy() as MockedObject<AppProxy>;
@@ -923,7 +923,7 @@ describe("when calling onStart with invokeIfRunning", () => {
 });
 
 test("should have not running state before any lifecycle events occur", () => {
-  provider = new AmazonConnectAppProvider({
+  provider = new AmazonConnectApp({
     onCreate: () => Promise.resolve(),
   });
   proxy = provider.getProxy() as MockedObject<AppProxy>;

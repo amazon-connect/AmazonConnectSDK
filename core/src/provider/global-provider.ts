@@ -10,10 +10,11 @@ export function setGlobalProvider(provider: AmazonConnectProvider) {
 
 export function getGlobalProvider<
   TProvider extends AmazonConnectProvider = AmazonConnectProvider
->(): TProvider {
+>(notSetMessage?: string): TProvider {
   if (!_provider) {
     throw new Error(
-      "Attempted to get Global AmazonConnectProvider that has not been set."
+      notSetMessage ??
+        "Attempted to get Global AmazonConnectProvider that has not been set."
     );
   }
 

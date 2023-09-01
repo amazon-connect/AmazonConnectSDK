@@ -1,4 +1,3 @@
-export { AmazonConnect } from "./amazon-connect";
 export type { AmazonConnectConfig } from "./amazon-connect-config";
 export type {
   AmazonConnectError,

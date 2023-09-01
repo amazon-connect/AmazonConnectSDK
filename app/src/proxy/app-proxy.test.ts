@@ -21,8 +21,8 @@ import {
 import { ErrorService } from "@amzn/amazon-connect-sdk-core/lib/proxy/error";
 import { MockedClass } from "jest-mock";
 
+import { AmazonConnectApp } from "../amazon-connect-app";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
-import { AmazonConnectAppProvider } from "../app-provider";
 import { LifecycleManager } from "../lifecycle";
 import { AppProxy } from "./app-proxy";
 import * as connectionTimeout from "./connection-timeout";
@@ -66,7 +66,7 @@ const getAppProxyLogger = () => {
   return LoggerMock.mock.instances[idx];
 };
 
-let provider: AmazonConnectAppProvider;
+let provider: AmazonConnectApp;
 let sut: AppProxy;
 let subjectPort: MessagePort;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,7 +79,7 @@ let mockTimeoutTrackerStart: jest.SpyInstance<
 
 beforeEach(() => {
   jest.resetAllMocks();
-  provider = new AmazonConnectAppProvider({} as AmazonConnectAppConfig);
+  provider = new AmazonConnectApp({} as AmazonConnectAppConfig);
   mockWindowPostMessage = jest.fn();
   global.window = {
     ...global.window,

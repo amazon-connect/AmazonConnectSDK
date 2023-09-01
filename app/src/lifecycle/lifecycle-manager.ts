@@ -4,8 +4,8 @@ import {
 } from "@amzn/amazon-connect-sdk-app-common";
 import { ConnectLogger } from "@amzn/amazon-connect-sdk-core";
 
+import { AmazonConnectApp } from "../amazon-connect-app";
 import { AppContext } from "../app-context";
-import { AmazonConnectAppProvider } from "../app-provider";
 import { AppProxy } from "../proxy";
 import {
   AppStartHandler,
@@ -32,7 +32,7 @@ type LifecycleAppState =
     };
 
 export class LifecycleManager {
-  private readonly provider: AmazonConnectAppProvider;
+  private readonly provider: AmazonConnectApp;
   private readonly startHandlers: Set<AppStartHandler>;
   private readonly stopHandlers: Set<AppStopHandler>;
   private readonly state: LifecycleAppState;
@@ -40,7 +40,7 @@ export class LifecycleManager {
   private isCreated: boolean;
   private isDestroyed: boolean;
 
-  constructor(provider: AmazonConnectAppProvider) {
+  constructor(provider: AmazonConnectApp) {
     this.provider = provider;
     this.startHandlers = new Set();
     this.stopHandlers = new Set();

@@ -14,8 +14,8 @@ import {
   TimeoutTrackerCancelledEvent,
 } from "@amzn/amazon-connect-sdk-core";
 
+import { AmazonConnectApp } from "../amazon-connect-app";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
-import { AmazonConnectAppProvider } from "../app-provider";
 import { LifecycleManager } from "../lifecycle";
 import { getConnectionTimeout } from "./connection-timeout";
 
@@ -29,10 +29,7 @@ export class AppProxy extends Proxy<
   private readonly appLogger: ConnectLogger;
   private connectionTimer: TimeoutTracker | undefined;
 
-  constructor(
-    provider: AmazonConnectAppProvider,
-    lifecycleManager: LifecycleManager
-  ) {
+  constructor(provider: AmazonConnectApp, lifecycleManager: LifecycleManager) {
     super(provider);
 
     this.channel = new MessageChannel();

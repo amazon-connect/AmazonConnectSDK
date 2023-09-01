@@ -1,6 +1,8 @@
 import { AmazonConnectConfig } from "../amazon-connect-config";
 import { AmazonConnectErrorHandler } from "../amazon-connect-error";
+import { ConnectLogger } from "../logging";
 import { Proxy, ProxyFactory } from "../proxy";
+import { setGlobalProvider } from "./global-provider";
 
 export type AmazonConnectProviderParams<TConfig extends AmazonConnectConfig> = {
   config: TConfig;
@@ -47,5 +49,31 @@ export class AmazonConnectProvider<
 
   offError(handler: AmazonConnectErrorHandler): void {
     this.getProxy().offError(handler);
+  }
+
+  protected static isInitialized = false;
+
+  protected static initializeProvider<TProvider extends AmazonConnectProvider>(
+    provider: TProvider
+  ): TProvider {
+    const logger = new ConnectLogger({
+      source: "core.amazonConnect.init",
+      provider,
+    });
+
+    if (this.isInitialized) {
+      const msg = "Error: Attempted to initialize provider more than one time.";
+      logger.error(msg);
+      throw new Error(msg);
+    }
+
+    setGlobalProvider(provider);
+
+    this.isInitialized = true;
+
+    // Getting the proxy sets up the connection with subject
+    provider.getProxy();
+
+    return provider;
   }
 }
