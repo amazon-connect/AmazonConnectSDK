@@ -1,5 +1,5 @@
 {
-  "name": "@amzn/amazon-connect-sdk-core",
+  "name": "@amazon-connect/core",
   "version": "1.0.0",
   "description": "Core functionality of the Amazon Connect SDK",
   "publishConfig": {

@@ -3,7 +3,7 @@ import {
   ConnectLogger,
   SubscriptionHandler,
   SubscriptionTopic,
-} from "@amzn/amazon-connect-sdk-core";
+} from "@amazon-connect/core";
 import { MockedClass } from "jest-mock";
 
 import { AmazonConnectApp } from "./amazon-connect-app";
@@ -12,7 +12,7 @@ import { AppStartHandler, AppStopHandler, LifecycleManager } from "./lifecycle";
 import { AppProxy } from "./proxy";
 
 jest.mock("./lifecycle/lifecycle-manager");
-jest.mock("@amzn/amazon-connect-sdk-core/lib/logging/connect-logger");
+jest.mock("@amazon-connect/core/lib/logging/connect-logger");
 jest.mock("./proxy/app-proxy");
 
 let sut: AmazonConnectApp;

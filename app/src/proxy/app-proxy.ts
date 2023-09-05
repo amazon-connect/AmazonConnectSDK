@@ -4,7 +4,7 @@ import {
   AppUpstreamMessage,
   CloseAppMessage,
   LifecycleHandlerCompletedMessage,
-} from "@amzn/amazon-connect-sdk-app-common";
+} from "@amazon-connect/app-common";
 import {
   ConnectLogger,
   Proxy,
@@ -12,7 +12,7 @@ import {
   SubscriptionTopic,
   TimeoutTracker,
   TimeoutTrackerCancelledEvent,
-} from "@amzn/amazon-connect-sdk-core";
+} from "@amazon-connect/core";
 
 import { AmazonConnectApp } from "../amazon-connect-app";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";

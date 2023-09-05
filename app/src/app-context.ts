@@ -1,5 +1,5 @@
-import { AppConfig } from "@amzn/amazon-connect-sdk-app-common";
-import { Context } from "@amzn/amazon-connect-sdk-core";
+import { AppConfig } from "@amazon-connect/app-common";
+import { Context } from "@amazon-connect/core";
 
 import { AmazonConnectApp } from "./amazon-connect-app";
 

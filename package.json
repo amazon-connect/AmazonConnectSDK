@@ -1,9 +1,10 @@
 {
-  "name": "@amzn/amazon-connect-sdk",
+  "name": "@amazon-connect/sdk",
   "version": "1.0.0",
   "description": "",
   "npm-pretty-much": {
-    "useWorkspaces": true
+    "useWorkspaces": true,
+    "publishLibCommonJs": true
   },
   "scripts": {
     "agent": "npm run --prefix ./agent",
@@ -16,6 +17,12 @@
     "lint": "eslint .",
     "prepare": "husky install",
     "test": "npm run --ws build && npm run --ws check-types && npm run --ws test"
+  },
+  "dependencies": {
+    "@amazon-connect/agent": "latest",
+    "@amazon-connect/app": "latest",
+    "@amazon-connect/app-common": "latest",
+    "@amazon-connect/core": "latest"
   },
   "devDependencies": {
     "@amzn/jest-reporter": "*",

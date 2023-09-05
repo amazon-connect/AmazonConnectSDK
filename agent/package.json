@@ -1,5 +1,5 @@
 {
-  "name": "@amzn/amazon-connect-sdk-agent",
+  "name": "@amazon-connect/agent",
   "version": "1.0.0",
   "description": "Agent functionality of the Amazon Connect SDK",
   "publishConfig": {
@@ -23,6 +23,6 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@amzn/amazon-connect-sdk-app": "^1.0.0"
+    "@amazon-connect/app": "^1.0.0"
   }
 }

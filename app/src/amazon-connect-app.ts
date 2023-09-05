@@ -6,7 +6,7 @@ import {
   SubscriptionHandler,
   SubscriptionHandlerData,
   SubscriptionTopic,
-} from "@amzn/amazon-connect-sdk-core";
+} from "@amazon-connect/core";
 
 import { AmazonConnectAppConfig } from "./amazon-connect-app-config";
 import {

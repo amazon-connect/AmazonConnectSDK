@@ -1,4 +1,4 @@
-import { AmazonConnectConfig } from "@amzn/amazon-connect-sdk-core";
+import { AmazonConnectConfig } from "@amazon-connect/core";
 
 import { AppCreateHandler, AppDestroyHandler } from "./lifecycle";
 

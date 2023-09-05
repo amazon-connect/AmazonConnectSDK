@@ -1,4 +1,4 @@
-import { AmazonConnectNamespace } from "@amzn/amazon-connect-sdk-core";
+import { AmazonConnectNamespace } from "@amazon-connect/core";
 
 export type Permissions = Record<AmazonConnectNamespace, string[]>;
 

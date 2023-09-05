@@ -8,7 +8,7 @@ import {
   CloseAppMessage,
   LifecycleHandlerCompletedMessage,
   LifecycleMessage,
-} from "@amzn/amazon-connect-sdk-app-common";
+} from "@amazon-connect/app-common";
 import {
   AcknowledgeMessage,
   ConnectLogger,
@@ -17,8 +17,8 @@ import {
   SubscriptionTopic,
   TimeoutTracker,
   TimeoutTrackerCancelledHandler,
-} from "@amzn/amazon-connect-sdk-core";
-import { ErrorService } from "@amzn/amazon-connect-sdk-core/lib/proxy/error";
+} from "@amazon-connect/core";
+import { ErrorService } from "@amazon-connect/core/lib/proxy/error";
 import { MockedClass } from "jest-mock";
 
 import { AmazonConnectApp } from "../amazon-connect-app";
@@ -27,9 +27,9 @@ import { LifecycleManager } from "../lifecycle";
 import { AppProxy } from "./app-proxy";
 import * as connectionTimeout from "./connection-timeout";
 
-jest.mock("@amzn/amazon-connect-sdk-core/lib/logging/connect-logger");
-jest.mock("@amzn/amazon-connect-sdk-core/lib/utility/timeout-tracker");
-jest.mock("@amzn/amazon-connect-sdk-core/lib/proxy/error/error-service");
+jest.mock("@amazon-connect/core/lib/logging/connect-logger");
+jest.mock("@amazon-connect/core/lib/utility/timeout-tracker");
+jest.mock("@amazon-connect/core/lib/proxy/error/error-service");
 
 jest.mock("../lifecycle/lifecycle-manager");
 jest.mock("./connection-timeout");

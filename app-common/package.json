@@ -1,5 +1,5 @@
 {
-  "name": "@amzn/amazon-connect-sdk-app-common",
+  "name": "@amazon-connect/app-common",
   "version": "1.0.0",
   "description": "Common functionality for apps within the Amazon Connect SDK",
   "publishConfig": {
@@ -23,6 +23,6 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@amzn/amazon-connect-sdk-core": "^1.0.0"
+    "@amazon-connect/core": "^1.0.0"
   }
 }

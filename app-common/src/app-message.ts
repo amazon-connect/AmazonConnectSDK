@@ -3,7 +3,7 @@ import {
   SubscriptionHandlerData,
   SubscriptionTopic,
   UpstreamMessage,
-} from "@amzn/amazon-connect-sdk-core";
+} from "@amazon-connect/core";
 
 import { AppConfig } from "./app-config";
 import { LifecycleStage } from "./lifecycle-stage";
