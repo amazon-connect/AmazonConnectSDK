@@ -18,12 +18,6 @@
     "prepare": "husky install",
     "test": "npm run --ws build && npm run --ws check-types && npm run --ws test"
   },
-  "dependencies": {
-    "@amazon-connect/agent": "latest",
-    "@amazon-connect/app": "latest",
-    "@amazon-connect/app-common": "latest",
-    "@amazon-connect/core": "latest"
-  },
   "devDependencies": {
     "@amzn/jest-reporter": "*",
     "@babel/core": "^7.22.5",
