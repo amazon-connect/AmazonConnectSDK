@@ -13,6 +13,7 @@ export type {
   DownstreamMessage,
   LogMessage,
   PublishMessage,
+  RequestMessage,
   SubscribeMessage,
   UnsubscribeMessage,
   UpstreamMessage,
@@ -34,4 +35,5 @@ export type {
   ProxySubjectStatus,
 } from "./proxy";
 export { createModuleProxy, Proxy } from "./proxy";
+export * from "./request";
 export * from "./utility";

@@ -1,6 +1,16 @@
 import { LogLevel } from "../logging";
 import { ProxySubjectStatus } from "../proxy";
+import {
+  ConnectRequest,
+  ConnectRequestData,
+  ConnectResponse,
+} from "../request";
 import { SubscriptionTopic } from "./subscription";
+
+export type RequestMessage<T extends ConnectRequestData = ConnectRequestData> =
+  {
+    type: "request";
+  } & ConnectRequest<T>;
 
 export type SubscribeMessage = {
   type: "subscribe";
@@ -28,6 +38,7 @@ export type CloseChannelMessage = {
 };
 
 export type UpstreamMessage =
+  | RequestMessage
   | SubscribeMessage
   | UnsubscribeMessage
   | LogMessage
@@ -49,6 +60,10 @@ export type ErrorMessage<T extends ProxySubjectStatus = ProxySubjectStatus> = {
   details?: Record<string, unknown>;
 };
 
+export type ResponseMessage = {
+  type: "response";
+} & ConnectResponse;
+
 export type PublishMessage = {
   type: "publish";
   topic: SubscriptionTopic;
@@ -57,4 +72,4 @@ export type PublishMessage = {
 
 export type DownstreamMessage<
   T extends ProxySubjectStatus = ProxySubjectStatus,
-> = AcknowledgeMessage<T> | PublishMessage | ErrorMessage<T>;
+> = AcknowledgeMessage<T> | ResponseMessage | PublishMessage | ErrorMessage<T>;

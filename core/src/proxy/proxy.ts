@@ -3,12 +3,15 @@ import {
   AmazonConnectError,
   AmazonConnectErrorHandler,
 } from "../amazon-connect-error";
+import { AmazonConnectNamespace } from "../amazon-connect-namespace";
 import { ConnectLogData, ConnectLogger } from "../logging";
 import {
   DownstreamMessage,
   ErrorMessage,
   LogMessage,
   PublishMessage,
+  RequestMessage,
+  ResponseMessage,
   SubscribeMessage,
   UnsubscribeMessage,
   UpstreamMessage,
@@ -20,12 +23,18 @@ import {
   SubscriptionTopic,
 } from "../messaging/subscription";
 import { AmazonConnectProvider } from "../provider";
+import {
+  ConnectRequestData,
+  ConnectResponseData,
+  formatResponseError,
+} from "../request";
+import { generateUUID } from "../utility";
 import { ErrorService } from "./error";
 import { ProxyConnectionStatusManager } from "./proxy-connection";
 import {
   ProxyConnectionChangedHandler,
   ProxyConnectionStatus,
-} from "./proxy-connection/types";
+} from "./proxy-connection";
 import { ProxyLogData } from "./proxy-log-data";
 
 export abstract class Proxy<
@@ -40,6 +49,7 @@ export abstract class Proxy<
   private readonly subscriptions: SubscriptionSet<SubscriptionHandler>;
   private readonly errorService: ErrorService;
   private readonly logger: ConnectLogger;
+  private requestManager: Record<string, (msg: ResponseMessage) => void>;
   private upstreamMessageQueue: TUpstreamMessage[];
   private connectionEstablished: boolean;
   private isInitialized: boolean;
@@ -51,6 +61,7 @@ export abstract class Proxy<
       mixin: () => ({ proxyType: this.proxyType }),
     });
 
+    this.requestManager = {};
     this.status = new ProxyConnectionStatusManager();
     this.errorService = new ErrorService();
     this.upstreamMessageQueue = [];
@@ -65,6 +76,35 @@ export abstract class Proxy<
     this.initProxy();
   }
   protected abstract initProxy(): void;
+
+  request<TResponse extends ConnectResponseData>(
+    namespace: AmazonConnectNamespace,
+    command: string,
+    data?: ConnectRequestData,
+  ): Promise<TResponse> {
+    const requestId = generateUUID();
+    const msg: RequestMessage = {
+      type: "request",
+      namespace,
+      command,
+      requestId,
+      data,
+    };
+
+    const resp = new Promise<TResponse>((resolve, reject) => {
+      this.requestManager[requestId] = (msg: ResponseMessage) => {
+        if (msg.isError) {
+          reject(formatResponseError(msg));
+        } else {
+          resolve(msg.data as TResponse);
+        }
+      };
+    });
+
+    this.sendOrQueueMessageToSubject(msg as TUpstreamMessage);
+
+    return resp;
+  }
 
   subscribe<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
@@ -178,6 +218,9 @@ export abstract class Proxy<
       case "acknowledge":
         this.handleConnectionAcknowledge();
         break;
+      case "response":
+        this.handleResponse(msg);
+        break;
       case "publish":
         this.handlePublish(msg);
         break;
@@ -204,6 +247,20 @@ export abstract class Proxy<
       const msg = this.upstreamMessageQueue.shift();
       this.sendMessageToSubject(msg as TUpstreamMessage);
     }
+  }
+
+  private handleResponse(msg: ResponseMessage) {
+    const handler = this.requestManager[msg.requestId];
+
+    if (!handler) {
+      // The proxy is implemented such that this should never happen
+      this.logger.error("Returned a response message with no handler", {
+        message: msg,
+      });
+      return;
+    }
+
+    handler(msg);
   }
 
   private handlePublish(msg: PublishMessage) {
