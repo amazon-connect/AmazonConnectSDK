@@ -53,7 +53,7 @@ const destroyMsg: LifecycleMessage = {
 
 const getLifecycleManagerLogger = () => {
   const idx = LoggerMock.mock.calls.findIndex(
-    ([a]) => typeof a === "object" && a.source === "app.lifecycleManager"
+    ([a]) => typeof a === "object" && a.source === "app.lifecycleManager",
   );
 
   if (idx < 0) throw new Error("LifecycleManager logger not found");
@@ -95,7 +95,7 @@ describe("when triggering the Create lifecycle event", () => {
 
       expect(proxy.sendLifecycleHandlerCompleted).toHaveBeenCalledWith(
         appInstanceId,
-        "create"
+        "create",
       );
       expect.assertions(2);
     });
@@ -672,7 +672,7 @@ describe("when triggering the Destroy lifecycle event", () => {
 
         expect(proxy.sendLifecycleHandlerCompleted).toHaveBeenCalledWith(
           appInstanceId,
-          "destroy"
+          "destroy",
         );
         expect.assertions(2);
       });
@@ -752,7 +752,7 @@ describe("when triggering the Destroy lifecycle event", () => {
 
         expect(proxy.sendLifecycleHandlerCompleted).toHaveBeenCalledWith(
           appInstanceId,
-          "destroy"
+          "destroy",
         );
       });
 

@@ -7,7 +7,7 @@ import { Context } from "./context";
 export class ModuleContext {
   constructor(
     private readonly engineContext: Context,
-    private readonly moduleNamespace: AmazonConnectNamespace
+    private readonly moduleNamespace: AmazonConnectNamespace,
   ) {}
 
   private moduleProxy: ModuleProxy | undefined;

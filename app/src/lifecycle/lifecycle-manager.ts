@@ -60,7 +60,7 @@ export class LifecycleManager {
     const context = new AppContext(
       this.provider,
       msg.appInstanceId,
-      msg.appConfig
+      msg.appConfig,
     );
     this.state.appInstanceId = msg.appInstanceId;
     this.state.appConfig = msg.appConfig;
@@ -81,7 +81,7 @@ export class LifecycleManager {
 
   onStart(
     handler: AppStartHandler,
-    options: StartSubscriptionOptions | undefined
+    options: StartSubscriptionOptions | undefined,
   ) {
     this.startHandlers.add(handler);
 
@@ -93,7 +93,7 @@ export class LifecycleManager {
         this.handleLifecycleChange(
           { ...this.getLifecycleChangeParams(), stage: "start" },
           (e) => handler(e),
-          false
+          false,
         );
       }
     }
@@ -126,7 +126,7 @@ export class LifecycleManager {
     if (this.isCreated) {
       this.logger.error(
         "An attempt was invoke Create after it was already invoked. No Action",
-        { appInstanceId: params.context.appInstanceId }
+        { appInstanceId: params.context.appInstanceId },
       );
       return;
     }
@@ -146,14 +146,14 @@ export class LifecycleManager {
     const { success } = await this.handleLifecycleChange(
       { ...params, stage: "create" },
       (e) => this.provider.config.onCreate(e),
-      true
+      true,
     );
 
     if (success) {
       this.isCreated = true;
       this.sendLifecycleHandlerCompletedMessage(
         params.context.appInstanceId,
-        "create"
+        "create",
       );
     }
   }
@@ -169,7 +169,7 @@ export class LifecycleManager {
     if (!this.isCreated) {
       this.logger.error(
         "An attempt was invoke Start before Create. No Action",
-        { appInstanceId: params.context.appInstanceId }
+        { appInstanceId: params.context.appInstanceId },
       );
       return;
     }
@@ -181,9 +181,9 @@ export class LifecycleManager {
         this.handleLifecycleChange(
           { ...params, stage: "start" },
           (e) => h(e),
-          false
-        )
-      )
+          false,
+        ),
+      ),
     );
 
     this.logger.debug("Completed all start handlers", {
@@ -214,9 +214,9 @@ export class LifecycleManager {
         this.handleLifecycleChange(
           { ...params, stage: "stop" },
           (e) => h(e),
-          false
-        )
-      )
+          false,
+        ),
+      ),
     );
 
     this.logger.debug("Completed all stop handlers", {
@@ -231,7 +231,7 @@ export class LifecycleManager {
         "An attempt was invoke Destroy multiple times. No Action",
         {
           appInstanceId: params.context.appInstanceId,
-        }
+        },
       );
       return;
     }
@@ -241,7 +241,7 @@ export class LifecycleManager {
         "An attempt was invoke Destroy before Create. No Action",
         {
           appInstanceId: params.context.appInstanceId,
-        }
+        },
       );
       return;
     }
@@ -254,13 +254,13 @@ export class LifecycleManager {
     const { success } = await this.handleLifecycleChange(
       { ...params, stage: "destroy" },
       (e) => (config.onDestroy ? config.onDestroy(e) : Promise.resolve()),
-      true
+      true,
     );
 
     if (success) {
       this.sendLifecycleHandlerCompletedMessage(
         params.context.appInstanceId,
-        "destroy"
+        "destroy",
       );
     }
   }
@@ -268,7 +268,7 @@ export class LifecycleManager {
   private async handleLifecycleChange<TEvent extends LifecycleStageChangeEvent>(
     evt: TEvent,
     action: LifecycleStageChangeHandler<TEvent>,
-    isFatal: boolean
+    isFatal: boolean,
   ): Promise<{ success: boolean }> {
     let success = false;
     try {
@@ -289,7 +289,7 @@ export class LifecycleManager {
           {
             appInstanceId,
             error,
-          }
+          },
         );
       }
     }
@@ -301,14 +301,14 @@ export class LifecycleManager {
       context: new AppContext(
         this.provider,
         this.state.appInstanceId!,
-        this.state.appConfig!
+        this.state.appConfig!,
       ),
     };
   }
 
   private sendLifecycleHandlerCompletedMessage(
     appInstanceId: string,
-    stage: "create" | "destroy"
+    stage: "create" | "destroy",
   ): void {
     this.logger.debug(`Sending lifecycle ${stage} completed signal`);
     const proxy = this.provider.getProxy() as AppProxy;

@@ -39,7 +39,7 @@ export class ConnectLogger {
   trace(
     message: string,
     data?: ConnectLogData,
-    options?: LogEntryOptions
+    options?: LogEntryOptions,
   ): void {
     this.log(LogLevel.trace, message, data, options);
   }
@@ -47,7 +47,7 @@ export class ConnectLogger {
   debug(
     message: string,
     data?: ConnectLogData,
-    options?: LogEntryOptions
+    options?: LogEntryOptions,
   ): void {
     this.log(LogLevel.debug, message, data, options);
   }
@@ -55,7 +55,7 @@ export class ConnectLogger {
   info(
     message: string,
     data?: ConnectLogData,
-    options?: LogEntryOptions
+    options?: LogEntryOptions,
   ): void {
     this.log(LogLevel.info, message, data, options);
   }
@@ -63,7 +63,7 @@ export class ConnectLogger {
   warn(
     message: string,
     data?: ConnectLogData,
-    options?: LogEntryOptions
+    options?: LogEntryOptions,
   ): void {
     this.log(LogLevel.warn, message, data, options);
   }
@@ -71,7 +71,7 @@ export class ConnectLogger {
   error(
     message: string,
     data?: ConnectLogData,
-    options?: LogEntryOptions
+    options?: LogEntryOptions,
   ): void {
     this.log(LogLevel.error, message, data, options);
   }
@@ -80,11 +80,11 @@ export class ConnectLogger {
     level: LogLevel,
     message: string,
     data?: ConnectLogData,
-    options?: LogEntryOptions
+    options?: LogEntryOptions,
   ): void {
     const transformedData = this.dataTransformer.getTransformedData(
       level,
-      data
+      data,
     );
 
     if (!this.ignoreRemote(options)) {
@@ -116,7 +116,7 @@ export class ConnectLogger {
 
   private applyDuplicateMessageToConsole(
     level: LogLevel,
-    options: LogEntryOptions | undefined
+    options: LogEntryOptions | undefined,
   ): boolean {
     return (
       options?.duplicateMessageToConsole || this.getLogConsoleLevel() <= level

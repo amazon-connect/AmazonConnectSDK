@@ -4,7 +4,7 @@ import { Proxy } from "./proxy";
 
 export function createModuleProxy(
   proxy: Proxy,
-  namespace: AmazonConnectNamespace
+  namespace: AmazonConnectNamespace,
 ): ModuleProxy {
   return {
     subscribe: (topic, handler) =>

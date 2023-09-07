@@ -120,7 +120,7 @@ describe("when tracker reaches timeout", () => {
     expect(logger.info).toHaveBeenCalledTimes(1);
     expect(logger.error).toHaveBeenCalledTimes(1);
     expect((logger.error.mock.calls[0][1] as { error: Error }).error).toEqual(
-      handlerError
+      handlerError,
     );
   });
 });

@@ -33,7 +33,7 @@ export abstract class Proxy<
   TUpstreamMessage extends { type: string } | UpstreamMessage = UpstreamMessage,
   TDownstreamMessage extends
     | { type: string }
-    | DownstreamMessage = DownstreamMessage
+    | DownstreamMessage = DownstreamMessage,
 > {
   protected readonly provider: AmazonConnectProvider<TConfig>;
   protected readonly status: ProxyConnectionStatusManager;
@@ -68,7 +68,7 @@ export abstract class Proxy<
 
   subscribe<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
-    handler: SubscriptionHandler<THandlerData>
+    handler: SubscriptionHandler<THandlerData>,
   ): void {
     this.subscriptions.add(topic, handler as SubscriptionHandler);
 
@@ -82,7 +82,7 @@ export abstract class Proxy<
 
   unsubscribe<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
-    handler: SubscriptionHandler<THandlerData>
+    handler: SubscriptionHandler<THandlerData>,
   ): void {
     this.subscriptions.delete(topic, handler as SubscriptionHandler);
 
@@ -147,7 +147,7 @@ export abstract class Proxy<
     if (!this.isInitialized) {
       this.logger.error(
         "Attempted to process message from subject prior to proxy being initializing. Message not processed",
-        { originalMessageEventData: evt.data }
+        { originalMessageEventData: evt.data },
       );
       return;
     }
@@ -210,7 +210,7 @@ export abstract class Proxy<
     this.subscriptions
       .get(msg.topic)
       .map((handler) =>
-        this.handleAsyncSubscriptionHandlerInvoke(handler, msg)
+        this.handleAsyncSubscriptionHandlerInvoke(handler, msg),
       );
   }
 
@@ -231,7 +231,7 @@ export abstract class Proxy<
   }
 
   protected publishError(
-    error: Omit<AmazonConnectError, "connectionStatus">
+    error: Omit<AmazonConnectError, "connectionStatus">,
   ): void {
     const fullError: AmazonConnectError = {
       ...error,
@@ -243,7 +243,7 @@ export abstract class Proxy<
 
   private async handleAsyncSubscriptionHandlerInvoke(
     handler: SubscriptionHandler,
-    { topic, data }: PublishMessage
+    { topic, data }: PublishMessage,
   ): Promise<void> {
     try {
       await handler(data);

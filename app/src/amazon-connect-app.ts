@@ -39,7 +39,7 @@ export class AmazonConnectApp extends AmazonConnectProvider<AmazonConnectAppConf
 
   static get default(): AmazonConnectApp {
     return getGlobalProvider<AmazonConnectApp>(
-      "AmazonConnectApp has not been initialized"
+      "AmazonConnectApp has not been initialized",
     );
   }
 
@@ -73,28 +73,28 @@ export class AmazonConnectApp extends AmazonConnectProvider<AmazonConnectAppConf
 
   sendFatalError(
     message: string,
-    data?: Record<string, unknown> | Error
+    data?: Record<string, unknown> | Error,
   ): void {
     (this.getProxy() as AppProxy).tryCloseApp(message, true, data);
   }
 
   subscribe<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
-    handler: SubscriptionHandler<THandlerData>
+    handler: SubscriptionHandler<THandlerData>,
   ): void {
     this.getProxy().subscribe(topic, handler);
   }
 
   unsubscribe<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
-    handler: SubscriptionHandler<THandlerData>
+    handler: SubscriptionHandler<THandlerData>,
   ): void {
     this.getProxy().unsubscribe(topic, handler);
   }
 
   publish<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
-    data: THandlerData
+    data: THandlerData,
   ): void {
     (this.getProxy() as AppProxy).publish(topic, data);
   }

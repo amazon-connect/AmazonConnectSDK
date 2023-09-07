@@ -46,7 +46,7 @@ describe("createModuleProxy", () => {
           key: "foo",
           parameter: "1",
         }),
-        handler
+        handler,
       );
     });
 
@@ -67,7 +67,7 @@ describe("createModuleProxy", () => {
           namespace: testNamespace,
           key: "foo",
         }),
-        handler
+        handler,
       );
     });
   });
@@ -88,7 +88,7 @@ describe("createModuleProxy", () => {
           key: "foo",
           parameter: "1",
         }),
-        handler
+        handler,
       );
     });
 
@@ -109,7 +109,7 @@ describe("createModuleProxy", () => {
           namespace: testNamespace,
           key: "foo",
         }),
-        handler
+        handler,
       );
     });
   });
@@ -134,7 +134,7 @@ describe("createModuleProxy", () => {
     const handler = jest.fn();
     const onConnectionStatusChangeSpy = jest.spyOn(
       proxy,
-      "onConnectionStatusChange"
+      "onConnectionStatusChange",
     );
 
     sut.onConnectionStatusChange(handler);
@@ -148,7 +148,7 @@ describe("createModuleProxy", () => {
     const handler = jest.fn();
     const offConnectionStatusChangeSpy = jest.spyOn(
       proxy,
-      "offConnectionStatusChange"
+      "offConnectionStatusChange",
     );
 
     sut.offConnectionStatusChange(handler);

@@ -22,7 +22,7 @@ describe("setGlobalProvider", () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(Error);
       expect((error as { message: string }).message).toEqual(
-        "Global Provider is already set"
+        "Global Provider is already set",
       );
     }
 

@@ -21,7 +21,7 @@ export class SubscriptionMap<T> {
       if (!this.paramSubscriptions.has(namespace)) {
         this.paramSubscriptions.set(
           namespace,
-          new Map([[key, new Map([[param, value]])]])
+          new Map([[key, new Map([[param, value]])]]),
         );
         return;
       }
@@ -82,7 +82,7 @@ export class SubscriptionMap<T> {
   addOrUpdate(
     topic: SubscriptionTopic,
     addFactory: () => T,
-    updateAction: (value: T) => T
+    updateAction: (value: T) => T,
   ): T {
     let value = this.get(topic);
 
@@ -102,8 +102,8 @@ export class SubscriptionMap<T> {
           (key) => ({
             namespace,
             key,
-          })
-        )
+          }),
+        ),
     );
 
     const withParam = Array.from(this.paramSubscriptions.keys()).flatMap(
@@ -111,13 +111,13 @@ export class SubscriptionMap<T> {
         Array.from(this.paramSubscriptions.get(namespace)!.keys()).flatMap(
           (key) =>
             Array.from(
-              this.paramSubscriptions.get(namespace)!.get(key)!.keys()
+              this.paramSubscriptions.get(namespace)!.get(key)!.keys(),
             ).flatMap((parameter) => ({
               namespace,
               key,
               parameter,
-            }))
-        )
+            })),
+        ),
     );
 
     return [...noParam, ...withParam];

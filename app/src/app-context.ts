@@ -10,7 +10,7 @@ export class AppContext extends Context<AmazonConnectApp> {
   constructor(
     provider: AmazonConnectApp,
     appInstanceId: string,
-    appConfig: AppConfig
+    appConfig: AppConfig,
   ) {
     super(provider);
     this.appInstanceId = appInstanceId;

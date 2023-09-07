@@ -34,7 +34,7 @@ export class ProxyConnectionStatusManager {
       } catch (error) {
         this.logger.error(
           "An error occurred within a ProxyConnectionChangedHandler",
-          { error }
+          { error },
         );
       }
     });

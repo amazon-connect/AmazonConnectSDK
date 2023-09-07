@@ -10,7 +10,7 @@ export type AmazonConnectProviderParams<TConfig extends AmazonConnectConfig> = {
 };
 
 export class AmazonConnectProvider<
-  TConfig extends AmazonConnectConfig = AmazonConnectConfig
+  TConfig extends AmazonConnectConfig = AmazonConnectConfig,
 > {
   private readonly proxyFactory: ProxyFactory<TConfig>;
   private readonly _config: TConfig;
@@ -54,7 +54,7 @@ export class AmazonConnectProvider<
   protected static isInitialized = false;
 
   protected static initializeProvider<TProvider extends AmazonConnectProvider>(
-    provider: TProvider
+    provider: TProvider,
   ): TProvider {
     const logger = new ConnectLogger({
       source: "core.amazonConnect.init",

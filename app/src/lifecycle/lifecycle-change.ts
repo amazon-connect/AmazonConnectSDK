@@ -19,7 +19,7 @@ export type LifecycleStageChangeEvent =
   | AppDestroyEvent;
 
 export type LifecycleStageChangeHandler<
-  T extends LifecycleStageChangeEvent = LifecycleStageChangeEvent
+  T extends LifecycleStageChangeEvent = LifecycleStageChangeEvent,
 > = (evt: T) => Promise<void>;
 
 export type AppCreateHandler = LifecycleStageChangeHandler<AppCreateEvent>;

@@ -58,7 +58,7 @@ const waitForMessageChannel = async (condition: () => boolean) => {
 
 const getAppProxyLogger = () => {
   const idx = LoggerMock.mock.calls.findIndex(
-    ([a]) => typeof a === "object" && a.source === "app.appProxy"
+    ([a]) => typeof a === "object" && a.source === "app.appProxy",
   );
 
   if (idx < 0) throw new Error("app proxy logger not found");
@@ -92,7 +92,7 @@ beforeEach(() => {
   mockTimeoutTrackerStart = jest
     .spyOn(TimeoutTracker, "start")
     .mockImplementation(
-      (onCancelled, ms) => new TimeoutTracker(onCancelled, ms)
+      (onCancelled, ms) => new TimeoutTracker(onCancelled, ms),
     );
 });
 
@@ -111,7 +111,7 @@ describe("when performing the init via the provider", () => {
 
     expect(mockTimeoutTrackerStart).toHaveBeenCalledWith(
       expect.anything(),
-      timeout
+      timeout,
     );
     expect(configSpy).toHaveBeenCalledWith(provider.config);
   });
@@ -205,7 +205,7 @@ describe("when performing the init via the provider", () => {
       // Sending a message through a message channel cannot be awaited.
       // For testing a loop with a quick delay is required
       await waitForMessageChannel(
-        () => connectionTimer.complete.mock.calls.length === 0
+        () => connectionTimer.complete.mock.calls.length === 0,
       );
 
       expect(sut.connectionStatus).not.toEqual("ready");
@@ -364,11 +364,12 @@ describe("when appProxy is ready", () => {
 
       subjectPort.postMessage(msg);
       await waitForMessageChannel(
-        () => lifecycleMock.handleLifecycleChangeMessage.mock.calls.length === 0
+        () =>
+          lifecycleMock.handleLifecycleChangeMessage.mock.calls.length === 0,
       );
 
       expect(lifecycleMock.handleLifecycleChangeMessage).toHaveBeenCalledWith(
-        msg
+        msg,
       );
     });
   });

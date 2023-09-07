@@ -4,7 +4,7 @@ import { LogLevel } from "./log-level";
 export type ConnectLogData = Record<string, unknown>;
 export type ConnectLoggerMixin = (
   data: ConnectLogData,
-  level: LogLevel
+  level: LogLevel,
 ) => ConnectLogData;
 
 type BaseLoggerParams = {

@@ -129,7 +129,7 @@ describe("init", () => {
       ProxyConnectionStatusManagerMock.mock.instances;
     let status: ProxyConnectionStatus;
     proxyConnectionStatusManager.update.mockImplementation(
-      (evt) => (status = evt.status)
+      (evt) => (status = evt.status),
     );
     proxyConnectionStatusManager.getStatus.mockImplementation(() => status);
 
@@ -158,7 +158,7 @@ describe("subscribe", () => {
       const [msg] = sut.upstreamMessagesSent;
       expect(msg.type).toBe("subscribe");
       expect((msg as SubscribeMessage).topic).toEqual(
-        expect.objectContaining(testTopic)
+        expect.objectContaining(testTopic),
       );
       expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
     });
@@ -192,7 +192,7 @@ describe("subscribe", () => {
     const [msg] = sut.upstreamMessagesSent;
     expect(msg.type).toBe("subscribe");
     expect((msg as SubscribeMessage).topic).toEqual(
-      expect.objectContaining(testTopic)
+      expect.objectContaining(testTopic),
     );
     expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
   });
@@ -218,12 +218,12 @@ describe("unsubscribe", () => {
       const [msg] = sut.upstreamMessagesSent;
       expect(msg.type).toBe("unsubscribe");
       expect((msg as UnsubscribeMessage).topic).toEqual(
-        expect.objectContaining(testTopic)
+        expect.objectContaining(testTopic),
       );
       expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
       expect(mockSubscriptionSet.delete).toHaveBeenCalledWith(
         testTopic,
-        handler
+        handler,
       );
     });
 
@@ -237,7 +237,7 @@ describe("unsubscribe", () => {
       expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
       expect(mockSubscriptionSet.delete).toHaveBeenCalledWith(
         testTopic,
-        handler
+        handler,
       );
     });
   });
@@ -256,7 +256,7 @@ describe("unsubscribe", () => {
     const [msg] = sut.upstreamMessagesSent;
     expect(msg.type).toBe("unsubscribe");
     expect((msg as UnsubscribeMessage).topic).toEqual(
-      expect.objectContaining(testTopic)
+      expect.objectContaining(testTopic),
     );
     expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
     expect(mockSubscriptionSet.delete).toHaveBeenCalledWith(testTopic, handler);
@@ -409,10 +409,10 @@ describe("acknowledge", () => {
       ProxyConnectionStatusManagerMock.mock.instances;
     const statusHistory: ProxyConnectionStatus[] = [];
     proxyConnectionStatusManager.update.mockImplementation((evt) =>
-      statusHistory.push(evt.status)
+      statusHistory.push(evt.status),
     );
     proxyConnectionStatusManager.getStatus.mockImplementation(
-      () => statusHistory[statusHistory.length - 1]
+      () => statusHistory[statusHistory.length - 1],
     );
 
     sut.init();
@@ -530,7 +530,7 @@ describe("error from upstream", () => {
     expect(upstreamError.key).toEqual(errorMsg.key);
     expect(upstreamError.isFatal).toEqual(errorMsg.isFatal);
     expect(upstreamError.details).toEqual(
-      expect.objectContaining(errorMsg.details)
+      expect.objectContaining(errorMsg.details),
     );
     expect(upstreamError.proxyStatus).toEqual(errorMsg.status);
   });
@@ -556,7 +556,7 @@ describe("error from upstream", () => {
     expect(upstreamError.key).toEqual(errorMsg.key);
     expect(upstreamError.isFatal).toEqual(errorMsg.isFatal);
     expect(upstreamError.details).toEqual(
-      expect.objectContaining(errorMsg.details)
+      expect.objectContaining(errorMsg.details),
     );
     expect(upstreamError.proxyStatus).toEqual(errorMsg.status);
   });
@@ -650,7 +650,7 @@ describe("Connection Status Change Handlers", () => {
     sut.offConnectionStatusChange(handler);
 
     expect(proxyConnectionStatusManager.offChange).toHaveBeenCalledWith(
-      handler
+      handler,
     );
   });
 });

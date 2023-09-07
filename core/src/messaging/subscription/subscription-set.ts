@@ -8,7 +8,7 @@ export class SubscriptionSet<T> {
     this.map.addOrUpdate(
       topic,
       () => new Set([value]),
-      (s) => s.add(value)
+      (s) => s.add(value),
     );
   }
 

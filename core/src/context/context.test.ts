@@ -20,7 +20,7 @@ beforeEach(() => {
 describe("getProxy", () => {
   test("should call getProvider().getProxy()", () => {
     const testProvider = new AmazonConnectProvider(
-      {} as unknown as AmazonConnectProviderParams<AmazonConnectConfig>
+      {} as unknown as AmazonConnectProviderParams<AmazonConnectConfig>,
     );
     const testContext = new Context(testProvider);
     jest.spyOn(testProvider, "getProxy");

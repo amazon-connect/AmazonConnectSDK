@@ -5,7 +5,7 @@ import { Proxy } from "../proxy";
 import { ModuleContext } from "./module-context";
 
 export class Context<
-  TProvider extends AmazonConnectProvider = AmazonConnectProvider
+  TProvider extends AmazonConnectProvider = AmazonConnectProvider,
 > {
   private readonly provider: TProvider | undefined;
 

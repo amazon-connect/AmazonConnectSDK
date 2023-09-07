@@ -8,7 +8,7 @@ export abstract class ConnectClient {
 
   constructor(
     namespace: AmazonConnectNamespace,
-    config: ConnectClientConfig | undefined
+    config: ConnectClientConfig | undefined,
   ) {
     this.namespace = namespace;
     this.context =

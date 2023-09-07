@@ -32,11 +32,11 @@ describe("AmazonConnectProvider", () => {
   test("should throw error when initialized without proxy factory", () => {
     try {
       new AmazonConnectProvider(
-        {} as unknown as AmazonConnectProviderParams<AmazonConnectConfig>
+        {} as unknown as AmazonConnectProviderParams<AmazonConnectConfig>,
       );
     } catch (e: unknown) {
       expect((e as { message: string }).message).toEqual(
-        "Attempted to get Proxy before setting up factory"
+        "Attempted to get Proxy before setting up factory",
       );
     }
 
@@ -50,7 +50,7 @@ describe("AmazonConnectProvider", () => {
       });
     } catch (e: unknown) {
       expect((e as { message: string }).message).toEqual(
-        "Failed to include config"
+        "Failed to include config",
       );
     }
 

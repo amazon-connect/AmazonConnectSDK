@@ -40,7 +40,7 @@ describe("invoke", () => {
     expect(logDetails?.isFatal).toEqual(testErr.isFatal);
     expect(logDetails?.connectionStatus).toEqual(testErr.connectionStatus);
     expect(logDetails?.details).toEqual(
-      expect.objectContaining(testErr.details)
+      expect.objectContaining(testErr.details),
     );
     expect(logOptions?.duplicateMessageToConsole).toBeTruthy();
     expect(logOptions?.remoteIgnore).toBeTruthy();
@@ -99,7 +99,7 @@ describe("invoke", () => {
     const [_m, errorData, handlerErrorLogOptions] = logger.error.mock.calls[1];
     expect(errorData?.handlerError).toBeInstanceOf(Error);
     expect((errorData?.handlerError as { message: string }).message).toEqual(
-      handlerError
+      handlerError,
     );
     expect(errorData?.originalError).toEqual(expect.objectContaining(testErr));
     expect(handlerErrorLogOptions?.duplicateMessageToConsole).toBeUndefined();

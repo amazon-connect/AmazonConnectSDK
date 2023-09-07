@@ -423,16 +423,16 @@ describe("getAllSubscriptions", () => {
         (topic) =>
           topic.namespace === topicFooA.namespace &&
           topic.key === topicFooA.key &&
-          !topic.parameter
-      )
+          !topic.parameter,
+      ),
     ).toBeDefined();
     expect(
       result.find(
         (topic) =>
           topic.namespace === topicFooB.namespace &&
           topic.key === topicFooB.key &&
-          !topic.parameter
-      )
+          !topic.parameter,
+      ),
     ).toBeDefined();
     expect(result).toContainEqual(expect.objectContaining(topicBarA));
     expect(result).toContainEqual(expect.objectContaining(paramTopicFooAA));

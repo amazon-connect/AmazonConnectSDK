@@ -47,7 +47,7 @@ export class AppProxy extends Proxy<
 
   sendLifecycleHandlerCompleted(
     appInstanceId: string,
-    stage: "create" | "destroy"
+    stage: "create" | "destroy",
   ) {
     const msg: LifecycleHandlerCompletedMessage = {
       type: "appLifecycleHandlerCompleted",
@@ -60,7 +60,7 @@ export class AppProxy extends Proxy<
   tryCloseApp(
     message: string | undefined,
     isFatalError?: boolean,
-    data?: Record<string, unknown> | Error
+    data?: Record<string, unknown> | Error,
   ) {
     const msg: CloseAppMessage = {
       type: "closeApp",
@@ -92,7 +92,7 @@ export class AppProxy extends Proxy<
 
     this.connectionTimer = TimeoutTracker.start(
       this.connectionTimeout.bind(this),
-      getConnectionTimeout(this.provider.config)
+      getConnectionTimeout(this.provider.config),
     );
 
     window.parent.postMessage(testMessage, "*", [this.channel.port2]);
@@ -110,7 +110,7 @@ export class AppProxy extends Proxy<
         "Workspace connection acknowledge received after timeout. App is not connected to workspace.",
         {
           timeout: this.connectionTimer!.timeoutMs,
-        }
+        },
       );
       return;
     }
@@ -126,7 +126,7 @@ export class AppProxy extends Proxy<
           .catch((error: unknown) => {
             this.appLogger.error(
               "An error occurred when invoking handleLifecycleChangeMessage",
-              { error }
+              { error },
             );
           });
         break;

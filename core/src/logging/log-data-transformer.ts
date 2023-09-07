@@ -10,7 +10,7 @@ export class LogDataTransformer {
 
   getTransformedData(
     level: LogLevel,
-    data: ConnectLogData | undefined
+    data: ConnectLogData | undefined,
   ): ConnectLogData | undefined {
     if (!this.mixin) return data;
 

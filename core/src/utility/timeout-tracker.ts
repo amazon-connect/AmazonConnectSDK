@@ -7,7 +7,7 @@ export type TimeoutTrackerCancelledEvent = {
 };
 
 export type TimeoutTrackerCancelledHandler = (
-  evt: TimeoutTrackerCancelledEvent
+  evt: TimeoutTrackerCancelledEvent,
 ) => void;
 
 export class TimeoutTracker {
@@ -33,7 +33,7 @@ export class TimeoutTracker {
 
   static start(
     onCancelled: TimeoutTrackerCancelledHandler,
-    ms: number
+    ms: number,
   ): TimeoutTracker {
     return new TimeoutTracker(onCancelled, ms);
   }
@@ -47,7 +47,7 @@ export class TimeoutTracker {
         return true;
       case "cancelled":
         this.logger.info(
-          "Attempted to complete a TimeoutTracker that has already been cancelled"
+          "Attempted to complete a TimeoutTracker that has already been cancelled",
         );
         return false;
     }
@@ -66,18 +66,18 @@ export class TimeoutTracker {
       case "running":
         this.status = "cancelled";
         this.logger.info(
-          "TimeoutTracker has timed out. Invoking onCancelled Handler"
+          "TimeoutTracker has timed out. Invoking onCancelled Handler",
         );
         this.invokeOnCancelled();
         break;
       case "completed":
         this.logger.debug(
-          "Cancel operation for TimerTracker invoked after already completed. No action."
+          "Cancel operation for TimerTracker invoked after already completed. No action.",
         );
         break;
       default:
         throw new Error(
-          "Cancel operation in TimerTracker called during an unexpected time."
+          "Cancel operation in TimerTracker called during an unexpected time.",
         );
     }
   }
@@ -94,7 +94,7 @@ export class TimeoutTracker {
     } catch (error) {
       this.logger.error(
         "Error when attempting to invoke TimeoutTrackerCancelledHandler",
-        { error }
+        { error },
       );
     }
   }

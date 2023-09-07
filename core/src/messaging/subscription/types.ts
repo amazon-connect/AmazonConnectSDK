@@ -14,5 +14,5 @@ export type ModuleSubscriptionTopic = Omit<SubscriptionTopic, "namespace">;
 export type SubscriptionHandlerData = Record<string, unknown>;
 
 export type SubscriptionHandler<
-  T extends SubscriptionHandlerData = SubscriptionHandlerData
+  T extends SubscriptionHandlerData = SubscriptionHandlerData,
 > = (evt: T) => Promise<void>;

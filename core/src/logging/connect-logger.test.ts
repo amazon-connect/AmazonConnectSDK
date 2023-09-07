@@ -55,7 +55,7 @@ let consoleWriteSpy: jest.SpyInstance<
   [
     level: LogLevel | undefined,
     message: string,
-    data?: ConnectLogData | undefined
+    data?: ConnectLogData | undefined,
   ]
 >;
 
@@ -89,7 +89,7 @@ describe("when not using any provider level options", () => {
       const sut = new ConnectLogger(testSource);
       const [logDataTransformer] = LogDataTransformerMock.mock.instances;
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
 
       sut.trace(testMessage, testData, {});
@@ -103,7 +103,7 @@ describe("when not using any provider level options", () => {
       });
       expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
         LogLevel.trace,
-        testData
+        testData,
       );
     });
 
@@ -111,7 +111,7 @@ describe("when not using any provider level options", () => {
       const sut = new ConnectLogger(testSource);
       const [logDataTransformer] = LogDataTransformerMock.mock.instances;
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
 
       sut.debug(testMessage, testData, {});
@@ -125,7 +125,7 @@ describe("when not using any provider level options", () => {
       });
       expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
         LogLevel.debug,
-        testData
+        testData,
       );
     });
 
@@ -133,7 +133,7 @@ describe("when not using any provider level options", () => {
       const sut = new ConnectLogger(testSource);
       const [logDataTransformer] = LogDataTransformerMock.mock.instances;
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
 
       sut.info(testMessage, testData, {});
@@ -147,7 +147,7 @@ describe("when not using any provider level options", () => {
       });
       expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
         LogLevel.info,
-        testData
+        testData,
       );
     });
 
@@ -155,7 +155,7 @@ describe("when not using any provider level options", () => {
       const sut = new ConnectLogger(testSource);
       const [logDataTransformer] = LogDataTransformerMock.mock.instances;
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
 
       sut.warn(testMessage, testData, {});
@@ -169,7 +169,7 @@ describe("when not using any provider level options", () => {
       });
       expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
         LogLevel.warn,
-        testData
+        testData,
       );
     });
 
@@ -177,7 +177,7 @@ describe("when not using any provider level options", () => {
       const sut = new ConnectLogger(testSource);
       const [logDataTransformer] = LogDataTransformerMock.mock.instances;
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
 
       sut.error(testMessage, testData, {});
@@ -191,7 +191,7 @@ describe("when not using any provider level options", () => {
       });
       expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
         LogLevel.error,
-        testData
+        testData,
       );
     });
 
@@ -230,7 +230,7 @@ describe("when not using any provider level options", () => {
       const sut = new ConnectLogger(testSource);
       const [logDataTransformer] = LogDataTransformerMock.mock.instances;
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
 
       sut.log(LogLevel.info, testMessage, testData, {});
@@ -244,7 +244,7 @@ describe("when not using any provider level options", () => {
       });
       expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
         LogLevel.info,
-        testData
+        testData,
       );
     });
   });
@@ -257,7 +257,7 @@ describe("when not using any provider level options", () => {
       sut = new ConnectLogger({ source: testSource, provider });
       logDataTransformer = LogDataTransformerMock.mock.instances[0];
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
     });
 
@@ -273,7 +273,7 @@ describe("when not using any provider level options", () => {
       });
       expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
         LogLevel.info,
-        testData
+        testData,
       );
     });
 
@@ -313,7 +313,7 @@ describe("when not using any provider level options", () => {
       expect(consoleWriteSpy).toHaveBeenCalledWith(
         LogLevel.error,
         testMessage,
-        transformTestData
+        transformTestData,
       );
     });
 
@@ -332,7 +332,7 @@ describe("when not using any provider level options", () => {
       expect(consoleWriteSpy).toHaveBeenCalledWith(
         LogLevel.trace,
         testMessage,
-        transformTestData
+        transformTestData,
       );
     });
   });
@@ -350,7 +350,7 @@ describe("when not using any provider level options", () => {
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
 
       sut.log(LogLevel.trace, testMessage, testData);
@@ -370,7 +370,7 @@ describe("when not using any provider level options", () => {
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
 
       sut.log(LogLevel.trace, testMessage, testData, {
@@ -392,7 +392,7 @@ describe("when not using any provider level options", () => {
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
 
       sut.log(LogLevel.trace, testMessage, testData, {
@@ -413,7 +413,7 @@ describe("when not using any provider level options", () => {
         });
         const logDataTransformer = LogDataTransformerMock.mock.instances[0];
         logDataTransformer.getTransformedData.mockReturnValueOnce(
-          transformTestData
+          transformTestData,
         );
       });
 
@@ -425,7 +425,7 @@ describe("when not using any provider level options", () => {
         expect(consoleWriteSpy).toHaveBeenCalledWith(
           LogLevel.warn,
           testMessage,
-          transformTestData
+          transformTestData,
         );
       });
 
@@ -437,7 +437,7 @@ describe("when not using any provider level options", () => {
         expect(consoleWriteSpy).toHaveBeenCalledWith(
           LogLevel.info,
           testMessage,
-          transformTestData
+          transformTestData,
         );
       });
 
@@ -470,7 +470,7 @@ describe("when setting the provider minLogToConsoleLevel to info", () => {
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
     });
 
@@ -482,7 +482,7 @@ describe("when setting the provider minLogToConsoleLevel to info", () => {
       expect(consoleWriteSpy).toHaveBeenCalledWith(
         LogLevel.warn,
         testMessage,
-        transformTestData
+        transformTestData,
       );
     });
 
@@ -494,7 +494,7 @@ describe("when setting the provider minLogToConsoleLevel to info", () => {
       expect(consoleWriteSpy).toHaveBeenCalledWith(
         LogLevel.info,
         testMessage,
-        transformTestData
+        transformTestData,
       );
     });
 
@@ -518,7 +518,7 @@ describe("when setting the provider minLogToConsoleLevel to info", () => {
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];
       logDataTransformer.getTransformedData.mockReturnValueOnce(
-        transformTestData
+        transformTestData,
       );
     });
 
@@ -530,7 +530,7 @@ describe("when setting the provider minLogToConsoleLevel to info", () => {
       expect(consoleWriteSpy).toHaveBeenCalledWith(
         LogLevel.error,
         testMessage,
-        transformTestData
+        transformTestData,
       );
     });
 
@@ -542,7 +542,7 @@ describe("when setting the provider minLogToConsoleLevel to info", () => {
       expect(consoleWriteSpy).toHaveBeenCalledWith(
         LogLevel.warn,
         testMessage,
-        transformTestData
+        transformTestData,
       );
     });
 

@@ -4,7 +4,7 @@ import { ConnectLogData } from "./logger-types";
 export function logToConsole(
   level: LogLevel | undefined,
   message: string,
-  data?: ConnectLogData
+  data?: ConnectLogData,
 ) {
   if (data) {
     switch (level) {

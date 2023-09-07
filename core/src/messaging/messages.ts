@@ -34,7 +34,7 @@ export type UpstreamMessage =
   | CloseChannelMessage;
 
 export type AcknowledgeMessage<
-  T extends ProxySubjectStatus = ProxySubjectStatus
+  T extends ProxySubjectStatus = ProxySubjectStatus,
 > = {
   type: "acknowledge";
   status: T;
@@ -56,5 +56,5 @@ export type PublishMessage = {
 };
 
 export type DownstreamMessage<
-  T extends ProxySubjectStatus = ProxySubjectStatus
+  T extends ProxySubjectStatus = ProxySubjectStatus,
 > = AcknowledgeMessage<T> | PublishMessage | ErrorMessage<T>;

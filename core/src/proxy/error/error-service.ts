@@ -26,7 +26,7 @@ export class ErrorService {
         isFatal,
         connectionStatus,
       },
-      { duplicateMessageToConsole: true, remoteIgnore: true }
+      { duplicateMessageToConsole: true, remoteIgnore: true },
     );
 
     [...this.errorHandlers].forEach((handler) => {
@@ -38,7 +38,7 @@ export class ErrorService {
           {
             handlerError,
             originalError: error,
-          }
+          },
         );
       }
     });
