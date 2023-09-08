@@ -1,1 +1,2 @@
-console.log("hello agent");
+export * from "./contact";
+export { agentNamespace } from "./namespace";
