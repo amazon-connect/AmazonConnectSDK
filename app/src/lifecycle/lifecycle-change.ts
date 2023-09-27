@@ -1,4 +1,4 @@
-import { LifecycleStage } from "@amazon-connect/app-common";
+import { LifecycleStage } from "@amazon-connect/app-types";
 
 import { AppContext } from "../app-context";
 

@@ -42,7 +42,7 @@
   },
   "workspaces": [
     "core",
-    "app-common",
+    "app-types",
     "app",
     "agent"
   ]

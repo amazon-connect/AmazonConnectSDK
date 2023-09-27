@@ -8,7 +8,7 @@ import {
   CloseAppMessage,
   LifecycleHandlerCompletedMessage,
   LifecycleMessage,
-} from "@amazon-connect/app-common";
+} from "@amazon-connect/app-types";
 import {
   AcknowledgeMessage,
   ConnectLogger,

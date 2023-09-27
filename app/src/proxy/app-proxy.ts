@@ -4,7 +4,7 @@ import {
   AppUpstreamMessage,
   CloseAppMessage,
   LifecycleHandlerCompletedMessage,
-} from "@amazon-connect/app-common";
+} from "@amazon-connect/app-types";
 import {
   ConnectLogger,
   Proxy,

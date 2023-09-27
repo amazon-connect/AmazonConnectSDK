@@ -1,4 +1,4 @@
-import { AppConfig } from "@amazon-connect/app-common";
+import { AppConfig } from "@amazon-connect/app-types";
 import { Context } from "@amazon-connect/core";
 
 import { AmazonConnectApp } from "./amazon-connect-app";

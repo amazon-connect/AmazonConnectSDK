@@ -1,7 +1,7 @@
 {
-  "name": "@amazon-connect/app-common",
+  "name": "@amazon-connect/app-types",
   "version": "1.0.0",
-  "description": "Common functionality for apps within the Amazon Connect SDK",
+  "description": "Types for apps within the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
   },
