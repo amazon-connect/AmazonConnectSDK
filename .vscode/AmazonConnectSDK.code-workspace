@@ -8,8 +8,8 @@
 			"path": "../core",
 		},
 		{
-			"name": "app-types",
-			"path": "../app-types"
+			"name": "workspace-types",
+			"path": "../workspace-types"
 		},
 		{
 			"name": "app",
@@ -23,7 +23,7 @@
 	"settings": {
 		"jest.disabledWorkspaceFolders": [
 			"AmazonConnectSDK",
-			"app-types"
+			"workspace-types"
 		],
 		"editor.codeActionsOnSave": {
 			"source.fixAll.eslint": true,

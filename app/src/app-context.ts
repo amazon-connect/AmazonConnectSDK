@@ -1,5 +1,5 @@
-import { AppConfig } from "@amazon-connect/app-types";
 import { Context } from "@amazon-connect/core";
+import { AppConfig } from "@amazon-connect/workspace-types";
 
 import { AmazonConnectApp } from "./amazon-connect-app";
 

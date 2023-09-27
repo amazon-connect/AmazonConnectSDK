@@ -2,14 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
-  AppConfig,
-  AppPublishMessage,
-  AppUpstreamMessage,
-  CloseAppMessage,
-  LifecycleHandlerCompletedMessage,
-  LifecycleMessage,
-} from "@amazon-connect/app-types";
-import {
   AcknowledgeMessage,
   ConnectLogger,
   LogLevel,
@@ -19,6 +11,14 @@ import {
   TimeoutTrackerCancelledHandler,
 } from "@amazon-connect/core";
 import { ErrorService } from "@amazon-connect/core/lib/proxy/error";
+import {
+  AppConfig,
+  AppPublishMessage,
+  AppUpstreamMessage,
+  CloseAppMessage,
+  LifecycleHandlerCompletedMessage,
+  LifecycleMessage,
+} from "@amazon-connect/workspace-types";
 import { MockedClass } from "jest-mock";
 
 import { AmazonConnectApp } from "../amazon-connect-app";

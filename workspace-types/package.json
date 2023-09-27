@@ -1,7 +1,7 @@
 {
-  "name": "@amazon-connect/app-types",
+  "name": "@amazon-connect/workspace-types",
   "version": "1.0.0",
-  "description": "Types for apps within the Amazon Connect SDK",
+  "description": "Workspace types for the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
   },
