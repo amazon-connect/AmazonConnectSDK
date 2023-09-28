@@ -3,12 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "agent": "npm run --prefix ./agent",
-    "app": "npm run --prefix ./app",
     "build": "npm run --ws build",
     "check-types": "npm run --ws check-types",
     "clean": "npm run --ws clean",
-    "core": "npm run --prefix ./core",
     "format": "eslint . --fix",
     "lint": "eslint .",
     "prepare": "husky install",
