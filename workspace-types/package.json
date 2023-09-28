@@ -12,7 +12,7 @@
     "prepack": "npm run build",
     "test": "echo 'no tests'"
   },
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "ssh://git.amazon.com/pkg/AmazonConnectSDK"
