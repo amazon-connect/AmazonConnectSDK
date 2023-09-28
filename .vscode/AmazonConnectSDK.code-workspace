@@ -18,6 +18,10 @@
 		{
 			"name": "agent",
 			"path": "../agent",
+		},
+		{
+			"name": "theme",
+			"path": "../theme",
 		}
 	],
 	"settings": {

@@ -41,6 +41,7 @@
     "core",
     "workspace-types",
     "app",
-    "agent"
+    "agent",
+    "theme"
   ]
 }
