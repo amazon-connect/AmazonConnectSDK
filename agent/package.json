@@ -23,6 +23,6 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@amazon-connect/app": "^1.0.0"
+    "@amazon-connect/app": "1.0.0"
   }
 }

@@ -23,7 +23,7 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@amazon-connect/workspace-types": "^1.0.0",
-    "@amazon-connect/core": "^1.0.0"
+    "@amazon-connect/workspace-types": "1.0.0",
+    "@amazon-connect/core": "1.0.0"
   }
 }
