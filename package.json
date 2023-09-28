@@ -2,10 +2,6 @@
   "name": "@amazon-connect/sdk",
   "version": "1.0.0",
   "description": "",
-  "npm-pretty-much": {
-    "useWorkspaces": true,
-    "publishLibCommonJs": true
-  },
   "scripts": {
     "agent": "npm run --prefix ./agent",
     "app": "npm run --prefix ./app",
