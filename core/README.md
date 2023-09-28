@@ -1,3 +1,3 @@
-# AmazonConnectSDKCore
+# AmazonConnectSDK - core
 
-A new project, overflowing with opportunity.
+This module contains core constructs utilized by other `@amazon-connect` modules; under normal circumstances this module should not be installed directly.
