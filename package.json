@@ -35,7 +35,6 @@
   "workspaces": [
     "core",
     "workspace-types",
-    "app",
-    "agent"
+    "app"
   ]
 }
