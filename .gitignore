@@ -1,0 +1,9 @@
+node_modules/
+.npmrc
+.cache/
+coverage/
+lib/*
+**/lib/*
+*.log
+.git
+build

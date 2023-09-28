@@ -1,0 +1,7 @@
+build/
+node_modules/
+*/lib/
+jest.config.js
+coverage/
+*/babel.config.js
+.eslintrc.cjs
