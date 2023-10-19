@@ -5,6 +5,7 @@ import {
   SubscriptionTopic,
   TimeoutTracker,
   TimeoutTrackerCancelledEvent,
+  UpstreamMessageOrigin,
 } from "@amazon-connect/core";
 import {
   AppDownstreamMessage,
