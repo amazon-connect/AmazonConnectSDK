@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { AppConfig, LifecycleMessage } from "@amazon-connect/app-common";
 import { ConnectLogger } from "@amazon-connect/core";
+import { AppConfig, LifecycleMessage } from "@amazon-connect/workspace-types";
 import { MockedClass, MockedObject } from "jest-mock";
 
 import { AmazonConnectApp } from "../amazon-connect-app";

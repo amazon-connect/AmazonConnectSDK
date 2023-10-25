@@ -45,10 +45,13 @@ describe("generateStringId", () => {
 
   test("should not contain the same value in every position", () => {
     const result = generateStringId(30);
-    const counts = [...result].reduce((a, e) => {
-      a[e] = a[e] ? a[e] + 1 : 1;
-      return a;
-    }, {} as Record<string, number>);
+    const counts = [...result].reduce(
+      (a, e) => {
+        a[e] = a[e] ? a[e] + 1 : 1;
+        return a;
+      },
+      {} as Record<string, number>,
+    );
 
     expect(Object.values(counts).includes(result.length)).toBeFalsy();
   });

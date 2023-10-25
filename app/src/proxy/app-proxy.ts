@@ -1,11 +1,4 @@
 import {
-  AppDownstreamMessage,
-  AppPublishMessage,
-  AppUpstreamMessage,
-  CloseAppMessage,
-  LifecycleHandlerCompletedMessage,
-} from "@amazon-connect/app-common";
-import {
   ConnectLogger,
   Proxy,
   SubscriptionHandlerData,
@@ -13,6 +6,13 @@ import {
   TimeoutTracker,
   TimeoutTrackerCancelledEvent,
 } from "@amazon-connect/core";
+import {
+  AppDownstreamMessage,
+  AppPublishMessage,
+  AppUpstreamMessage,
+  CloseAppMessage,
+  LifecycleHandlerCompletedMessage,
+} from "@amazon-connect/workspace-types";
 
 import { AmazonConnectApp } from "../amazon-connect-app";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";

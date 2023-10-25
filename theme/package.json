@@ -1,18 +1,15 @@
 {
-  "name": "@amazon-connect/app-common",
+  "name": "@amazon-connect/theme",
   "version": "1.0.0",
-  "description": "Common functionality for apps within the Amazon Connect SDK",
-  "publishConfig": {
-    "access": "public"
-  },
+  "description": "Theme for apps functionality of the Amazon Connect SDK",
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "check-types": "tsc --noEmit",
     "clean": "rm -rf ./lib",
     "prepack": "npm run build",
-    "test": "echo 'no tests'"
+    "test": "jest --coverage"
   },
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "ssh://git.amazon.com/pkg/AmazonConnectSDK"
@@ -22,7 +19,11 @@
   "files": [
     "lib/**/*"
   ],
-  "dependencies": {
-    "@amazon-connect/core": "^1.0.0"
+  "peerDependencies": {
+    "@cloudscape-design/components": "^3.0.0"
+  },
+  "devDependencies": {
+    "jest-environment-jsdom": "^29.6.4",
+    "jsdom": "^22.1.0"
   }
 }

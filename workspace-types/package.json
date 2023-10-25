@@ -1,7 +1,7 @@
 {
-  "name": "@amazon-connect/agent",
+  "name": "@amazon-connect/workspace-types",
   "version": "1.0.0",
-  "description": "Agent functionality of the Amazon Connect SDK",
+  "description": "Workspace types for the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
   },
@@ -10,7 +10,7 @@
     "check-types": "tsc --noEmit",
     "clean": "rm -rf ./lib",
     "prepack": "npm run build",
-    "test": "jest --coverage"
+    "test": "echo 'no tests'"
   },
   "license": "Apache-2.0",
   "repository": {
@@ -23,6 +23,6 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@amazon-connect/app": "1.0.0"
+    "@amazon-connect/core": "1.0.0"
   }
 }

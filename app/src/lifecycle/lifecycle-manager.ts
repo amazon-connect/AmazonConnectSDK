@@ -1,5 +1,5 @@
-import { AppConfig, LifecycleMessage } from "@amazon-connect/app-common";
 import { ConnectLogger } from "@amazon-connect/core";
+import { AppConfig, LifecycleMessage } from "@amazon-connect/workspace-types";
 
 import { AmazonConnectApp } from "../amazon-connect-app";
 import { AppContext } from "../app-context";

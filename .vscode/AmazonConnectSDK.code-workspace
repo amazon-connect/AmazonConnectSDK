@@ -8,8 +8,8 @@
 			"path": "../core",
 		},
 		{
-			"name": "app-common",
-			"path": "../app-common"
+			"name": "workspace-types",
+			"path": "../workspace-types"
 		},
 		{
 			"name": "app",
@@ -18,12 +18,16 @@
 		{
 			"name": "agent",
 			"path": "../agent",
+		},
+		{
+			"name": "theme",
+			"path": "../theme",
 		}
 	],
 	"settings": {
 		"jest.disabledWorkspaceFolders": [
 			"AmazonConnectSDK",
-			"app-common"
+			"workspace-types"
 		],
 		"editor.codeActionsOnSave": {
 			"source.fixAll.eslint": true,
