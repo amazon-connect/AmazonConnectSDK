@@ -1,4 +1,5 @@
 import { AmazonConnectConfig } from "../amazon-connect-config";
+import { UpstreamMessageOrigin } from "../messaging";
 import { Proxy } from "../proxy";
 import { AmazonConnectProvider, AmazonConnectProviderParams } from "./provider";
 
@@ -20,6 +21,9 @@ class TestProxy extends Proxy {
     throw new Error("Method not implemented.");
   }
   public get proxyType(): string {
+    throw new Error("Method not implemented.");
+  }
+  protected getUpstreamMessageOrigin(): UpstreamMessageOrigin {
     throw new Error("Method not implemented.");
   }
 }

@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "check-types": "tsc --noEmit",
-    "clean": "rm -rf ./lib",
+    "clean": "rm -rf ./lib && rm -rf ./build",
     "prepack": "npm run build",
     "test": "jest --coverage"
   },

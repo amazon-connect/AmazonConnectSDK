@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MockedClass, MockedObject } from "jest-mock";
+import { mocked, MockedClass, MockedObject } from "jest-mock";
 
 import { AmazonConnectErrorHandler } from "../amazon-connect-error";
 import { LogLevel } from "../logging";
@@ -13,17 +13,22 @@ import {
   ErrorMessage,
   LogMessage,
   PublishMessage,
+  RequestMessage,
+  ResponseMessage,
   SubscribeMessage,
   UnsubscribeMessage,
   UpstreamMessage,
+  UpstreamMessageOrigin,
 } from "../messaging";
 import {
   SubscriptionHandler,
   SubscriptionHandlerData,
-  SubscriptionSet,
+  SubscriptionHandlerId,
+  SubscriptionManager,
   SubscriptionTopic,
 } from "../messaging/subscription";
 import { AmazonConnectProvider } from "../provider";
+import { createRequestMessage, RequestManager } from "../request";
 import { ErrorService } from "./error";
 import { Proxy } from "./proxy";
 import {
@@ -33,19 +38,24 @@ import {
 } from "./proxy-connection";
 
 jest.mock("../logging/connect-logger");
-jest.mock("../messaging/subscription/subscription-set");
+jest.mock("../messaging/subscription/subscription-manager");
 jest.mock("./error/error-service");
 jest.mock("./proxy-connection/proxy-connection-status-manager");
+jest.mock("../request/request-manager");
+jest.mock("../request/request-message-factory");
 
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
-const SubscriptionSetMock = SubscriptionSet as MockedClass<
-  typeof SubscriptionSet<SubscriptionHandler>
+const RequestManagerMock = RequestManager as MockedClass<typeof RequestManager>;
+const SubscriptionManagerMock = SubscriptionManager as MockedClass<
+  typeof SubscriptionManager
 >;
 const ErrorServiceMock = ErrorService as MockedClass<typeof ErrorService>;
 const ProxyConnectionStatusManagerMock =
   ProxyConnectionStatusManager as MockedClass<
     typeof ProxyConnectionStatusManager
   >;
+
+const testOrigin = { _type: "test_origin" };
 
 class TestProxy extends Proxy {
   public readonly upstreamMessagesSent: UpstreamMessage[];
@@ -68,6 +78,9 @@ class TestProxy extends Proxy {
   public get proxyType(): string {
     return "test";
   }
+  protected getUpstreamMessageOrigin(): UpstreamMessageOrigin {
+    return testOrigin;
+  }
 
   public mockPushAcknowledgeMessage() {
     const ackMsg: AcknowledgeMessage = {
@@ -78,11 +91,16 @@ class TestProxy extends Proxy {
     this.mockPushMessage(ackMsg);
   }
 
-  public mockPublish(topic: SubscriptionTopic, data: SubscriptionHandlerData) {
+  public mockPublish(
+    topic: SubscriptionTopic,
+    data: SubscriptionHandlerData,
+    handlerId?: SubscriptionHandlerId,
+  ) {
     const pubMsg: PublishMessage = {
       type: "publish",
       topic,
       data,
+      handlerId,
     };
 
     this.mockPushMessage(pubMsg);
@@ -96,8 +114,10 @@ class TestProxy extends Proxy {
     this.consumerMessageHandler(messageEvent);
   }
 
-  static getReadyTestProxy(loggerContext?: Record<string, unknown>): TestProxy {
-    const proxy = new TestProxy(loggerContext);
+  static getReadyTestProxy(config?: {
+    loggerContext?: Record<string, unknown>;
+  }): TestProxy {
+    const proxy = new TestProxy(config?.loggerContext);
     proxy.init();
     proxy.mockPushAcknowledgeMessage();
     return proxy;
@@ -111,6 +131,20 @@ const testTopic: Readonly<SubscriptionTopic> = {
 
 beforeEach(() => {
   jest.resetAllMocks();
+});
+
+describe("constructor", () => {
+  test("should apply the proxy type to logger mix", () => {
+    const sut = new TestProxy();
+    const loggerConfig = LoggerMock.mock.calls[0][0];
+    expect(typeof loggerConfig).not.toBe("string");
+    if (typeof loggerConfig === "string") throw Error("ts needs this");
+    const mixin = loggerConfig.mixin!;
+
+    const result = mixin({}, LogLevel.info);
+
+    expect(result.proxyType).toEqual(sut.proxyType);
+  });
 });
 
 describe("init", () => {
@@ -137,52 +171,186 @@ describe("init", () => {
 
     expect(sut.connectionStatus).toEqual("initializing");
   });
+
+  test("should throw if init is called multiple times", () => {
+    const sut = new TestProxy();
+    sut.init();
+
+    expect(() => sut.init()).toThrowError("Proxy already initialized");
+  });
 });
 
-describe("subscribe", () => {
+describe("request", () => {
+  const testNamespace = "test-namespace";
+  const testCommand = "test-command";
+  const testData = { foo: 1 };
+  const testOverrideOrigin: UpstreamMessageOrigin = {
+    _type: "override-origin",
+  };
+
   describe("when proxy is ready", () => {
     let sut: TestProxy;
-    let mockSubscriptionSet: MockedObject<SubscriptionSet<SubscriptionHandler>>;
+    let mockRequestMgr: MockedObject<RequestManager>;
 
     beforeEach(() => {
       sut = TestProxy.getReadyTestProxy();
-      mockSubscriptionSet = SubscriptionSetMock.mock.instances[0];
+      mockRequestMgr = RequestManagerMock.mock.instances[0];
+    });
+
+    test("should return handler from request manager with override origin", () => {
+      const requestMessage: RequestMessage = {
+        type: "request",
+      } as RequestMessage;
+      const handlerPromise = Promise.resolve();
+      mocked(createRequestMessage).mockReturnValueOnce(requestMessage);
+      mockRequestMgr.processRequest.mockReturnValueOnce(handlerPromise);
+
+      const result = sut.request(
+        testNamespace,
+        testCommand,
+        testData,
+        testOverrideOrigin,
+      );
+
+      expect(result).toEqual(handlerPromise);
+      expect(createRequestMessage).toHaveBeenCalledWith(
+        testNamespace,
+        testCommand,
+        testData,
+        testOverrideOrigin,
+      );
+      expect(mockRequestMgr.processRequest).toHaveBeenCalledWith(
+        requestMessage,
+      );
+    });
+
+    test("should return handler from request manager with origin from proxy", () => {
+      const requestMessage: RequestMessage = {
+        type: "request",
+      } as RequestMessage;
+      const handlerPromise = Promise.resolve();
+      mocked(createRequestMessage).mockReturnValueOnce(requestMessage);
+      mockRequestMgr.processRequest.mockReturnValueOnce(handlerPromise);
+
+      const result = sut.request(testNamespace, testCommand, testData);
+
+      expect(result).toEqual(handlerPromise);
+      expect(createRequestMessage).toHaveBeenCalledWith(
+        testNamespace,
+        testCommand,
+        testData,
+        testOrigin, // Default origin from TestProxy
+      );
+      expect(mockRequestMgr.processRequest).toHaveBeenCalledWith(
+        requestMessage,
+      );
+    });
+
+    test("should send request upstream", () => {
+      const requestMessage: RequestMessage = {
+        type: "request",
+      } as RequestMessage;
+      const handlerPromise = Promise.resolve();
+      mocked(createRequestMessage).mockReturnValueOnce(requestMessage);
+      mockRequestMgr.processRequest.mockReturnValueOnce(handlerPromise);
+
+      void sut.request(testNamespace, testCommand, testData);
+
+      expect(sut.upstreamMessagesSent).toHaveLength(1);
+      const [msg] = sut.upstreamMessagesSent;
+      expect(msg).toEqual(requestMessage);
+      expect(mockRequestMgr.processRequest).toHaveBeenCalledWith(
+        requestMessage,
+      );
+    });
+  });
+
+  test("should not send request before proxy connection acknowledged", () => {
+    const sut = new TestProxy();
+    const [mockRequestMgr] = RequestManagerMock.mock.instances;
+    const requestMessage: RequestMessage = {
+      type: "request",
+    } as RequestMessage;
+    const handlerPromise = Promise.resolve();
+    mocked(createRequestMessage).mockReturnValueOnce(requestMessage);
+    mockRequestMgr.processRequest.mockReturnValueOnce(handlerPromise);
+    sut.init();
+
+    void sut.request(testNamespace, testCommand, testData);
+
+    expect(sut.upstreamMessagesSent).toHaveLength(0);
+    expect(mockRequestMgr.processRequest).toHaveBeenCalledWith(requestMessage);
+  });
+
+  test("should send request after proxy connection acknowledged", () => {
+    const sut = new TestProxy();
+    const [mockRequestMgr] = RequestManagerMock.mock.instances;
+    const requestMessage: RequestMessage = {
+      type: "request",
+    } as RequestMessage;
+    const handlerPromise = Promise.resolve();
+    mocked(createRequestMessage).mockReturnValueOnce(requestMessage);
+    mockRequestMgr.processRequest.mockReturnValueOnce(handlerPromise);
+
+    void sut.request(testNamespace, testCommand, testData);
+    sut.init();
+    sut.mockPushAcknowledgeMessage();
+
+    expect(sut.upstreamMessagesSent).toHaveLength(1);
+    const [msg] = sut.upstreamMessagesSent;
+    expect(msg).toEqual(requestMessage);
+    expect(mockRequestMgr.processRequest).toHaveBeenCalledWith(requestMessage);
+  });
+});
+
+describe("subscribe", () => {
+  const handlerId = "foo";
+  describe("when proxy is ready", () => {
+    let sut: TestProxy;
+    let mockSubscriptionMgr: MockedObject<SubscriptionManager>;
+
+    beforeEach(() => {
+      sut = TestProxy.getReadyTestProxy();
+      mockSubscriptionMgr = SubscriptionManagerMock.mock.instances[0];
     });
 
     test("should send subscribe message for new subscription", () => {
       const handler: SubscriptionHandler = () => Promise.resolve();
+      mockSubscriptionMgr.add.mockReturnValueOnce({ handlerId });
 
       sut.subscribe(testTopic, handler);
 
       expect(sut.upstreamMessagesSent).toHaveLength(1);
       const [msg] = sut.upstreamMessagesSent;
       expect(msg.type).toBe("subscribe");
-      expect((msg as SubscribeMessage).topic).toEqual(
-        expect.objectContaining(testTopic),
-      );
-      expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
+      expect((msg as SubscribeMessage).topic).toEqual({ ...testTopic });
+      expect((msg as SubscribeMessage).messageOrigin).toEqual(testOrigin);
+      expect((msg as SubscribeMessage).handlerId).toEqual(handlerId);
+      expect(mockSubscriptionMgr.add).toHaveBeenCalledWith(testTopic, handler);
     });
   });
 
   test("should not send subscribe before proxy connection acknowledged", () => {
     const sut = new TestProxy();
-    const [mockSubscriptionSet] = SubscriptionSetMock.mock.instances;
+    const [mockSubscriptionMgr] = SubscriptionManagerMock.mock.instances;
     const handler: SubscriptionHandler = () => Promise.resolve();
-    mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
+    mockSubscriptionMgr.isEmpty.mockReturnValueOnce(true);
+    mockSubscriptionMgr.add.mockReturnValueOnce({ handlerId });
 
     sut.init();
 
     sut.subscribe(testTopic, handler);
 
     expect(sut.upstreamMessagesSent).toHaveLength(0);
-    expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
+    expect(mockSubscriptionMgr.add).toHaveBeenCalledWith(testTopic, handler);
   });
 
   test("should send subscribe after proxy connection acknowledged", () => {
     const sut = new TestProxy();
     const handler: SubscriptionHandler = () => Promise.resolve();
-    const [mockSubscriptionSet] = SubscriptionSetMock.mock.instances;
-    mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
+    const [mockSubscriptionMgr] = SubscriptionManagerMock.mock.instances;
+    mockSubscriptionMgr.isEmpty.mockReturnValueOnce(true);
+    mockSubscriptionMgr.add.mockReturnValueOnce({ handlerId });
 
     sut.subscribe(testTopic, handler);
     sut.init();
@@ -191,21 +359,22 @@ describe("subscribe", () => {
     expect(sut.upstreamMessagesSent).toHaveLength(1);
     const [msg] = sut.upstreamMessagesSent;
     expect(msg.type).toBe("subscribe");
-    expect((msg as SubscribeMessage).topic).toEqual(
-      expect.objectContaining(testTopic),
-    );
-    expect(mockSubscriptionSet.add).toHaveBeenCalledWith(testTopic, handler);
+    expect((msg as SubscribeMessage).topic).toEqual(testTopic);
+    expect((msg as SubscribeMessage).messageOrigin).toEqual(testOrigin);
+    expect((msg as SubscribeMessage).handlerId).toEqual(handlerId);
+
+    expect(mockSubscriptionMgr.add).toHaveBeenCalledWith(testTopic, handler);
   });
 });
 
 describe("unsubscribe", () => {
   describe("when proxy is ready", () => {
     let sut: TestProxy;
-    let mockSubscriptionSet: MockedObject<SubscriptionSet<SubscriptionHandler>>;
+    let mockSubscriptionSet: MockedObject<SubscriptionManager>;
 
     beforeEach(() => {
       sut = TestProxy.getReadyTestProxy();
-      mockSubscriptionSet = SubscriptionSetMock.mock.instances[0];
+      mockSubscriptionSet = SubscriptionManagerMock.mock.instances[0];
     });
 
     test("should send unsubscribe message when no subscriptions remain", () => {
@@ -217,9 +386,8 @@ describe("unsubscribe", () => {
       expect(sut.upstreamMessagesSent).toHaveLength(1);
       const [msg] = sut.upstreamMessagesSent;
       expect(msg.type).toBe("unsubscribe");
-      expect((msg as UnsubscribeMessage).topic).toEqual(
-        expect.objectContaining(testTopic),
-      );
+      expect((msg as UnsubscribeMessage).topic).toEqual(testTopic);
+      expect((msg as UnsubscribeMessage).messageOrigin).toEqual(testOrigin);
       expect(mockSubscriptionSet.isEmpty).toHaveBeenCalledWith(testTopic);
       expect(mockSubscriptionSet.delete).toHaveBeenCalledWith(
         testTopic,
@@ -245,7 +413,7 @@ describe("unsubscribe", () => {
   test("should send unsubscribe after proxy connection acknowledged", () => {
     const sut = new TestProxy();
     const handler: SubscriptionHandler = () => Promise.resolve();
-    const [mockSubscriptionSet] = SubscriptionSetMock.mock.instances;
+    const [mockSubscriptionSet] = SubscriptionManagerMock.mock.instances;
     mockSubscriptionSet.isEmpty.mockReturnValueOnce(true);
 
     sut.unsubscribe(testTopic, handler);
@@ -266,7 +434,9 @@ describe("unsubscribe", () => {
 describe("log", () => {
   test("should send a log message", () => {
     const proxyLoggerContext = { foo: "test" };
-    const sut = TestProxy.getReadyTestProxy(proxyLoggerContext);
+    const sut = TestProxy.getReadyTestProxy({
+      loggerContext: proxyLoggerContext,
+    });
     const level = LogLevel.error;
     const source = "test";
     const message = "test message";
@@ -284,10 +454,13 @@ describe("log", () => {
     expect(msg.loggerId).toEqual(loggerId);
     expect(msg.data).toEqual(expect.objectContaining(data));
     expect(msg.context).toEqual(expect.objectContaining(proxyLoggerContext));
+    expect(msg.messageOrigin).toEqual(testOrigin);
   });
   test("should send a log message with data undefined", () => {
     const proxyLoggerContext = { foo: "test" };
-    const sut = TestProxy.getReadyTestProxy(proxyLoggerContext);
+    const sut = TestProxy.getReadyTestProxy({
+      loggerContext: proxyLoggerContext,
+    });
     const level = LogLevel.error;
     const source = "test";
     const message = "test message";
@@ -305,11 +478,14 @@ describe("log", () => {
     expect(msg.loggerId).toEqual(loggerId);
     expect(msg.data).toBeUndefined();
     expect(msg.context).toEqual(expect.objectContaining(proxyLoggerContext));
+    expect(msg.messageOrigin).toEqual(testOrigin);
   });
 
   test("should strip out data with a a non-cloneable object attached allowing to pass through message channel", async () => {
     const proxyLoggerContext = { foo: "test" };
-    const sut = TestProxy.getReadyTestProxy(proxyLoggerContext);
+    const sut = TestProxy.getReadyTestProxy({
+      loggerContext: proxyLoggerContext,
+    });
     const level = LogLevel.error;
     const source = "test";
     const message = "test message";
@@ -362,7 +538,7 @@ describe("sendLogMessage", () => {
     const originalContext = { foo: 1, bar: 2 };
     const loggerContext = { bar: 300 };
     const expectedContext = { foo: 1, bar: 300 };
-    const sut = TestProxy.getReadyTestProxy(loggerContext);
+    const sut = TestProxy.getReadyTestProxy({ loggerContext });
 
     const originalMsg: LogMessage = {
       type: "log",
@@ -373,6 +549,7 @@ describe("sendLogMessage", () => {
       time,
       context: originalContext,
       data,
+      messageOrigin: testOrigin,
     };
 
     sut.sendLogMessage(originalMsg);
@@ -386,6 +563,7 @@ describe("sendLogMessage", () => {
     expect(msg.loggerId).toEqual(loggerId);
     expect(msg.data).toEqual(expect.objectContaining(data));
     expect(msg.context).toEqual(expect.objectContaining(expectedContext));
+    expect(msg.messageOrigin).toEqual(testOrigin);
   });
 
   test("should throw when message is not of type log", () => {
@@ -436,75 +614,169 @@ describe("acknowledge", () => {
   });
 });
 
+describe("response", () => {
+  test("should send response to request manager", () => {
+    const sut = TestProxy.getReadyTestProxy();
+    const [mockRequestMgr] = RequestManagerMock.mock.instances;
+    const responseMessage: ResponseMessage = {
+      type: "response",
+    } as ResponseMessage;
+
+    sut.mockPushMessage(responseMessage);
+
+    expect(mockRequestMgr.processResponse).toHaveBeenCalledWith(
+      responseMessage,
+    );
+  });
+});
+
 describe("publish", () => {
   let sut: TestProxy;
-  let mockSubscriptionSet: MockedObject<SubscriptionSet<SubscriptionHandler>>;
+  let mockSubscriptionMgr: MockedObject<SubscriptionManager>;
   const testData = { foo: "bar" };
 
   beforeEach(() => {
     sut = TestProxy.getReadyTestProxy();
-    mockSubscriptionSet = SubscriptionSetMock.mock.instances[0];
+    mockSubscriptionMgr = SubscriptionManagerMock.mock.instances[0];
   });
 
-  test("should invoke with one subscription", () => {
-    const mockHandler = jest.fn();
-    mockHandler.mockResolvedValue(null);
-    mockSubscriptionSet.get.mockReturnValueOnce([mockHandler]);
+  describe("when doing a regular publish (with no handler id set)", () => {
+    test("should invoke with one subscription", () => {
+      const mockHandler = jest.fn();
+      const handlerId = "handler_1";
+      mockHandler.mockResolvedValue(null);
+      mockSubscriptionMgr.get.mockReturnValueOnce([
+        { handler: mockHandler, handlerId },
+      ]);
 
-    sut.mockPublish(testTopic, testData);
+      sut.mockPublish(testTopic, testData);
 
-    expect(mockSubscriptionSet.get).toHaveBeenCalledWith(testTopic);
-    expect(mockHandler).toHaveBeenCalledWith(testData);
+      expect(mockSubscriptionMgr.get).toHaveBeenCalledWith(testTopic);
+      expect(mockHandler).toHaveBeenCalledWith(testData);
+    });
+
+    test("should invoke with two subscriptions", () => {
+      const mockHandler1 = jest.fn();
+      const handlerId1 = "handler_1";
+      mockHandler1.mockResolvedValue(null);
+      const mockHandler2 = jest.fn();
+      const handlerId2 = "handler_2";
+      mockHandler2.mockResolvedValue(null);
+      mockSubscriptionMgr.get.mockReturnValueOnce([
+        { handler: mockHandler1, handlerId: handlerId1 },
+        { handler: mockHandler2, handlerId: handlerId2 },
+      ]);
+
+      sut.mockPublish(testTopic, testData);
+
+      expect(mockSubscriptionMgr.get).toHaveBeenCalledWith(testTopic);
+      expect(mockHandler1).toHaveBeenCalledWith(testData);
+      expect(mockHandler2).toHaveBeenCalledWith(testData);
+    });
+
+    test("should do nothing when no subscriptions", () => {
+      mockSubscriptionMgr.get.mockReturnValueOnce([]);
+
+      sut.mockPublish(testTopic, testData);
+
+      expect(mockSubscriptionMgr.get).toHaveBeenCalledWith(testTopic);
+    });
+
+    test("should catch and log when handler throws error", async () => {
+      const mockHandler = jest.fn();
+      const handlerId = "handler_1";
+      mockHandler.mockImplementation(() => Promise.reject("test error"));
+      mockSubscriptionMgr.get.mockReturnValueOnce([
+        { handler: mockHandler, handlerId },
+      ]);
+      const [logger] = LoggerMock.mock.instances;
+
+      sut.mockPublish(testTopic, testData);
+
+      expect(mockSubscriptionMgr.get).toHaveBeenCalledWith(testTopic);
+      expect(mockHandler).toHaveBeenCalledWith(testData);
+
+      // This code is testing an error wrapper on a fire and forget
+      // promise being invoked. There is go way to await this directly
+      // so this loop will wait to the condition is met (or the test
+      // would fail because of a timeout if it was never to be met)
+      while (logger.error.mock.calls.length === 0) {
+        await new Promise(process.nextTick);
+      }
+
+      expect(logger.error).toHaveBeenCalled();
+      const errorData = logger.error.mock.calls[0][1] as {
+        topic: any;
+        error: any;
+        handlerId: SubscriptionHandlerId;
+      };
+      expect(errorData.topic).toEqual(testTopic);
+      expect(errorData.error).toEqual("test error");
+      expect(errorData.handlerId).toEqual(handlerId);
+    });
   });
 
-  test("should invoke with two subscriptions", () => {
-    const mockHandler1 = jest.fn();
-    mockHandler1.mockResolvedValue(null);
-    const mockHandler2 = jest.fn();
-    mockHandler2.mockResolvedValue(null);
-    mockSubscriptionSet.get.mockReturnValueOnce([mockHandler1, mockHandler2]);
+  describe("when publishing to a specific handler (with handler id set)", () => {
+    const handlerId = "handler_1";
 
-    sut.mockPublish(testTopic, testData);
+    test("should invoke with existing subscription", () => {
+      const mockHandler = jest.fn();
+      mockHandler.mockResolvedValue(null);
+      mockSubscriptionMgr.getById.mockReturnValueOnce(mockHandler);
 
-    expect(mockSubscriptionSet.get).toHaveBeenCalledWith(testTopic);
-    expect(mockHandler1).toHaveBeenCalledWith(testData);
-    expect(mockHandler2).toHaveBeenCalledWith(testData);
-  });
+      sut.mockPublish(testTopic, testData, handlerId);
 
-  test("should do nothing when no subscriptions", () => {
-    mockSubscriptionSet.get.mockReturnValueOnce([]);
+      expect(mockSubscriptionMgr.getById).toHaveBeenCalledWith(
+        testTopic,
+        handlerId,
+      );
+      expect(mockHandler).toHaveBeenCalledWith(testData);
+    });
 
-    sut.mockPublish(testTopic, testData);
+    test("should do nothing unknown handler id", () => {
+      mockSubscriptionMgr.getById.mockReturnValueOnce(null);
 
-    expect(mockSubscriptionSet.get).toHaveBeenCalledWith(testTopic);
-  });
+      sut.mockPublish(testTopic, testData, handlerId);
 
-  test("should catch and log when handler throws error", async () => {
-    const mockHandler = jest.fn();
-    mockHandler.mockImplementation(() => Promise.reject("test error"));
-    mockSubscriptionSet.get.mockReturnValueOnce([mockHandler]);
-    const [logger] = LoggerMock.mock.instances;
+      expect(mockSubscriptionMgr.getById).toHaveBeenCalledWith(
+        testTopic,
+        handlerId,
+      );
+    });
 
-    sut.mockPublish(testTopic, testData);
+    test("should catch and log when handler throws error", async () => {
+      const mockHandler = jest.fn();
+      mockHandler.mockImplementation(() => Promise.reject("test error"));
+      mockSubscriptionMgr.getById.mockReturnValueOnce(mockHandler);
 
-    expect(mockSubscriptionSet.get).toHaveBeenCalledWith(testTopic);
-    expect(mockHandler).toHaveBeenCalledWith(testData);
+      const [logger] = LoggerMock.mock.instances;
 
-    // This code is testing an error wrapper on a fire and forget
-    // promise being invoked. There is go way to await this directly
-    // so this loop will wait to the condition is met (or the test
-    // would fail because of a timeout if it was never to be met)
-    while (logger.error.mock.calls.length === 0) {
-      await new Promise(process.nextTick);
-    }
+      sut.mockPublish(testTopic, testData, handlerId);
 
-    expect(logger.error).toHaveBeenCalled();
-    const errorData = logger.error.mock.calls[0][1] as {
-      topic: any;
-      error: any;
-    };
-    expect(errorData?.topic).toEqual(testTopic);
-    expect(errorData?.error).toEqual("test error");
+      expect(mockSubscriptionMgr.getById).toHaveBeenCalledWith(
+        testTopic,
+        handlerId,
+      );
+      expect(mockHandler).toHaveBeenCalledWith(testData);
+
+      // This code is testing an error wrapper on a fire and forget
+      // promise being invoked. There is go way to await this directly
+      // so this loop will wait to the condition is met (or the test
+      // would fail because of a timeout if it was never to be met)
+      while (logger.error.mock.calls.length === 0) {
+        await new Promise(process.nextTick);
+      }
+
+      expect(logger.error).toHaveBeenCalled();
+      const errorData = logger.error.mock.calls[0][1] as {
+        topic: any;
+        error: any;
+        handlerId: SubscriptionHandlerId;
+      };
+      expect(errorData.topic).toEqual(testTopic);
+      expect(errorData.error).toEqual("test error");
+      expect(errorData.handlerId).toEqual(handlerId);
+    });
   });
 });
 
