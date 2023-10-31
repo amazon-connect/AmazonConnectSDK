@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`theming applies default Connect theme 1`] = `
+{
+  "theme": {
+    "tokens": {
+      "colorBackgroundButtonPrimaryActive": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorBackgroundButtonPrimaryDefault": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBackgroundButtonPrimaryHover": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorBackgroundControlChecked": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBorderButtonNormalActive": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorBorderButtonNormalDefault": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBorderButtonNormalHover": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorBorderItemFocused": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBorderItemSelected": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextAccent": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextButtonNormalActive": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorTextButtonNormalDefault": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextButtonNormalHover": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorTextLinkDefault": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextLinkHover": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "fontFamilyBase": undefined,
+    },
+  },
+}
+`;

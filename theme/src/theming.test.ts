@@ -1,38 +1,79 @@
-import { applyTheme } from "@cloudscape-design/components/theming";
+import { applyTheme, Theme } from "@cloudscape-design/components/theming";
 
 import { applyConnectTheme } from "./theming";
 
 jest.mock("@cloudscape-design/components/theming");
+const applyThemeMock = applyTheme as jest.MockedFn<typeof applyTheme>;
+
+function expectTokens(tokens: Theme["tokens"]) {
+  expect(applyThemeMock).toHaveBeenCalledWith({
+    theme: {
+      // Need to cast as unknown because this whole repo uses @typescript-eslint/no-unsafe-assignment
+      // which produces false positives like this one. The typical recommendation is to instead rely on
+      // noImplicitAny from the Typescript compiler and no-explicit-any from ESLint.
+      tokens: expect.objectContaining(tokens) as unknown,
+    },
+  });
+}
 
 describe("theming", () => {
-  test("should apply default theme", () => {
+  beforeEach(() => applyThemeMock.mockReset());
+
+  it("applies default Connect theme", () => {
     applyConnectTheme();
-    expect(applyTheme).toBeCalledWith({
-      theme: {
-        tokens: {
-          colorBackgroundButtonPrimaryActive: "#065B78",
-          colorBackgroundButtonPrimaryDefault: "#077398",
-          colorBackgroundButtonPrimaryHover: "#065B78",
-          colorBackgroundControlChecked: "#077398",
-          colorBorderButtonNormalDefault: "#077398",
-          colorBorderButtonNormalHover: "#065B78",
-          colorBorderItemFocused: "#077398",
-          colorBorderItemSelected: "#077398",
-          colorTextAccent: {
-            dark: "#077398",
-            light: "#077398",
-          },
-          colorTextButtonNormalDefault: "#077398",
-          colorTextButtonNormalHover: "#065B78",
-          colorTextLinkDefault: "#077398",
-          colorTextLinkHover: "#065B78",
-        },
+    expect(applyThemeMock).toHaveBeenCalledTimes(1);
+    // This is the only use-case that ever makes sense for snapshot tests.
+    // We need an exact, precise output, and we want changes to it to be reviewed carefully.
+    expect(applyThemeMock.mock.lastCall?.[0]).toMatchSnapshot();
+  });
+
+  it("allows non-modal overrides", () => {
+    applyConnectTheme({ fontFamily: "Comic Sans", brandColor: "hotpink" });
+    expectTokens({
+      fontFamilyBase: "Comic Sans",
+      colorBackgroundButtonPrimaryDefault: "hotpink",
+      colorBackgroundButtonPrimaryActive: {
+        dark: "#A7C1D1",
+        light: "#065B78",
+      },
+      colorBackgroundButtonPrimaryHover: {
+        dark: "#A7C1D1",
+        light: "#065B78",
       },
     });
   });
 
-  test("should not allow overrides", () => {
-    // @ts-expect-error: We do not support this yet so the argument is typed as never. We still want a unit test for JS customers.
-    expect(() => applyConnectTheme({ tokens: {} })).toThrow();
+  it("allows modal overrides", () => {
+    applyConnectTheme({ brandColor: { light: "deeppink", dark: "hotpink" } });
+    expectTokens({
+      colorBackgroundButtonPrimaryDefault: {
+        light: "deeppink",
+        dark: "hotpink",
+      },
+      colorBackgroundButtonPrimaryActive: {
+        dark: "#A7C1D1",
+        light: "#065B78",
+      },
+      colorBackgroundButtonPrimaryHover: {
+        dark: "#A7C1D1",
+        light: "#065B78",
+      },
+    });
+  });
+
+  it("ignores unknown tokens", () => {
+    applyConnectTheme();
+    const defaultTheme = applyThemeMock.mock.lastCall;
+    // @ts-expect-error - We use a property that doesn't exist on purpose to mimic non-TS customers.
+    applyConnectTheme({ pageBorderRadius: "0" });
+    expect(applyThemeMock.mock.lastCall).toEqual(defaultTheme);
+  });
+
+  it("ignores modal overrides on non-modal properties", () => {
+    applyConnectTheme();
+    const defaultTheme = applyThemeMock.mock.lastCall;
+    // @ts-expect-error - We use the wrong value type for fontFamily to mimic non-TS customers.
+    applyConnectTheme({ fontFamily: { light: "deeppink", dark: "hotpink" } });
+    expect(applyThemeMock.mock.lastCall).toEqual(defaultTheme);
   });
 });
