@@ -1,0 +1,1 @@
+export { currentContact } from "./scope";
