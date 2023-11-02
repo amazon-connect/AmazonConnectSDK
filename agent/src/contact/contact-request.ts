@@ -6,7 +6,7 @@ export type ContactAttributeFilter =
   | ContactAttributeKey[]
   | AllContactAttributes;
 
-const contactRoutePrefix = "aws.connect.contact::";
+const contactRoutePrefix = "contact/";
 
 export enum ContactRequests {
   getAttributes = contactRoutePrefix + "getAttributes",

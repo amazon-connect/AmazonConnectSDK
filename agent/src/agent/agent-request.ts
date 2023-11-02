@@ -1,4 +1,4 @@
-const agentRoutePrefix = "aws.connect.agent::";
+const agentRoutePrefix = "agent/";
 
 export enum AgentRequests {
   getEndpoints = agentRoutePrefix + "getEndpoints",
