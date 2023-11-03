@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/sdk",
-  "version": "1.0.1-rc.2",
+  "version": "1.0.1-rc.3",
   "description": "",
   "scripts": {
     "build": "npm run --ws build",
@@ -36,7 +36,6 @@
   "workspaces": [
     "core",
     "workspace-types",
-    "app",
-    "theme"
+    "app"
   ]
 }
