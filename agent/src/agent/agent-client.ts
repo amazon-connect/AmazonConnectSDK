@@ -1,7 +1,13 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
 import { AGENT_APP_NAMESPACE } from "../namespace";
-import { AgentRequests } from "./agent-request";
+import {
+  AgentChannelConcurrencyMap,
+  AgentRequests,
+  AgentRoutingProfile,
+  AgentState,
+  Endpoint,
+} from "./agent-request";
 
 export class AgentClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
@@ -9,13 +15,13 @@ export class AgentClient extends ConnectClient {
   }
 
   // requests
-  async getEndpoints(
-    queueARNs: string[] | string,
-  ): Promise<Record<string, unknown>[]> {
-    const data: Record<string, Record<string, unknown>[]> =
-      await this.context.proxy.request(AgentRequests.getEndpoints, {
+  async getEndpoints(queueARNs: string[] | string): Promise<Endpoint[]> {
+    const data: Record<string, Endpoint[]> = await this.context.proxy.request(
+      AgentRequests.getEndpoints,
+      {
         queueARNs,
-      });
+      },
+    );
     return data.endpoints;
   }
 
@@ -30,58 +36,55 @@ export class AgentClient extends ConnectClient {
     const data: Record<string, string> = await this.context.proxy.request(
       AgentRequests.getName,
     );
-    return data.Name;
+    return data.name;
   }
 
-  async getState(): Promise<Record<string, unknown>> {
-    const data: Record<
-      string,
-      Record<string, unknown>
-    > = await this.context.proxy.request(AgentRequests.getState);
-    return data.State;
+  async getState(): Promise<AgentState> {
+    const data: AgentState = await this.context.proxy.request(
+      AgentRequests.getState,
+    );
+    return data;
   }
 
-  async getRoutingProfile(): Promise<Record<string, unknown>> {
-    const data: Record<
-      string,
-      Record<string, unknown>
-    > = await this.context.proxy.request(AgentRequests.getRoutingProfile);
-    return data.RoutingProfile;
+  async getRoutingProfile(): Promise<AgentRoutingProfile> {
+    const data: AgentRoutingProfile = await this.context.proxy.request(
+      AgentRequests.getRoutingProfile,
+    );
+    return data;
   }
 
-  async getChannelConcurrency(): Promise<Record<string, number>> {
-    const data: Record<
-      string,
-      Record<string, number>
-    > = await this.context.proxy.request(AgentRequests.getChannelConcurrency);
-    return data.ChannelConcurrency;
+  async getChannelConcurrency(): Promise<AgentChannelConcurrencyMap> {
+    const data: AgentChannelConcurrencyMap = await this.context.proxy.request(
+      AgentRequests.getChannelConcurrency,
+    );
+    return data;
   }
 
   async getExtension(): Promise<string | null> {
     const data: Record<string, string> = await this.context.proxy.request(
       AgentRequests.getExtension,
     );
-    return data.Extension ?? null;
+    return data.extension ?? null;
   }
 
   async getDialableCountries(): Promise<string[]> {
     const data: Record<string, string[]> = await this.context.proxy.request(
       AgentRequests.getDialableCountries,
     );
-    return data.DialableCountries;
+    return data.dialableCountries;
   }
 
   async getAllQueueARNs(): Promise<string[]> {
     const data: Record<string, string[]> = await this.context.proxy.request(
       AgentRequests.getAllQueueARNs,
     );
-    return data.AllQueueARNs;
+    return data.allQueueARNs;
   }
 
   async getPermissions(): Promise<string[]> {
     const data: Record<string, string[]> = await this.context.proxy.request(
       AgentRequests.getPermissions,
     );
-    return data.Permissions;
+    return data.permissions;
   }
 }
