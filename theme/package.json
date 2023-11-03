@@ -2,6 +2,9 @@
   "name": "@amazon-connect/theme",
   "version": "1.0.0",
   "description": "Theme for apps functionality of the Amazon Connect SDK",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "check-types": "tsc --noEmit",
