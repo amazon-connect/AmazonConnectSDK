@@ -1,5 +1,18 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
+import {
+  ContactAcceptedHandler,
+  ContactAcwHandler,
+  ContactConnectedHandler,
+  ContactConnectingHandler,
+  ContactDestroyHandler,
+  ContactEndedHandler,
+  ContactErrorHandler,
+  ContactIncomingHandler,
+  ContactLifecycleTopic,
+  ContactMissedHandler,
+  ContactPendingHandler,
+} from "../event/contact-events";
 import { agentNamespace } from "../namespace";
 import { Queue } from "../request/agent-request";
 import {
@@ -11,7 +24,6 @@ import {
   GetAttributesRequest,
   ReferenceDictionary,
 } from "../request/contact-request";
-import { ContactAcceptedHandler, ContactLifecycleTopic, ContactAcwHandler, ContactConnectedHandler, ContactConnectingHandler, ContactDestroyHandler, ContactEndedHandler, ContactErrorHandler, ContactIncomingHandler, ContactMissedHandler, ContactPendingHandler } from "../event/contact-events";
 
 export class ContactClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
@@ -135,7 +147,7 @@ export class ContactClient extends ConnectClient {
   onAccepted(handler: ContactAcceptedHandler, contactId: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.ACCEPTED, parameter: contactId },
-      handler
+      handler,
     );
   }
 
