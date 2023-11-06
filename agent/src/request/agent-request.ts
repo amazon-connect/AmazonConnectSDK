@@ -1,18 +1,16 @@
-import { Queue } from "../contact/contact-request";
-
-const agentRoutePrefix = "agent/";
+import { Queue } from "./contact-request";
 
 export enum AgentRequests {
-  getEndpoints = agentRoutePrefix + "getEndpoints",
-  getARN = agentRoutePrefix + "getARN",
-  getName = agentRoutePrefix + "getName",
-  getState = agentRoutePrefix + "getState",
-  getRoutingProfile = agentRoutePrefix + "getRoutingProfile",
-  getChannelConcurrency = agentRoutePrefix + "getChannelConcurrency",
-  getExtension = agentRoutePrefix + "getExtension",
-  getDialableCountries = agentRoutePrefix + "getDialableCountries",
-  getAllQueueARNs = agentRoutePrefix + "getAllQueueARNs",
-  getPermissions = agentRoutePrefix + "getPermissions",
+  getEndpoints = "agent/getEndpoints",
+  getARN = "agent/getARN",
+  getName = "agent/getName",
+  getState = "agent/getState",
+  getRoutingProfile = "agent/getRoutingProfile",
+  getChannelConcurrency = "agent/getChannelConcurrency",
+  getExtension = "agent/getExtension",
+  getDialableCountries = "agent/getDialableCountries",
+  getAllQueueARNs = "agent/getAllQueueARNs",
+  getPermissions = "agent/getPermissions",
 }
 
 export enum EndpointType {

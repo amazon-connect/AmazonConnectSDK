@@ -5,21 +5,19 @@ export type ContactAttributeFilter =
   | ContactAttributeKey[]
   | AllContactAttributes;
 
-const contactRoutePrefix = "contact/";
-
 export enum ContactRequests {
-  getAttributes = contactRoutePrefix + "getAttributes",
-  getCustomerDetails = contactRoutePrefix + "getCustomerDetails",
-  getContactId = contactRoutePrefix + "getContactId",
-  getInitialContactId = contactRoutePrefix + "getInitialContactId",
-  getType = contactRoutePrefix + "getType",
-  getState = contactRoutePrefix + "getState",
-  getStateDuration = contactRoutePrefix + "getStateDuration",
-  getQueue = contactRoutePrefix + "getQueue",
-  getQueueTimestamp = contactRoutePrefix + "getQueueTimestamp",
-  getName = contactRoutePrefix + "getName",
-  getDescription = contactRoutePrefix + "getDescription",
-  getReferences = contactRoutePrefix + "getReferences",
+  getAttributes = "contact/getAttributes",
+  getCustomerDetails = "contact/getCustomerDetails",
+  getContactId = "contact/getContactId",
+  getInitialContactId = "contact/getInitialContactId",
+  getType = "contact/getType",
+  getState = "contact/getState",
+  getStateDuration = "contact/getStateDuration",
+  getQueue = "contact/getQueue",
+  getQueueTimestamp = "contact/getQueueTimestamp",
+  getName = "contact/getName",
+  getDescription = "contact/getDescription",
+  getReferences = "contact/getReferences",
 }
 
 export type ContactRequestRequest = {

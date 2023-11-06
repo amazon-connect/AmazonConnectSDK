@@ -1,29 +1,141 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
-import {
-  ContactAcceptedHandler,
-  ContactAcwHandler,
-  ContactConnectedHandler,
-  ContactConnectingHandler,
-  ContactDestroyHandler,
-  ContactEndedHandler,
-  ContactErrorHandler,
-  ContactIncomingHandler,
-  ContactLifecycleTopic,
-  ContactMissedHandler,
-  ContactPendingHandler,
-} from "../event/contact-events";
 import { agentNamespace } from "../namespace";
+import {
+  ContactAttributeFilter,
+  ContactRequests,
+  ContactState,
+  ContactType,
+  CustomerDetails,
+  GetAttributesRequest,
+  Queue,
+  ReferenceDictionary,
+} from "../request/contact-request";
+import { ContactAcceptedHandler, ContactLifecycleTopic, ContactAcwHandler, ContactConnectedHandler, ContactConnectingHandler, ContactDestroyHandler, ContactEndedHandler, ContactErrorHandler, ContactIncomingHandler, ContactMissedHandler, ContactPendingHandler } from "../event/contact-events";
 
 export class ContactClient extends ConnectClient {
-  constructor(config?: ConnectClientConfig | undefined) {
+  constructor(config?: ConnectClientConfig) {
     super(agentNamespace, config);
   }
+
+  // requests
+  getAttributes(
+    contactId: string,
+    attributes: ContactAttributeFilter,
+  ): Promise<Record<string, string>> {
+    const requestData: GetAttributesRequest = {
+      contactId,
+      attributes,
+    };
+
+    return this.context.proxy.request(
+      ContactRequests.getAttributes,
+      requestData,
+    );
+  }
+
+  async getAttribute(
+    contactId: string,
+    attribute: string,
+  ): Promise<string | null> {
+    const result = await this.getAttributes(contactId, [attribute]);
+    return result[attribute] ?? null;
+  }
+
+  async getCustomerDetails(contactId: string): Promise<CustomerDetails> {
+    const data: CustomerDetails = await this.context.proxy.request(
+      ContactRequests.getCustomerDetails,
+      {
+        contactId,
+      },
+    );
+    return data;
+  }
+
+  async getInitialContactId(contactId: string): Promise<string | null> {
+    const data: Record<string, string> = await this.context.proxy.request(
+      ContactRequests.getInitialContactId,
+      { contactId },
+    );
+    return data.initialContactId ?? null;
+  }
+
+  async getType(contactId: string): Promise<ContactType> {
+    const data: Record<string, ContactType> = await this.context.proxy.request(
+      ContactRequests.getType,
+      { contactId },
+    );
+    return data.type;
+  }
+
+  async getState(contactId: string): Promise<ContactState> {
+    const data: ContactState = await this.context.proxy.request(
+      ContactRequests.getState,
+      {
+        contactId,
+      },
+    );
+    return data;
+  }
+
+  async getStateDuration(contactId: string): Promise<number> {
+    const data: Record<string, number> = await this.context.proxy.request(
+      ContactRequests.getStateDuration,
+      { contactId },
+    );
+    return data.stateDuration;
+  }
+
+  async getQueue(contactId: string): Promise<Queue> {
+    const data: Queue = await this.context.proxy.request(
+      ContactRequests.getQueue,
+      {
+        contactId,
+      },
+    );
+    return data;
+  }
+
+  async getQueueTimestamp(contactId: string): Promise<Date | null> {
+    const data: Record<string, Date> = await this.context.proxy.request(
+      ContactRequests.getQueueTimestamp,
+      { contactId },
+    );
+    return data.queueTimestamp ?? null;
+  }
+
+  async getName(contactId: string): Promise<string | null> {
+    const data: Record<string, string> = await this.context.proxy.request(
+      ContactRequests.getName,
+      { contactId },
+    );
+    return data.name ?? null;
+  }
+
+  async getDescription(contactId: string): Promise<string | null> {
+    const data: Record<string, string> = await this.context.proxy.request(
+      ContactRequests.getDescription,
+      { contactId },
+    );
+    return data.description ?? null;
+  }
+
+  async getReferences(contactId: string): Promise<ReferenceDictionary | null> {
+    const data: ReferenceDictionary | void = await this.context.proxy.request(
+      ContactRequests.getReferences,
+      {
+        contactId,
+      },
+    );
+    return data ?? null;
+  }
+
+  // lifecycle
 
   onAccepted(handler: ContactAcceptedHandler, contactId: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.ACCEPTED, parameter: contactId },
-      handler,
+      handler
     );
   }
 

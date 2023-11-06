@@ -29,3 +29,4 @@ export {
   ContactPendingHandler,
 } from "./event/contact-events";
 export { agentNamespace } from "./namespace";
+export * from "./request";
