@@ -1,1 +1,1 @@
-export const agentNamespace = "amazon-connect.agent";
+export const agentNamespace = "aws.connect.agent";
