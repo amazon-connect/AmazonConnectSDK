@@ -1,6 +1,7 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
 import { agentNamespace } from "../namespace";
+import { Queue } from "../request/agent-request";
 import {
   ContactAttributeFilter,
   ContactRequests,
@@ -8,7 +9,6 @@ import {
   ContactType,
   CustomerDetails,
   GetAttributesRequest,
-  Queue,
   ReferenceDictionary,
 } from "../request/contact-request";
 import { ContactAcceptedHandler, ContactLifecycleTopic, ContactAcwHandler, ContactConnectedHandler, ContactConnectingHandler, ContactDestroyHandler, ContactEndedHandler, ContactErrorHandler, ContactIncomingHandler, ContactMissedHandler, ContactPendingHandler } from "../event/contact-events";

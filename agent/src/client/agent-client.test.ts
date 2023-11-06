@@ -1,9 +1,8 @@
 import { ConnectRequestData, ConnectResponseData, ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
-
 import { AgentStateChangeEventData, AgentTopic } from "../event/agent-events";
-import { AgentClient } from "./agent-client";
 import { Endpoint, EndpointType, AgentRequests, AgentState, AgentStateType, Queue, AgentRoutingProfile, ChannelType, AgentChannelConcurrencyMap } from "../request";
+import { AgentClient } from "./agent-client";
 
 const moduleProxyMock = mock<ModuleProxy>();
 const moduleContextMock = mock<ModuleContext>();
@@ -60,7 +59,6 @@ describe("AgentClient", () => {
           type: EndpointType.AGENT,
           name: "name",
           phoneNumber: "number",
-          agentLogin: "login",
           queue: "queue",
         },
       ];
@@ -109,7 +107,7 @@ describe("AgentClient", () => {
       const queue: Queue = { name: "name", queueARN: "arn", queueId: "id" };
       const profile: AgentRoutingProfile = {
         channelConcurrencyMap: { [ChannelType.VOICE]: 1 },
-        defaultOutboundQueue: { name: "name", queueARN: "arn", queueId: "id" },
+        defaultOutboundQueue: queue,
         name: "routing profile",
         queues: [queue],
         routingProfileARN: "ARN",

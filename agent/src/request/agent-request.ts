@@ -1,5 +1,3 @@
-import { Queue } from "./contact-request";
-
 export enum AgentRequests {
   getEndpoints = "agent/getEndpoints",
   getARN = "agent/getARN",
@@ -20,13 +18,12 @@ export enum EndpointType {
 }
 
 export type Endpoint = {
-  readonly endpointARN: string;
-  readonly endpointId: string;
-  readonly type: EndpointType;
-  readonly name: string;
-  readonly phoneNumber: string;
-  readonly agentLogin: string;
-  readonly queue: string;
+  endpointARN: string;
+  endpointId: string;
+  type: EndpointType;
+  name: string;
+  phoneNumber: string;
+  queue: string;
 };
 
 export enum AgentStateType {
@@ -37,10 +34,10 @@ export enum AgentStateType {
 }
 
 export type AgentState = {
-  readonly agentStateARN: string | null;
-  readonly name: string;
-  readonly startTimestamp: Date;
-  readonly type: AgentStateType;
+  agentStateARN: string | null;
+  name: string;
+  startTimestamp: Date;
+  type: AgentStateType;
 };
 
 export enum ChannelType {
@@ -50,14 +47,20 @@ export enum ChannelType {
 }
 
 export type AgentChannelConcurrencyMap = {
-  readonly [key: string]: number;
+  [key: string]: number;
 };
 
 export type AgentRoutingProfile = {
-  readonly channelConcurrencyMap: AgentChannelConcurrencyMap;
-  readonly defaultOutboundQueue: Queue;
-  readonly name: string;
-  readonly queues: Queue[];
-  readonly routingProfileARN: string;
-  readonly routingProfileId: string;
+  channelConcurrencyMap: AgentChannelConcurrencyMap;
+  defaultOutboundQueue: Queue;
+  name: string;
+  queues: Queue[];
+  routingProfileARN: string;
+  routingProfileId: string;
+};
+
+export type Queue = {
+  name: string;
+  queueARN: string;
+  queueId: string;
 };

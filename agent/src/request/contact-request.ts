@@ -8,7 +8,6 @@ export type ContactAttributeFilter =
 export enum ContactRequests {
   getAttributes = "contact/getAttributes",
   getCustomerDetails = "contact/getCustomerDetails",
-  getContactId = "contact/getContactId",
   getInitialContactId = "contact/getInitialContactId",
   getType = "contact/getType",
   getState = "contact/getState",
@@ -29,9 +28,9 @@ export type GetAttributesRequest = ContactRequestRequest & {
 };
 
 export type CustomerDetails = {
-  readonly phoneNumber?: string | void;
-  readonly customerName?: string | void;
-  readonly name?: string | void;
+  phoneNumber?: string;
+  customerName?: string;
+  name?: string;
 };
 
 export enum ContactType {
@@ -54,14 +53,8 @@ export enum ContactStateType {
 }
 
 export type ContactState = {
-  readonly type: ContactStateType;
-  readonly timestamp: Date;
-};
-
-export type Queue = {
-  readonly name: string;
-  readonly queueARN: string;
-  readonly queueId: string;
+  type: ContactStateType;
+  timestamp: Date;
 };
 
 export enum ReferenceType {
@@ -69,7 +62,7 @@ export enum ReferenceType {
 }
 
 export type ReferenceDictionary = {
-  readonly [key: string]: {
+  [key: string]: {
     type: ReferenceType;
     value: string;
   };

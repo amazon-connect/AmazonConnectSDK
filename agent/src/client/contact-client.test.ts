@@ -1,30 +1,7 @@
 import { ConnectRequestData, ConnectResponseData, ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
-
-import {
-  ContactAcceptedEventData,
-  ContactAcceptedHandler,
-  ContactAcwEventData,
-  ContactAcwHandler,
-  ContactConnectedEventData,
-  ContactConnectedHandler,
-  ContactConnectingEventData,
-  ContactConnectingHandler,
-  ContactDestroyEventData,
-  ContactDestroyHandler,
-  ContactEndedEventData,
-  ContactEndedHandler,
-  ContactErrorEventData,
-  ContactErrorHandler,
-  ContactIncomingEventData,
-  ContactIncomingHandler,
-  ContactLifecycleTopic,
-  ContactMissedEventData,
-  ContactMissedHandler,
-  ContactPendingEventData,
-  ContactPendingHandler,
-} from "../event/contact-events";
 import { ContactClient } from "./contact-client";
+import { ContactAcceptedHandler, ContactAcceptedEventData, ContactLifecycleTopic, ContactAcwHandler, ContactAcwEventData, ContactConnectedHandler, ContactConnectedEventData, ContactConnectingHandler, ContactConnectingEventData, ContactDestroyHandler, ContactDestroyEventData, ContactEndedHandler, ContactEndedEventData, ContactErrorHandler, ContactErrorEventData, ContactIncomingHandler, ContactIncomingEventData, ContactMissedHandler, ContactMissedEventData, ContactPendingHandler, ContactPendingEventData } from "../event/contact-events";
 import { ContactRequests, CustomerDetails, ContactType, ContactState, ContactStateType, Queue, ReferenceDictionary, ReferenceType } from "../request";
 
 const currentContact = "CURRENT_CONTACT";
