@@ -144,140 +144,140 @@ export class ContactClient extends ConnectClient {
 
   // lifecycle
 
-  onAccepted(handler: ContactAcceptedHandler, contactId: string): void {
+  onAccepted(handler: ContactAcceptedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.ACCEPTED, parameter: contactId },
       handler,
     );
   }
 
-  onAcw(handler: ContactAcwHandler, contactId: string) {
+  onAcw(handler: ContactAcwHandler, contactId?: string) {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.ACW, parameter: contactId },
       handler,
     );
   }
 
-  onConnected(handler: ContactConnectedHandler, contactId: string): void {
+  onConnected(handler: ContactConnectedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.CONNECTED, parameter: contactId },
       handler,
     );
   }
 
-  onConnecting(handler: ContactConnectingHandler, contactId: string): void {
+  onConnecting(handler: ContactConnectingHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.CONNECTING, parameter: contactId },
       handler,
     );
   }
 
-  onDestroy(handler: ContactDestroyHandler, contactId: string): void {
+  onDestroy(handler: ContactDestroyHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.DESTROY, parameter: contactId },
       handler,
     );
   }
 
-  onEnded(handler: ContactEndedHandler, contactId: string) {
+  onEnded(handler: ContactEndedHandler, contactId?: string) {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.ENDED, parameter: contactId },
       handler,
     );
   }
 
-  onError(handler: ContactErrorHandler, contactId: string): void {
+  onError(handler: ContactErrorHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.ERROR, parameter: contactId },
       handler,
     );
   }
 
-  onIncoming(handler: ContactIncomingHandler, contactId: string): void {
+  onIncoming(handler: ContactIncomingHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.INCOMING, parameter: contactId },
       handler,
     );
   }
 
-  onMissed(handler: ContactMissedHandler, contactId: string): void {
+  onMissed(handler: ContactMissedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.MISSED, parameter: contactId },
       handler,
     );
   }
 
-  onPending(handler: ContactPendingHandler, contactId: string): void {
+  onPending(handler: ContactPendingHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.PENDING, parameter: contactId },
       handler,
     );
   }
 
-  offAccepted(handler: ContactAcceptedHandler, contactId: string): void {
+  offAccepted(handler: ContactAcceptedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.ACCEPTED, parameter: contactId },
       handler,
     );
   }
 
-  offAcw(handler: ContactAcwHandler, contactId: string) {
+  offAcw(handler: ContactAcwHandler, contactId?: string) {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.ACW, parameter: contactId },
       handler,
     );
   }
 
-  offConnected(handler: ContactConnectedHandler, contactId: string): void {
+  offConnected(handler: ContactConnectedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.CONNECTED, parameter: contactId },
       handler,
     );
   }
 
-  offConnecting(handler: ContactConnectingHandler, contactId: string): void {
+  offConnecting(handler: ContactConnectingHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.CONNECTING, parameter: contactId },
       handler,
     );
   }
 
-  offDestroy(handler: ContactDestroyHandler, contactId: string): void {
+  offDestroy(handler: ContactDestroyHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.DESTROY, parameter: contactId },
       handler,
     );
   }
 
-  offEnded(handler: ContactEndedHandler, contactId: string) {
+  offEnded(handler: ContactEndedHandler, contactId?: string) {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.ENDED, parameter: contactId },
       handler,
     );
   }
 
-  offError(handler: ContactErrorHandler, contactId: string): void {
+  offError(handler: ContactErrorHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.ERROR, parameter: contactId },
       handler,
     );
   }
 
-  offIncoming(handler: ContactIncomingHandler, contactId: string): void {
+  offIncoming(handler: ContactIncomingHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.INCOMING, parameter: contactId },
       handler,
     );
   }
 
-  offMissed(handler: ContactMissedHandler, contactId: string): void {
+  offMissed(handler: ContactMissedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.MISSED, parameter: contactId },
       handler,
     );
   }
 
-  offPending(handler: ContactPendingHandler, contactId: string): void {
+  offPending(handler: ContactPendingHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.PENDING, parameter: contactId },
       handler,
