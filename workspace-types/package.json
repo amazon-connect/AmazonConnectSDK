@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/workspace-types",
-  "version": "1.0.1-rc.3",
+  "version": "1.0.1",
   "description": "Workspace types for the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
@@ -23,6 +23,6 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@amazon-connect/core": "1.0.1-rc.3"
+    "@amazon-connect/core": "1.0.1"
   }
 }
