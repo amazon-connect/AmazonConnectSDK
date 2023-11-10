@@ -4,7 +4,7 @@
     "outDir": "./lib/",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["./src/**/*", "jest.config.js", "babel.config.js"],
+  "include": ["./src/**/*"],
   "typeAcquisition": {
     "include": ["jest"]
   }

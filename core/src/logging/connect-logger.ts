@@ -1,9 +1,10 @@
-import { AmazonConnectProvider, getGlobalProvider } from "../provider";
-import { Proxy } from "../proxy";
+import { getGlobalProvider } from "../provider";
 import { generateStringId } from "../utility";
 import { logToConsole } from "./log-data-console-writer";
 import { LogDataTransformer } from "./log-data-transformer";
 import { LogLevel } from "./log-level";
+import { LogProvider } from "./log-provider";
+import { LogProxy } from "./log-proxy";
 import {
   ConnectLogData,
   ConnectLoggerParams,
@@ -12,13 +13,14 @@ import {
 } from "./logger-types";
 
 export class ConnectLogger {
-  private readonly provider: AmazonConnectProvider | undefined;
+  private provider: LogProvider | undefined;
   private readonly source: string;
   private readonly loggerId: string;
   private readonly dataTransformer: LogDataTransformer;
   private readonly logOptions: LoggerOptions | undefined;
-  private _proxy: Proxy | null;
+  private _proxy: LogProxy | null;
   private _logToConsoleLevel: LogLevel | null;
+  private readonly providerFactory: (() => LogProvider) | undefined;
 
   constructor(param: string | ConnectLoggerParams) {
     this._proxy = null;
@@ -30,7 +32,11 @@ export class ConnectLogger {
       this.dataTransformer = new LogDataTransformer(undefined);
     } else {
       this.source = param.source;
-      this.provider = param.provider;
+
+      if (param.provider && typeof param.provider === "function")
+        this.providerFactory = param.provider;
+      else this.provider = param.provider;
+
       this.dataTransformer = new LogDataTransformer(param.mixin);
       this.logOptions = param.options;
     }
@@ -102,12 +108,17 @@ export class ConnectLogger {
     }
   }
 
-  private getProvider(): AmazonConnectProvider {
-    if (this.provider) return this.provider;
-    else return getGlobalProvider();
+  private getProvider(): LogProvider {
+    if (!this.provider) {
+      this.provider = this.providerFactory
+        ? this.providerFactory()
+        : getGlobalProvider();
+    }
+
+    return this.provider;
   }
 
-  private getProxy(): Proxy {
+  private getProxy(): LogProxy {
     if (!this._proxy) {
       this._proxy = this.getProvider().getProxy();
     }

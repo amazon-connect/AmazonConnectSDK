@@ -1,3 +1,4 @@
+import { UpstreamMessageOrigin } from "../messaging";
 import {
   ModuleSubscriptionTopic,
   SubscriptionTopic,
@@ -7,6 +8,7 @@ import { createModuleProxy } from "./module-proxy-factory";
 import { Proxy } from "./proxy";
 
 jest.mock("../logging/connect-logger");
+jest.mock("../messaging/subscription/subscription-manager");
 
 class TestProxy extends Proxy {
   constructor() {
@@ -25,15 +27,42 @@ class TestProxy extends Proxy {
   public get proxyType(): string {
     throw new Error("Method not implemented.");
   }
+  protected getUpstreamMessageOrigin(): UpstreamMessageOrigin {
+    return { _type: "test" };
+  }
 }
+
+beforeEach(jest.resetAllMocks);
 
 const testNamespace = "test";
 
 describe("createModuleProxy", () => {
+  describe("request", () => {
+    test("should send request for given command and data", async () => {
+      const proxy = new TestProxy();
+      const command = "test-command";
+      const requestData = { foo: 1 };
+      const responseData = { bar: 2 };
+      const requestSpy = jest.spyOn(proxy, "request");
+      requestSpy.mockResolvedValueOnce(responseData);
+      const sut = createModuleProxy(proxy, testNamespace);
+
+      const result = await sut.request(command, requestData);
+
+      expect(result).toEqual(responseData);
+      expect(requestSpy).toHaveBeenCalledWith(
+        testNamespace,
+        command,
+        requestData,
+      );
+    });
+  });
+
   describe("subscribe", () => {
     test("should subscribe with ModuleSubscriptionTopic with parameter", () => {
       const proxy = new TestProxy();
       const subscribeSpy = jest.spyOn(proxy, "subscribe");
+      subscribeSpy.mockImplementation(() => {});
       const sut = createModuleProxy(proxy, testNamespace);
       const topic: ModuleSubscriptionTopic = { key: "foo", parameter: "1" };
       const handler = jest.fn();
@@ -41,11 +70,11 @@ describe("createModuleProxy", () => {
       sut.subscribe(topic, handler);
 
       expect(subscribeSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           namespace: testNamespace,
           key: "foo",
           parameter: "1",
-        }),
+        },
         handler,
       );
     });
@@ -53,6 +82,7 @@ describe("createModuleProxy", () => {
     test("should subscribe with topic with namespace mismatch", () => {
       const proxy = new TestProxy();
       const subscribeSpy = jest.spyOn(proxy, "subscribe");
+      subscribeSpy.mockImplementation(() => {});
       const sut = createModuleProxy(proxy, testNamespace);
       const topic: SubscriptionTopic = {
         namespace: "mismatch",
@@ -63,10 +93,10 @@ describe("createModuleProxy", () => {
       sut.subscribe(topic, handler);
 
       expect(subscribeSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           namespace: testNamespace,
           key: "foo",
-        }),
+        },
         handler,
       );
     });

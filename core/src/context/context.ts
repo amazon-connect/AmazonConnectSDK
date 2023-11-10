@@ -27,6 +27,16 @@ export class Context<
   }
 
   createLogger(params: ConnectLoggerFromContextParams): ConnectLogger {
-    return new ConnectLogger(params);
+    if (typeof params === "object") {
+      return new ConnectLogger({
+        ...params,
+        provider: () => this.getProvider(),
+      });
+    } else {
+      return new ConnectLogger({
+        source: params,
+        provider: () => this.getProvider(),
+      });
+    }
   }
 }

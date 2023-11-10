@@ -3,6 +3,7 @@ import {
   SubscriptionHandlerData,
   SubscriptionTopic,
   UpstreamMessage,
+  UpstreamMessageOrigin,
 } from "@amazon-connect/core";
 
 import { AppConfig } from "./app-config";
@@ -18,6 +19,7 @@ export type AppPublishMessage = {
   type: "appPublish";
   topic: SubscriptionTopic;
   data: SubscriptionHandlerData;
+  messageOrigin?: UpstreamMessageOrigin;
 };
 
 export type CloseAppMessage = {
