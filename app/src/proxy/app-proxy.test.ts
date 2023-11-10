@@ -358,6 +358,7 @@ describe("when appProxy is ready", () => {
         appInstanceId: "abc123",
         stage: "create",
         appConfig: {} as AppConfig,
+        scope: { type: "contact", contactId: "123" },
       };
       const lifecycleMock = LifecycleManagerMock.mock.instances[0];
       lifecycleMock.handleLifecycleChangeMessage.mockResolvedValue();
