@@ -1,5 +1,9 @@
 import { ConnectLogger } from "@amazon-connect/core";
-import { AppConfig, LifecycleMessage } from "@amazon-connect/workspace-types";
+import {
+  AppConfig,
+  AppScope,
+  LifecycleMessage,
+} from "@amazon-connect/workspace-types";
 
 import { AmazonConnectApp } from "../amazon-connect-app";
 import { AppContext } from "../app-context";
@@ -21,11 +25,13 @@ type LifecycleAppState =
       isRunning: true;
       appInstanceId: string;
       appConfig: AppConfig;
+      scope: AppScope;
     }
   | {
       isRunning: false;
       appInstanceId?: string;
       appConfig?: AppConfig;
+      scope?: AppScope;
     };
 
 export class LifecycleManager {
@@ -61,9 +67,11 @@ export class LifecycleManager {
       this.provider,
       msg.appInstanceId,
       msg.appConfig,
+      msg.scope,
     );
     this.state.appInstanceId = msg.appInstanceId;
     this.state.appConfig = msg.appConfig;
+    this.state.scope = msg.scope;
 
     const params: LifecycleChangeParams = { context };
 
@@ -302,6 +310,7 @@ export class LifecycleManager {
         this.provider,
         this.state.appInstanceId!,
         this.state.appConfig!,
+        this.state.scope!,
       ),
     };
   }
