@@ -28,5 +28,5 @@ export {
   ContactPendingEventData,
   ContactPendingHandler,
 } from "./event/contact-events";
-export { agentNamespace } from "./namespace";
+export { contactNamespace } from "./namespace";
 export * from "./request";

@@ -7,7 +7,6 @@ export type ContactAttributeFilter =
 
 export enum ContactRequests {
   getAttributes = "contact/getAttributes",
-  getCustomerDetails = "contact/getCustomerDetails",
   getInitialContactId = "contact/getInitialContactId",
   getType = "contact/getType",
   getState = "contact/getState",
@@ -27,18 +26,8 @@ export type GetAttributesRequest = ContactRequestRequest & {
   attributes?: ContactAttributeFilter;
 };
 
-export type CustomerDetails = {
-  phoneNumber?: string;
-  customerName?: string;
-  name?: string;
-};
-
-export enum ContactType {
-  VOICE = "voice",
-  QUEUE_CALLBACK = "queue_callback",
-  CHAT = "chat",
-  TASK = "task",
-}
+export type PhoneNumber = string;
+export type ContactType = string;
 
 export enum ContactStateType {
   INIT = "init",

@@ -7,7 +7,7 @@ import {
 } from "@amazon-connect/core";
 
 import { AppConfig } from "./app-config";
-import { AppScope } from "./app-scope";
+import { ContactScope } from "./app-scope";
 import { LifecycleStage } from "./lifecycle-stage";
 
 export type LifecycleHandlerCompletedMessage = {
@@ -41,7 +41,7 @@ export type LifecycleMessage = {
   stage: LifecycleStage;
   appInstanceId: string;
   appConfig: AppConfig;
-  scope: AppScope;
+  contactScope?: ContactScope;
 };
 
 export type AppDownstreamMessage = DownstreamMessage | LifecycleMessage;

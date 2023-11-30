@@ -26,14 +26,14 @@ const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 
 const appInstanceId = "abc123";
 const appConfig: AppConfig = { _type: "iframe" } as AppConfig;
-const appScope: ContactScope = { type: "contact", contactId: "123" };
+const contactScope: ContactScope = { type: "contact", contactId: "123" };
 
 const createMsg: LifecycleMessage = {
   type: "appLifecycle",
   stage: "create",
   appInstanceId,
   appConfig,
-  scope: appScope,
+  contactScope: contactScope,
 };
 
 const startMsg: LifecycleMessage = {
@@ -41,7 +41,7 @@ const startMsg: LifecycleMessage = {
   stage: "start",
   appInstanceId,
   appConfig,
-  scope: appScope,
+  contactScope: contactScope,
 };
 
 const stopMsg: LifecycleMessage = {
@@ -49,7 +49,7 @@ const stopMsg: LifecycleMessage = {
   stage: "stop",
   appInstanceId,
   appConfig,
-  scope: appScope,
+  contactScope: contactScope,
 };
 
 const destroyMsg: LifecycleMessage = {
@@ -57,7 +57,7 @@ const destroyMsg: LifecycleMessage = {
   stage: "destroy",
   appInstanceId,
   appConfig,
-  scope: appScope,
+  contactScope: contactScope,
 };
 
 const getLifecycleManagerLogger = () => {
@@ -124,7 +124,7 @@ describe("when triggering the Create lifecycle event", () => {
       expect(state.isRunning).toBeFalsy();
       expect(state.appInstanceId).toEqual(appInstanceId);
       expect(state.appConfig).toEqual(appConfig);
-      expect(state.scope).toEqual(appScope);
+      expect(state.contactScope).toEqual(contactScope);
     });
   });
 
@@ -315,7 +315,7 @@ describe("when triggering the Start lifecycle event", () => {
       expect(state.isRunning).toBeTruthy();
       expect(state.appInstanceId).toEqual(appInstanceId);
       expect(state.appConfig).toEqual(appConfig);
-      expect(state.scope).toEqual(appScope);
+      expect(state.contactScope).toEqual(contactScope);
     });
 
     test("should execute the one handler set", async () => {
@@ -503,7 +503,7 @@ describe("when triggering the Stop lifecycle event", () => {
       expect(state.isRunning).toBeFalsy();
       expect(state.appInstanceId).toEqual(appInstanceId);
       expect(state.appConfig).toEqual(appConfig);
-      expect(state.scope).toEqual(appScope);
+      expect(state.contactScope).toEqual(contactScope);
     });
 
     test("should execute the one handler set", async () => {
@@ -705,7 +705,7 @@ describe("when triggering the Destroy lifecycle event", () => {
         expect(state.isRunning).toBeFalsy();
         expect(state.appInstanceId).toEqual(appInstanceId);
         expect(state.appConfig).toEqual(appConfig);
-        expect(state.scope).toEqual(appScope);
+        expect(state.contactScope).toEqual(contactScope);
       });
     });
 
@@ -878,7 +878,7 @@ describe("when calling onStart with invokeIfRunning", () => {
           expect(evt.stage).toEqual("start");
           expect(evt.context.appInstanceId).toEqual(appInstanceId);
           expect(evt.context.appConfig).toEqual(appConfig);
-          expect(evt.context.scope).toEqual(appScope);
+          expect(evt.context.contactScope).toEqual(contactScope);
 
           done();
           return Promise.resolve();
@@ -945,5 +945,5 @@ test("should have not running state before any lifecycle events occur", () => {
   expect(state.isRunning).toBeFalsy();
   expect(state.appInstanceId).toBeUndefined();
   expect(state.appConfig).toBeUndefined();
-  expect(state.scope).toBeUndefined();
+  expect(state.contactScope).toBeUndefined();
 });

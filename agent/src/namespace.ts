@@ -1,1 +1,1 @@
-export const agentNamespace = "aws.connect.agent";
+export const contactNamespace = "aws.connect.contact";

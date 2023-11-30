@@ -13,21 +13,20 @@ import {
   ContactMissedHandler,
   ContactPendingHandler,
 } from "../event/contact-events";
-import { agentNamespace } from "../namespace";
+import { contactNamespace } from "../namespace";
 import { Queue } from "../request/agent-request";
 import {
   ContactAttributeFilter,
   ContactRequests,
-  ContactState,
-  ContactType,
-  CustomerDetails,
+  ContactState, ContactType,
   GetAttributesRequest,
+  PhoneNumber,
   ReferenceDictionary,
 } from "../request/contact-request";
 
 export class ContactClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
-    super(agentNamespace, config);
+    super(contactNamespace, config);
   }
 
   // requests
@@ -52,16 +51,6 @@ export class ContactClient extends ConnectClient {
   ): Promise<string | null> {
     const result = await this.getAttributes(contactId, [attribute]);
     return result[attribute] ?? null;
-  }
-
-  async getCustomerDetails(contactId: string): Promise<CustomerDetails> {
-    const data: CustomerDetails = await this.context.proxy.request(
-      ContactRequests.getCustomerDetails,
-      {
-        contactId,
-      },
-    );
-    return data;
   }
 
   async getInitialContactId(contactId: string): Promise<string | null> {
@@ -179,13 +168,6 @@ export class ContactClient extends ConnectClient {
     );
   }
 
-  onEnded(handler: ContactEndedHandler, contactId?: string) {
-    this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.ENDED, parameter: contactId },
-      handler,
-    );
-  }
-
   onError(handler: ContactErrorHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopic.ERROR, parameter: contactId },
@@ -193,9 +175,9 @@ export class ContactClient extends ConnectClient {
     );
   }
 
-  onIncoming(handler: ContactIncomingHandler, contactId?: string): void {
+  onIncoming(handler: ContactIncomingHandler): void {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.INCOMING, parameter: contactId },
+      { key: ContactLifecycleTopic.INCOMING },
       handler,
     );
   }
@@ -263,9 +245,9 @@ export class ContactClient extends ConnectClient {
     );
   }
 
-  offIncoming(handler: ContactIncomingHandler, contactId?: string): void {
+  offIncoming(handler: ContactIncomingHandler): void {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.INCOMING, parameter: contactId },
+      { key: ContactLifecycleTopic.INCOMING },
       handler,
     );
   }

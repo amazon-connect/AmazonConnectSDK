@@ -2,7 +2,15 @@ import { ConnectRequestData, ConnectResponseData, ModuleContext, ModuleProxy } f
 import { mock } from "jest-mock-extended";
 import { ContactClient } from "./contact-client";
 import { ContactAcceptedHandler, ContactAcceptedEventData, ContactLifecycleTopic, ContactAcwHandler, ContactAcwEventData, ContactConnectedHandler, ContactConnectedEventData, ContactConnectingHandler, ContactConnectingEventData, ContactDestroyHandler, ContactDestroyEventData, ContactEndedHandler, ContactEndedEventData, ContactErrorHandler, ContactErrorEventData, ContactIncomingHandler, ContactIncomingEventData, ContactMissedHandler, ContactMissedEventData, ContactPendingHandler, ContactPendingEventData } from "../event/contact-events";
-import { ContactRequests, CustomerDetails, ContactType, ContactState, ContactStateType, Queue, ReferenceDictionary, ReferenceType } from "../request";
+import {
+  ContactRequests,
+  ContactState,
+  ContactStateType,
+  Queue,
+  ReferenceDictionary,
+  ReferenceType,
+  PhoneNumber
+} from "../request";
 
 const currentContact = "CURRENT_CONTACT";
 
@@ -137,29 +145,6 @@ describe("ContactClient", () => {
       });
     });
 
-    describe("ENDED", () => {
-      const handler: ContactEndedHandler =
-        createHandler<ContactEndedEventData>();
-
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onEnded(handler, currentContact);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.ENDED, parameter: currentContact },
-          handler,
-        );
-      });
-
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offEnded(handler, currentContact);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.ENDED, parameter: currentContact },
-          handler,
-        );
-      });
-    });
-
     describe("ERROR", () => {
       const handler: ContactErrorHandler =
         createHandler<ContactErrorEventData>();
@@ -189,18 +174,18 @@ describe("ContactClient", () => {
 
       it("subscribes to event with handler", () => {
         const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onIncoming(handler, currentContact);
+        contactClient.onIncoming(handler);
         expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.INCOMING, parameter: currentContact },
+          { key: ContactLifecycleTopic.INCOMING },
           handler,
         );
       });
 
       it("unsubscribes from event with handler", () => {
         const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offIncoming(handler, currentContact);
+        contactClient.offIncoming(handler);
         expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.INCOMING, parameter: currentContact },
+          { key: ContactLifecycleTopic.INCOMING },
           handler,
         );
       });
@@ -305,22 +290,6 @@ describe("ContactClient", () => {
       });
     });
 
-    test("getCustomerDetails returns result", async () => {
-      const expectedResult: CustomerDetails = { phoneNumber: "123" };
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve(expectedResult)),
-      );
-      const actualResult =
-        await contactClient.getCustomerDetails(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(
-        ContactRequests.getCustomerDetails,
-        {
-          contactId: testContactId,
-        },
-      );
-      expect(actualResult).toBe(expectedResult);
-    });
-
     test("getInitialContactId returns result if available", async () => {
       const expectedResult = "CONTACT_ID";
       requestSpy.mockReturnValue(
@@ -353,7 +322,7 @@ describe("ContactClient", () => {
     });
 
     test("getType returns result", async () => {
-      const expectedResult: ContactType = ContactType.VOICE;
+      const expectedResult: string = "voice";
       requestSpy.mockReturnValue(
         new Promise((resolve) => resolve({ type: expectedResult })),
       );

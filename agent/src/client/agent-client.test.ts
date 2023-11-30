@@ -163,25 +163,5 @@ describe("AgentClient", () => {
       );
       expect(actualResult).toEqual(dialableCountries);
     });
-
-    test("getAllQueueARNs returns result", async () => {
-      const allQueueARNs = ["arn1", "arn2"];
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ allQueueARNs })),
-      );
-      const actualResult = await agentClient.getAllQueueARNs();
-      expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getAllQueueARNs);
-      expect(actualResult).toEqual(allQueueARNs);
-    });
-
-    test("getPermissions returns result", async () => {
-      const permissions = ["permission1", "permission2"];
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ permissions })),
-      );
-      const actualResult = await agentClient.getPermissions();
-      expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getPermissions);
-      expect(actualResult).toEqual(permissions);
-    });
   });
 });

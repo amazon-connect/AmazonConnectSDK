@@ -1,6 +1,6 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
-import { agentNamespace } from "../namespace";
+import { contactNamespace } from "../namespace";
 import {
   AgentChannelConcurrencyMap,
   AgentRequests,
@@ -12,7 +12,7 @@ import { AgentStateChangeHandler, AgentTopic } from "../event/agent-events";
 
 export class AgentClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
-    super(agentNamespace, config);
+    super(contactNamespace, config);
   }
 
   // requests
@@ -73,20 +73,6 @@ export class AgentClient extends ConnectClient {
       AgentRequests.getDialableCountries,
     );
     return data.dialableCountries;
-  }
-
-  async getAllQueueARNs(): Promise<string[]> {
-    const data: Record<string, string[]> = await this.context.proxy.request(
-      AgentRequests.getAllQueueARNs,
-    );
-    return data.allQueueARNs;
-  }
-
-  async getPermissions(): Promise<string[]> {
-    const data: Record<string, string[]> = await this.context.proxy.request(
-      AgentRequests.getPermissions,
-    );
-    return data.permissions;
   }
 
   // lifecycle
