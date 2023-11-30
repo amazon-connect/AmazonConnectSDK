@@ -310,7 +310,7 @@ export class LifecycleManager {
         this.provider,
         this.state.appInstanceId!,
         this.state.appConfig!,
-        this.state.contactScope!,
+        this.state.contactScope,
       ),
     };
   }

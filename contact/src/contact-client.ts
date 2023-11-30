@@ -1,28 +1,27 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
+import { Queue } from "./agent-request";
 import {
   ContactAcceptedHandler,
   ContactAcwHandler,
   ContactConnectedHandler,
   ContactConnectingHandler,
   ContactDestroyHandler,
-  ContactEndedHandler,
   ContactErrorHandler,
   ContactIncomingHandler,
   ContactLifecycleTopic,
   ContactMissedHandler,
   ContactPendingHandler,
-} from "../event/contact-events";
-import { contactNamespace } from "../namespace";
-import { Queue } from "../request/agent-request";
+} from "./contact-events";
 import {
   ContactAttributeFilter,
   ContactRequests,
-  ContactState, ContactType,
+  ContactState,
+  ContactType,
   GetAttributesRequest,
-  PhoneNumber,
   ReferenceDictionary,
-} from "../request/contact-request";
+} from "./contact-request";
+import { contactNamespace } from "./namespace";
 
 export class ContactClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
@@ -48,17 +47,17 @@ export class ContactClient extends ConnectClient {
   async getAttribute(
     contactId: string,
     attribute: string,
-  ): Promise<string | null> {
+  ): Promise<string | undefined> {
     const result = await this.getAttributes(contactId, [attribute]);
-    return result[attribute] ?? null;
+    return result[attribute];
   }
 
-  async getInitialContactId(contactId: string): Promise<string | null> {
+  async getInitialContactId(contactId: string): Promise<string | undefined> {
     const data: Record<string, string> = await this.context.proxy.request(
       ContactRequests.getInitialContactId,
       { contactId },
     );
-    return data.initialContactId ?? null;
+    return data.initialContactId;
   }
 
   async getType(contactId: string): Promise<ContactType> {
@@ -97,38 +96,38 @@ export class ContactClient extends ConnectClient {
     return data;
   }
 
-  async getQueueTimestamp(contactId: string): Promise<Date | null> {
+  async getQueueTimestamp(contactId: string): Promise<Date | undefined> {
     const data: Record<string, Date> = await this.context.proxy.request(
       ContactRequests.getQueueTimestamp,
       { contactId },
     );
-    return data.queueTimestamp ?? null;
+    return data.queueTimestamp;
   }
 
-  async getName(contactId: string): Promise<string | null> {
+  async getName(contactId: string): Promise<string | undefined> {
     const data: Record<string, string> = await this.context.proxy.request(
       ContactRequests.getName,
       { contactId },
     );
-    return data.name ?? null;
+    return data.name;
   }
 
-  async getDescription(contactId: string): Promise<string | null> {
+  async getDescription(contactId: string): Promise<string | undefined> {
     const data: Record<string, string> = await this.context.proxy.request(
       ContactRequests.getDescription,
       { contactId },
     );
-    return data.description ?? null;
+    return data.description;
   }
 
-  async getReferences(contactId: string): Promise<ReferenceDictionary | null> {
-    const data: ReferenceDictionary | void = await this.context.proxy.request(
-      ContactRequests.getReferences,
-      {
+  async getReferences(
+    contactId: string,
+  ): Promise<ReferenceDictionary | undefined> {
+    const data: ReferenceDictionary | undefined =
+      await this.context.proxy.request(ContactRequests.getReferences, {
         contactId,
-      },
-    );
-    return data ?? null;
+      });
+    return data;
   }
 
   // lifecycle
@@ -230,14 +229,6 @@ export class ContactClient extends ConnectClient {
       handler,
     );
   }
-
-  offEnded(handler: ContactEndedHandler, contactId?: string) {
-    this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.ENDED, parameter: contactId },
-      handler,
-    );
-  }
-
   offError(handler: ContactErrorHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopic.ERROR, parameter: contactId },

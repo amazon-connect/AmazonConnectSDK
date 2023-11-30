@@ -1,5 +1,4 @@
 export enum AgentRequests {
-  getEndpoints = "agent/getEndpoints",
   getARN = "agent/getARN",
   getName = "agent/getName",
   getState = "agent/getState",
@@ -7,24 +6,7 @@ export enum AgentRequests {
   getChannelConcurrency = "agent/getChannelConcurrency",
   getExtension = "agent/getExtension",
   getDialableCountries = "agent/getDialableCountries",
-  getAllQueueARNs = "agent/getAllQueueARNs",
-  getPermissions = "agent/getPermissions",
 }
-
-export enum EndpointType {
-  PHONE_NUMBER = "phone_number",
-  AGENT = "agent",
-  QUEUE = "queue",
-}
-
-export type Endpoint = {
-  endpointARN: string;
-  endpointId: string;
-  type: EndpointType;
-  name: string;
-  phoneNumber: string;
-  queue: string;
-};
 
 export enum AgentStateType {
   INIT = "init",
@@ -39,12 +21,6 @@ export type AgentState = {
   startTimestamp: Date;
   type: AgentStateType;
 };
-
-export enum ChannelType {
-  VOICE = "VOICE",
-  CHAT = "CHAT",
-  TASK = "TASK",
-}
 
 export type AgentChannelConcurrencyMap = {
   [key: string]: number;

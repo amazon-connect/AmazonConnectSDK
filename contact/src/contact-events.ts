@@ -36,9 +36,6 @@ export type ContactDestroyEventData = BaseContactLifecycleEventData;
 export type ContactDestroyHandler =
   SubscriptionHandler<ContactDestroyEventData>;
 
-export type ContactEndedEventData = BaseContactLifecycleEventData;
-export type ContactEndedHandler = SubscriptionHandler<ContactEndedEventData>;
-
 export type ContactErrorEventData = BaseContactLifecycleEventData;
 export type ContactErrorHandler = SubscriptionHandler<ContactErrorEventData>;
 

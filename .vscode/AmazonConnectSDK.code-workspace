@@ -1,11 +1,8 @@
 {
 	"folders": [
 		{
-			"path": "..",
-		},
-		{
 			"name": "core",
-			"path": "../core",
+			"path": "../core"
 		},
 		{
 			"name": "workspace-types",
@@ -13,16 +10,20 @@
 		},
 		{
 			"name": "app",
-			"path": "../app",
+			"path": "../app"
 		},
 		{
-			"name": "agent",
-			"path": "../agent",
+			"name": "contact",
+			"path": "../contact"
 		},
 		{
 			"name": "theme",
-			"path": "../theme",
-		}
+			"path": "../theme"
+		},
+		{
+			"name": "voice",
+			"path": "../voice"
+		},
 	],
 	"settings": {
 		"jest.disabledWorkspaceFolders": [

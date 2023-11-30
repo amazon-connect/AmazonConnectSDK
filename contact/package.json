@@ -1,5 +1,5 @@
 {
-  "name": "@amazon-connect/agent",
+  "name": "@amazon-connect/contact",
   "version": "1.0.0",
   "description": "Agent functionality of the Amazon Connect SDK",
   "publishConfig": {

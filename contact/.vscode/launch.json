@@ -14,7 +14,7 @@
         "--runTestsByPath",
         "${jest.testFile}"
       ],
-      "cwd": "${workspaceRoot}/../agent",
+      "cwd": "${workspaceRoot}/../contact",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true,

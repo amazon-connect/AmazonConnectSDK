@@ -18,11 +18,8 @@ export enum ContactRequests {
   getReferences = "contact/getReferences",
 }
 
-export type ContactRequestRequest = {
+export type GetAttributesRequest = {
   contactId: string;
-};
-
-export type GetAttributesRequest = ContactRequestRequest & {
   attributes?: ContactAttributeFilter;
 };
 

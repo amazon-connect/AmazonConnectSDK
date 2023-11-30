@@ -1,14 +1,13 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
-import { contactNamespace } from "../namespace";
+import { AgentStateChangeHandler, AgentTopic } from "./agent-events";
 import {
   AgentChannelConcurrencyMap,
   AgentRequests,
   AgentRoutingProfile,
   AgentState,
-  Endpoint,
-} from "../request/agent-request";
-import { AgentStateChangeHandler, AgentTopic } from "../event/agent-events";
+} from "./agent-request";
+import { contactNamespace } from "./namespace";
 
 export class AgentClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
@@ -16,16 +15,6 @@ export class AgentClient extends ConnectClient {
   }
 
   // requests
-  async getEndpoints(queueARNs: string[] | string): Promise<Endpoint[]> {
-    const data: Record<string, Endpoint[]> = await this.context.proxy.request(
-      AgentRequests.getEndpoints,
-      {
-        queueARNs,
-      },
-    );
-    return data.endpoints;
-  }
-
   async getARN(): Promise<string> {
     const data: Record<string, string> = await this.context.proxy.request(
       AgentRequests.getARN,
@@ -61,11 +50,11 @@ export class AgentClient extends ConnectClient {
     return data;
   }
 
-  async getExtension(): Promise<string | null> {
+  async getExtension(): Promise<string | undefined> {
     const data: Record<string, string> = await this.context.proxy.request(
       AgentRequests.getExtension,
     );
-    return data.extension ?? null;
+    return data.extension;
   }
 
   async getDialableCountries(): Promise<string[]> {

@@ -1,10 +1,11 @@
-export { AgentClient } from "./client/agent-client";
-export { ContactClient } from "./client/contact-client";
+export { AgentClient } from "./agent-client";
 export {
   AgentStateChangeEventData,
   AgentStateChangeHandler,
   AgentTopic,
-} from "./event/agent-events";
+} from "./agent-events";
+export * from "./agent-request";
+export { ContactClient } from "./contact-client";
 export {
   ContactAcceptedEventData,
   ContactAcceptedHandler,
@@ -16,8 +17,6 @@ export {
   ContactConnectingHandler,
   ContactDestroyEventData,
   ContactDestroyHandler,
-  ContactEndedEventData,
-  ContactEndedHandler,
   ContactErrorEventData,
   ContactErrorHandler,
   ContactIncomingEventData,
@@ -27,6 +26,6 @@ export {
   ContactMissedHandler,
   ContactPendingEventData,
   ContactPendingHandler,
-} from "./event/contact-events";
+} from "./contact-events";
+export * from "./contact-request";
 export { contactNamespace } from "./namespace";
-export * from "./request";

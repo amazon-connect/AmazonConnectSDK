@@ -1,8 +1,21 @@
-import { ConnectRequestData, ConnectResponseData, ModuleContext, ModuleProxy } from "@amazon-connect/core";
+import {
+  ConnectRequestData,
+  ConnectResponseData,
+  ModuleContext,
+  ModuleProxy,
+} from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
-import { AgentStateChangeEventData, AgentTopic } from "../event/agent-events";
-import { Endpoint, EndpointType, AgentRequests, AgentState, AgentStateType, Queue, AgentRoutingProfile, ChannelType, AgentChannelConcurrencyMap } from "../request";
+
 import { AgentClient } from "./agent-client";
+import { AgentStateChangeEventData, AgentTopic } from "./agent-events";
+import {
+  AgentChannelConcurrencyMap,
+  AgentRequests,
+  AgentRoutingProfile,
+  AgentState,
+  AgentStateType,
+  Queue,
+} from "./agent-request";
 
 const moduleProxyMock = mock<ModuleProxy>();
 const moduleContextMock = mock<ModuleContext>();
@@ -50,28 +63,6 @@ describe("AgentClient", () => {
       requestSpy = jest.spyOn(moduleProxyMock, "request");
     });
 
-    test("getEndpoints returns result", async () => {
-      const queueARNs = "ARN";
-      const endpoints: Endpoint[] = [
-        {
-          endpointARN: "ARN",
-          endpointId: "id",
-          type: EndpointType.AGENT,
-          name: "name",
-          phoneNumber: "number",
-          queue: "queue",
-        },
-      ];
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ endpoints })),
-      );
-      const actualResult = await agentClient.getEndpoints(queueARNs);
-      expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getEndpoints, {
-        queueARNs,
-      });
-      expect(actualResult).toEqual(endpoints);
-    });
-
     test("getARN returns result", async () => {
       const arn = "ARN";
       requestSpy.mockReturnValue(
@@ -106,7 +97,7 @@ describe("AgentClient", () => {
     test("getRoutingProfile returns result", async () => {
       const queue: Queue = { name: "name", queueARN: "arn", queueId: "id" };
       const profile: AgentRoutingProfile = {
-        channelConcurrencyMap: { [ChannelType.VOICE]: 1 },
+        channelConcurrencyMap: { ["voice"]: 1 },
         defaultOutboundQueue: queue,
         name: "routing profile",
         queues: [queue],
@@ -121,7 +112,7 @@ describe("AgentClient", () => {
 
     test("getChannelConcurrency returns result", async () => {
       const concurrency: AgentChannelConcurrencyMap = {
-        [ChannelType.VOICE]: 1,
+        ["voice"]: 1,
       };
       requestSpy.mockReturnValue(
         new Promise((resolve) => resolve(concurrency)),
@@ -143,13 +134,13 @@ describe("AgentClient", () => {
       expect(actualResult).toEqual(extension);
     });
 
-    test("getExtension returns null when result is not available", async () => {
+    test("getExtension returns undefined when result is not available", async () => {
       requestSpy.mockReturnValue(
         new Promise((resolve) => resolve({ extension: undefined })),
       );
       const actualResult = await agentClient.getExtension();
       expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getExtension);
-      expect(actualResult).toBeNull();
+      expect(actualResult).toBeUndefined();
     });
 
     test("getDialableCountries returns result", async () => {

@@ -7,7 +7,7 @@ import {
 } from "@amazon-connect/core";
 
 import { AppConfig } from "./app-config";
-import { ContactScope } from "./app-scope";
+import { ContactScope } from "./contact-scope";
 import { LifecycleStage } from "./lifecycle-stage";
 
 export type LifecycleHandlerCompletedMessage = {

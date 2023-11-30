@@ -42,7 +42,7 @@
     "core",
     "workspace-types",
     "app",
-    "agent",
+    "contact",
     "theme",
     "voice"
   ]

@@ -1,9 +1,13 @@
-import { ConnectRequestData, ConnectResponseData, ModuleContext, ModuleProxy } from "@amazon-connect/core";
+import {
+  ConnectRequestData,
+  ConnectResponseData,
+  ModuleContext,
+  ModuleProxy,
+} from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
-import { VoiceClient } from "./voice-client";
-import {PhoneNumber, VoiceRequests} from "../request";
 
-const currentContact = "CURRENT_CONTACT";
+import { VoiceClient } from "./voice-client";
+import { VoiceRequests } from "./voice-request";
 
 const moduleProxyMock = mock<ModuleProxy>();
 const moduleContextMock = mock<ModuleContext>();
@@ -33,24 +37,16 @@ describe("ContactClient", () => {
       requestSpy = jest.spyOn(moduleProxyMock, "request");
     });
 
-
     test("getPhoneNumber returns result", async () => {
-      const expectedResult: PhoneNumber = "123";
+      const expectedResult: string = "123";
       requestSpy.mockReturnValue(
         new Promise((resolve) => resolve({ phoneNumber: expectedResult })),
       );
-      const actualResult =
-        await contactClient.getPhoneNumber(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(
-        VoiceRequests.getPhoneNumber,
-        {
-          contactId: testContactId,
-        },
-      );
+      const actualResult = await contactClient.getPhoneNumber(testContactId);
+      expect(requestSpy).toHaveBeenCalledWith(VoiceRequests.getPhoneNumber, {
+        contactId: testContactId,
+      });
       expect(actualResult).toBe(expectedResult);
     });
-
-
   });
 });
-

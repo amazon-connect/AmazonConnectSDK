@@ -1,16 +1,41 @@
-import { ConnectRequestData, ConnectResponseData, ModuleContext, ModuleProxy } from "@amazon-connect/core";
+import {
+  ConnectRequestData,
+  ConnectResponseData,
+  ModuleContext,
+  ModuleProxy,
+} from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
+
+import { Queue } from "./agent-request";
 import { ContactClient } from "./contact-client";
-import { ContactAcceptedHandler, ContactAcceptedEventData, ContactLifecycleTopic, ContactAcwHandler, ContactAcwEventData, ContactConnectedHandler, ContactConnectedEventData, ContactConnectingHandler, ContactConnectingEventData, ContactDestroyHandler, ContactDestroyEventData, ContactEndedHandler, ContactEndedEventData, ContactErrorHandler, ContactErrorEventData, ContactIncomingHandler, ContactIncomingEventData, ContactMissedHandler, ContactMissedEventData, ContactPendingHandler, ContactPendingEventData } from "../event/contact-events";
+import {
+  ContactAcceptedEventData,
+  ContactAcceptedHandler,
+  ContactAcwEventData,
+  ContactAcwHandler,
+  ContactConnectedEventData,
+  ContactConnectedHandler,
+  ContactConnectingEventData,
+  ContactConnectingHandler,
+  ContactDestroyEventData,
+  ContactDestroyHandler,
+  ContactErrorEventData,
+  ContactErrorHandler,
+  ContactIncomingEventData,
+  ContactIncomingHandler,
+  ContactLifecycleTopic,
+  ContactMissedEventData,
+  ContactMissedHandler,
+  ContactPendingEventData,
+  ContactPendingHandler,
+} from "./contact-events";
 import {
   ContactRequests,
   ContactState,
   ContactStateType,
-  Queue,
   ReferenceDictionary,
   ReferenceType,
-  PhoneNumber
-} from "../request";
+} from "./contact-request";
 
 const currentContact = "CURRENT_CONTACT";
 
@@ -265,7 +290,7 @@ describe("ContactClient", () => {
       expect(actualResult).toEqual(value);
     });
 
-    test("getAttribute returns null if attribute not present in result", async () => {
+    test("getAttribute returns undefined if attribute not present in result", async () => {
       const key = "TEST_KEY";
       const value = "TEST_VALUE";
       const expectedResponse = { OTHER_KEY: value };
@@ -277,7 +302,7 @@ describe("ContactClient", () => {
         contactId: testContactId,
         attributes: [key],
       });
-      expect(actualResult).toBeNull();
+      expect(actualResult).toBeUndefined();
     });
 
     test("getAttributes passes attributes list if provided", async () => {
@@ -306,7 +331,7 @@ describe("ContactClient", () => {
       expect(actualResult).toBe(expectedResult);
     });
 
-    test("getInitialContactId returns null if result not available", async () => {
+    test("getInitialContactId returns undefined if result not available", async () => {
       requestSpy.mockReturnValue(
         new Promise((resolve) => resolve({ initialContactId: undefined })),
       );
@@ -318,7 +343,7 @@ describe("ContactClient", () => {
           contactId: testContactId,
         },
       );
-      expect(actualResult).toBeNull();
+      expect(actualResult).toBeUndefined();
     });
 
     test("getType returns result", async () => {
@@ -406,7 +431,7 @@ describe("ContactClient", () => {
       expect(actualResult).toBe(expectedResult);
     });
 
-    test("getName returns null if result not available", async () => {
+    test("getName returns undefined if result not available", async () => {
       requestSpy.mockReturnValue(
         new Promise((resolve) => resolve({ name: undefined })),
       );
@@ -414,7 +439,7 @@ describe("ContactClient", () => {
       expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getName, {
         contactId: testContactId,
       });
-      expect(actualResult).toBeNull();
+      expect(actualResult).toBeUndefined();
     });
 
     test("getDescription returns result if available", async () => {
@@ -429,7 +454,7 @@ describe("ContactClient", () => {
       expect(actualResult).toBe(expectedResult);
     });
 
-    test("getDescription returns null if result not available", async () => {
+    test("getDescription returns undefined if result not available", async () => {
       requestSpy.mockReturnValue(
         new Promise((resolve) => resolve({ description: undefined })),
       );
@@ -437,7 +462,7 @@ describe("ContactClient", () => {
       expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getDescription, {
         contactId: testContactId,
       });
-      expect(actualResult).toBeNull();
+      expect(actualResult).toBeUndefined();
     });
 
     test("getReferences returns result if available", async () => {
@@ -454,13 +479,13 @@ describe("ContactClient", () => {
       expect(actualResult).toBe(expectedResult);
     });
 
-    test("getReferences returns null if result not available", async () => {
+    test("getReferences returns undefined if result not available", async () => {
       requestSpy.mockReturnValue(new Promise((resolve) => resolve(undefined)));
       const actualResult = await contactClient.getReferences(testContactId);
       expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getReferences, {
         contactId: testContactId,
       });
-      expect(actualResult).toBeNull();
+      expect(actualResult).toBeUndefined();
     });
   });
 });
