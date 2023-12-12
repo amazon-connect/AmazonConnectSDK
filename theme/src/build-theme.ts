@@ -13,8 +13,7 @@ export function buildTheme({
       colorBackgroundButtonPrimaryHover: brandColorActive,
 
       colorBackgroundControlChecked: brandColor,
-      // TODO waiting for latest public version
-      // colorBackgroundSegmentActive: brandColor,
+      colorBackgroundSegmentActive: brandColor,
       // Not themable
       // colorBackgroundProgressBarContentDefault: brandColor,
 
@@ -24,8 +23,7 @@ export function buildTheme({
 
       colorTextLinkDefault: brandColor,
       colorTextLinkHover: brandColorActive,
-      // TODO waiting for latest public version
-      // colorTextSegmentHover: brandColor,
+      colorTextSegmentHover: brandColor,
 
       colorTextButtonNormalDefault: brandColor,
       colorTextButtonNormalActive: brandColorActive,

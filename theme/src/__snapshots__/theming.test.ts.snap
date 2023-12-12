@@ -20,6 +20,10 @@ exports[`theming applies default Connect theme 1`] = `
         "dark": "#7CA2BB",
         "light": "#077398",
       },
+      "colorBackgroundSegmentActive": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
       "colorBorderButtonNormalActive": {
         "dark": "#A7C1D1",
         "light": "#065B78",
@@ -63,6 +67,10 @@ exports[`theming applies default Connect theme 1`] = `
       "colorTextLinkHover": {
         "dark": "#A7C1D1",
         "light": "#065B78",
+      },
+      "colorTextSegmentHover": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
       },
       "fontFamilyBase": undefined,
     },
