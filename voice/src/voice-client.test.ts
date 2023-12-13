@@ -1,51 +1,41 @@
-import {
-  ConnectRequestData,
-  ConnectResponseData,
-  ModuleContext,
-  ModuleProxy,
-} from "@amazon-connect/core";
+/* eslint-disable @typescript-eslint/unbound-method */
+import { ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
 
+import { VoiceRequests } from "./types";
 import { VoiceClient } from "./voice-client";
-import { VoiceRequests } from "./voice-request";
 
 const moduleProxyMock = mock<ModuleProxy>();
-const moduleContextMock = mock<ModuleContext>();
-
-Object.defineProperty(moduleContextMock, "proxy", {
-  get() {
-    return moduleProxyMock;
-  },
+const moduleContextMock = mock<ModuleContext>({
+  proxy: moduleProxyMock,
 });
+
+let sut: VoiceClient;
 
 beforeEach(jest.resetAllMocks);
 
-describe("ContactClient", () => {
-  const contactClient = new VoiceClient({
-    context: moduleContextMock,
+describe("VoiceClient", () => {
+  beforeEach(() => {
+    sut = new VoiceClient({ context: moduleContextMock });
   });
 
   describe("Requests", () => {
     const testContactId = "CONTACT_ID";
-    let requestSpy: jest.SpyInstance<
-      Promise<ConnectResponseData>,
-      [command: string, data?: ConnectRequestData | undefined],
-      unknown
-    >;
-
-    beforeEach(() => {
-      requestSpy = jest.spyOn(moduleProxyMock, "request");
-    });
 
     test("getPhoneNumber returns result", async () => {
       const expectedResult: string = "123";
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve({ phoneNumber: expectedResult })),
       );
-      const actualResult = await contactClient.getPhoneNumber(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(VoiceRequests.getPhoneNumber, {
-        contactId: testContactId,
-      });
+
+      const actualResult = await sut.getPhoneNumber(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        VoiceRequests.getPhoneNumber,
+        {
+          contactId: testContactId,
+        },
+      );
       expect(actualResult).toBe(expectedResult);
     });
   });

@@ -1,27 +1,24 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
-import { Queue } from "./agent-request";
+import { contactNamespace } from "./namespace";
+import { ContactRoutes } from "./routes";
+import { ContactLifecycleTopicKey } from "./topic-keys";
 import {
   ContactAcceptedHandler,
-  ContactAcwHandler,
+  ContactAttributeFilter,
   ContactConnectedHandler,
   ContactConnectingHandler,
-  ContactDestroyHandler,
+  ContactDestroyedHandler,
   ContactErrorHandler,
   ContactIncomingHandler,
-  ContactLifecycleTopic,
   ContactMissedHandler,
   ContactPendingHandler,
-} from "./contact-events";
-import {
-  ContactAttributeFilter,
-  ContactRequests,
+  ContactStartingAcwHandler,
   ContactState,
   ContactType,
   GetAttributesRequest,
-  ReferenceDictionary,
-} from "./contact-request";
-import { contactNamespace } from "./namespace";
+  Queue,
+} from "./types";
 
 export class ContactClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
@@ -38,10 +35,7 @@ export class ContactClient extends ConnectClient {
       attributes,
     };
 
-    return this.context.proxy.request(
-      ContactRequests.getAttributes,
-      requestData,
-    );
+    return this.context.proxy.request(ContactRoutes.getAttributes, requestData);
   }
 
   async getAttribute(
@@ -54,7 +48,7 @@ export class ContactClient extends ConnectClient {
 
   async getInitialContactId(contactId: string): Promise<string | undefined> {
     const data: Record<string, string> = await this.context.proxy.request(
-      ContactRequests.getInitialContactId,
+      ContactRoutes.getInitialContactId,
       { contactId },
     );
     return data.initialContactId;
@@ -62,7 +56,7 @@ export class ContactClient extends ConnectClient {
 
   async getType(contactId: string): Promise<ContactType> {
     const data: Record<string, ContactType> = await this.context.proxy.request(
-      ContactRequests.getType,
+      ContactRoutes.getType,
       { contactId },
     );
     return data.type;
@@ -70,7 +64,7 @@ export class ContactClient extends ConnectClient {
 
   async getState(contactId: string): Promise<ContactState> {
     const data: ContactState = await this.context.proxy.request(
-      ContactRequests.getState,
+      ContactRoutes.getState,
       {
         contactId,
       },
@@ -80,179 +74,147 @@ export class ContactClient extends ConnectClient {
 
   async getStateDuration(contactId: string): Promise<number> {
     const data: Record<string, number> = await this.context.proxy.request(
-      ContactRequests.getStateDuration,
+      ContactRoutes.getStateDuration,
       { contactId },
     );
     return data.stateDuration;
   }
 
-  async getQueue(contactId: string): Promise<Queue> {
-    const data: Queue = await this.context.proxy.request(
-      ContactRequests.getQueue,
-      {
-        contactId,
-      },
-    );
-    return data;
+  getQueue(contactId: string): Promise<Queue> {
+    return this.context.proxy.request(ContactRoutes.getQueue, {
+      contactId,
+    });
   }
 
   async getQueueTimestamp(contactId: string): Promise<Date | undefined> {
     const data: Record<string, Date> = await this.context.proxy.request(
-      ContactRequests.getQueueTimestamp,
+      ContactRoutes.getQueueTimestamp,
       { contactId },
     );
     return data.queueTimestamp;
   }
 
-  async getName(contactId: string): Promise<string | undefined> {
-    const data: Record<string, string> = await this.context.proxy.request(
-      ContactRequests.getName,
-      { contactId },
-    );
-    return data.name;
-  }
-
-  async getDescription(contactId: string): Promise<string | undefined> {
-    const data: Record<string, string> = await this.context.proxy.request(
-      ContactRequests.getDescription,
-      { contactId },
-    );
-    return data.description;
-  }
-
-  async getReferences(
-    contactId: string,
-  ): Promise<ReferenceDictionary | undefined> {
-    const data: ReferenceDictionary | undefined =
-      await this.context.proxy.request(ContactRequests.getReferences, {
-        contactId,
-      });
-    return data;
-  }
-
-  // lifecycle
-
   onAccepted(handler: ContactAcceptedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.ACCEPTED, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Accepted, parameter: contactId },
       handler,
     );
   }
 
-  onAcw(handler: ContactAcwHandler, contactId?: string) {
+  onStartingAcw(handler: ContactStartingAcwHandler, contactId?: string) {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.ACW, parameter: contactId },
+      { key: ContactLifecycleTopicKey.StartingACW, parameter: contactId },
       handler,
     );
   }
 
   onConnected(handler: ContactConnectedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.CONNECTED, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Connected, parameter: contactId },
       handler,
     );
   }
 
   onConnecting(handler: ContactConnectingHandler, contactId?: string): void {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.CONNECTING, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Connecting, parameter: contactId },
       handler,
     );
   }
 
-  onDestroy(handler: ContactDestroyHandler, contactId?: string): void {
+  onDestroyed(handler: ContactDestroyedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.DESTROY, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Destroyed, parameter: contactId },
       handler,
     );
   }
 
   onError(handler: ContactErrorHandler, contactId?: string): void {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.ERROR, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Error, parameter: contactId },
       handler,
     );
   }
 
   onIncoming(handler: ContactIncomingHandler): void {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.INCOMING },
+      { key: ContactLifecycleTopicKey.Incoming },
       handler,
     );
   }
 
   onMissed(handler: ContactMissedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.MISSED, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Missed, parameter: contactId },
       handler,
     );
   }
 
   onPending(handler: ContactPendingHandler, contactId?: string): void {
     this.context.proxy.subscribe(
-      { key: ContactLifecycleTopic.PENDING, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Pending, parameter: contactId },
       handler,
     );
   }
 
   offAccepted(handler: ContactAcceptedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.ACCEPTED, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Accepted, parameter: contactId },
       handler,
     );
   }
 
-  offAcw(handler: ContactAcwHandler, contactId?: string) {
+  offStartingAcw(handler: ContactStartingAcwHandler, contactId?: string) {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.ACW, parameter: contactId },
+      { key: ContactLifecycleTopicKey.StartingACW, parameter: contactId },
       handler,
     );
   }
 
   offConnected(handler: ContactConnectedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.CONNECTED, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Connected, parameter: contactId },
       handler,
     );
   }
 
   offConnecting(handler: ContactConnectingHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.CONNECTING, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Connecting, parameter: contactId },
       handler,
     );
   }
 
-  offDestroy(handler: ContactDestroyHandler, contactId?: string): void {
+  offDestroyed(handler: ContactDestroyedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.DESTROY, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Destroyed, parameter: contactId },
       handler,
     );
   }
   offError(handler: ContactErrorHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.ERROR, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Error, parameter: contactId },
       handler,
     );
   }
 
   offIncoming(handler: ContactIncomingHandler): void {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.INCOMING },
+      { key: ContactLifecycleTopicKey.Incoming },
       handler,
     );
   }
 
   offMissed(handler: ContactMissedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.MISSED, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Missed, parameter: contactId },
       handler,
     );
   }
 
   offPending(handler: ContactPendingHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopic.PENDING, parameter: contactId },
+      { key: ContactLifecycleTopicKey.Pending, parameter: contactId },
       handler,
     );
   }

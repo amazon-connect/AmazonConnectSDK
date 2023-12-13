@@ -1,262 +1,262 @@
-import {
-  ConnectRequestData,
-  ConnectResponseData,
-  ModuleContext,
-  ModuleProxy,
-} from "@amazon-connect/core";
+/* eslint-disable @typescript-eslint/unbound-method */
+import { ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
 
-import { Queue } from "./agent-request";
 import { ContactClient } from "./contact-client";
-import {
-  ContactAcceptedEventData,
-  ContactAcceptedHandler,
-  ContactAcwEventData,
-  ContactAcwHandler,
-  ContactConnectedEventData,
-  ContactConnectedHandler,
-  ContactConnectingEventData,
-  ContactConnectingHandler,
-  ContactDestroyEventData,
-  ContactDestroyHandler,
-  ContactErrorEventData,
-  ContactErrorHandler,
-  ContactIncomingEventData,
-  ContactIncomingHandler,
-  ContactLifecycleTopic,
-  ContactMissedEventData,
-  ContactMissedHandler,
-  ContactPendingEventData,
-  ContactPendingHandler,
-} from "./contact-events";
-import {
-  ContactRequests,
-  ContactState,
-  ContactStateType,
-  ReferenceDictionary,
-  ReferenceType,
-} from "./contact-request";
+import { ContactRoutes } from "./routes";
+import { ContactLifecycleTopicKey } from "./topic-keys";
+import { ContactState, Queue } from "./types";
 
 const currentContact = "CURRENT_CONTACT";
 
 const moduleProxyMock = mock<ModuleProxy>();
-const moduleContextMock = mock<ModuleContext>();
-
-Object.defineProperty(moduleContextMock, "proxy", {
-  get() {
-    return moduleProxyMock;
-  },
+const moduleContextMock = mock<ModuleContext>({
+  proxy: moduleProxyMock,
 });
+
+let sut: ContactClient;
 
 beforeEach(jest.resetAllMocks);
 
-describe("ContactClient", () => {
-  const contactClient = new ContactClient({
+beforeEach(() => {
+  sut = new ContactClient({
     context: moduleContextMock,
   });
+});
 
+describe("ContactClient", () => {
   describe("Events", () => {
     describe("ACCEPTED", () => {
-      const handler: ContactAcceptedHandler =
-        createHandler<ContactAcceptedEventData>();
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
 
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onAccepted(handler, currentContact);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.ACCEPTED, parameter: currentContact },
+        sut.onAccepted(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Accepted, parameter: currentContact },
           handler,
         );
       });
 
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offAccepted(handler, currentContact);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.ACCEPTED, parameter: currentContact },
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offAccepted(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Accepted, parameter: currentContact },
           handler,
         );
       });
     });
 
-    describe("ACW", () => {
-      const handler: ContactAcwHandler = createHandler<ContactAcwEventData>();
+    describe("Starting ACW", () => {
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
 
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onAcw(handler, currentContact);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.ACW, parameter: currentContact },
+        sut.onStartingAcw(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.StartingACW,
+            parameter: currentContact,
+          },
           handler,
         );
       });
 
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offAcw(handler, currentContact);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.ACW, parameter: currentContact },
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offStartingAcw(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.StartingACW,
+            parameter: currentContact,
+          },
           handler,
         );
       });
     });
 
     describe("CONNECTED", () => {
-      const handler: ContactConnectedHandler =
-        createHandler<ContactConnectedEventData>();
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
 
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onConnected(handler, currentContact);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.CONNECTED, parameter: currentContact },
+        sut.onConnected(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Connected,
+            parameter: currentContact,
+          },
           handler,
         );
       });
 
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offConnected(handler, currentContact);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.CONNECTED, parameter: currentContact },
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offConnected(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Connected,
+            parameter: currentContact,
+          },
           handler,
         );
       });
     });
 
     describe("CONNECTING", () => {
-      const handler: ContactConnectingHandler =
-        createHandler<ContactConnectingEventData>();
-
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onConnecting(handler, currentContact);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.CONNECTING, parameter: currentContact },
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
+        sut.onConnecting(handler, currentContact);
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Connecting,
+            parameter: currentContact,
+          },
           handler,
         );
       });
 
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offConnecting(handler, currentContact);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.CONNECTING, parameter: currentContact },
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offConnecting(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Connecting,
+            parameter: currentContact,
+          },
           handler,
         );
       });
     });
 
-    describe("DESTROY", () => {
-      const handler: ContactDestroyHandler =
-        createHandler<ContactDestroyEventData>();
+    describe("DESTROYED", () => {
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
 
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onDestroy(handler, currentContact);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.DESTROY, parameter: currentContact },
+        sut.onDestroyed(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Destroyed,
+            parameter: currentContact,
+          },
           handler,
         );
       });
 
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offDestroy(handler, currentContact);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.DESTROY, parameter: currentContact },
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offDestroyed(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Destroyed,
+            parameter: currentContact,
+          },
           handler,
         );
       });
     });
 
     describe("ERROR", () => {
-      const handler: ContactErrorHandler =
-        createHandler<ContactErrorEventData>();
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
 
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onError(handler, currentContact);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.ERROR, parameter: currentContact },
+        sut.onError(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Error, parameter: currentContact },
           handler,
         );
       });
 
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offError(handler, currentContact);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.ERROR, parameter: currentContact },
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offError(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Error, parameter: currentContact },
           handler,
         );
       });
     });
 
     describe("INCOMING", () => {
-      const handler: ContactIncomingHandler =
-        createHandler<ContactIncomingEventData>();
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
 
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onIncoming(handler);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.INCOMING },
+        sut.onIncoming(handler);
+
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Incoming },
           handler,
         );
       });
 
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offIncoming(handler);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.INCOMING },
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offIncoming(handler);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Incoming },
           handler,
         );
       });
     });
 
     describe("MISSED", () => {
-      const handler: ContactMissedHandler =
-        createHandler<ContactMissedEventData>();
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
 
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onMissed(handler, currentContact);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.MISSED, parameter: currentContact },
+        sut.onMissed(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Missed, parameter: currentContact },
           handler,
         );
       });
 
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offMissed(handler, currentContact);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.MISSED, parameter: currentContact },
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offMissed(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Missed, parameter: currentContact },
           handler,
         );
       });
     });
 
     describe("PENDING", () => {
-      const handler: ContactPendingHandler =
-        createHandler<ContactPendingEventData>();
-
-      it("subscribes to event with handler", () => {
-        const onSpy = jest.spyOn(moduleProxyMock, "subscribe");
-        contactClient.onPending(handler, currentContact);
-        expect(onSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.PENDING, parameter: currentContact },
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
+        sut.onPending(handler, currentContact);
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Pending, parameter: currentContact },
           handler,
         );
       });
 
-      it("unsubscribes from event with handler", () => {
-        const offSpy = jest.spyOn(moduleProxyMock, "unsubscribe");
-        contactClient.offPending(handler, currentContact);
-        expect(offSpy).toBeCalledWith(
-          { key: ContactLifecycleTopic.PENDING, parameter: currentContact },
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offPending(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          { key: ContactLifecycleTopicKey.Pending, parameter: currentContact },
           handler,
         );
       });
@@ -265,28 +265,24 @@ describe("ContactClient", () => {
 
   describe("Requests", () => {
     const testContactId = "CONTACT_ID";
-    let requestSpy: jest.SpyInstance<
-      Promise<ConnectResponseData>,
-      [command: string, data?: ConnectRequestData | undefined],
-      unknown
-    >;
-
-    beforeEach(() => {
-      requestSpy = jest.spyOn(moduleProxyMock, "request");
-    });
 
     test("getAttribute gets attribute if present in result", async () => {
       const key = "TEST_KEY";
       const value = "TEST_VALUE";
       const expectedResponse = { [key]: value };
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve(expectedResponse)),
       );
-      const actualResult = await contactClient.getAttribute(testContactId, key);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getAttributes, {
-        contactId: testContactId,
-        attributes: [key],
-      });
+
+      const actualResult = await sut.getAttribute(testContactId, key);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getAttributes,
+        {
+          contactId: testContactId,
+          attributes: [key],
+        },
+      );
       expect(actualResult).toEqual(value);
     });
 
@@ -294,36 +290,49 @@ describe("ContactClient", () => {
       const key = "TEST_KEY";
       const value = "TEST_VALUE";
       const expectedResponse = { OTHER_KEY: value };
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve(expectedResponse)),
       );
-      const actualResult = await contactClient.getAttribute(testContactId, key);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getAttributes, {
-        contactId: testContactId,
-        attributes: [key],
-      });
+
+      const actualResult = await sut.getAttribute(testContactId, key);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getAttributes,
+        {
+          contactId: testContactId,
+          attributes: [key],
+        },
+      );
       expect(actualResult).toBeUndefined();
     });
 
     test("getAttributes passes attributes list if provided", async () => {
       const attributes = ["ATTRIBUTE_1", "ATTRIBUTE_2"];
-      requestSpy.mockReturnValue(new Promise((resolve) => resolve()));
-      await contactClient.getAttributes(testContactId, attributes);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getAttributes, {
-        contactId: testContactId,
-        attributes,
-      });
+      moduleProxyMock.request.mockReturnValue(
+        new Promise((resolve) => resolve()),
+      );
+
+      await sut.getAttributes(testContactId, attributes);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getAttributes,
+        {
+          contactId: testContactId,
+          attributes,
+        },
+      );
     });
 
     test("getInitialContactId returns result if available", async () => {
       const expectedResult = "CONTACT_ID";
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve({ initialContactId: expectedResult })),
       );
-      const actualResult =
-        await contactClient.getInitialContactId(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(
-        ContactRequests.getInitialContactId,
+
+      const actualResult = await sut.getInitialContactId(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getInitialContactId,
         {
           contactId: testContactId,
         },
@@ -332,13 +341,14 @@ describe("ContactClient", () => {
     });
 
     test("getInitialContactId returns undefined if result not available", async () => {
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve({ initialContactId: undefined })),
       );
-      const actualResult =
-        await contactClient.getInitialContactId(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(
-        ContactRequests.getInitialContactId,
+
+      const actualResult = await sut.getInitialContactId(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getInitialContactId,
         {
           contactId: testContactId,
         },
@@ -348,39 +358,49 @@ describe("ContactClient", () => {
 
     test("getType returns result", async () => {
       const expectedResult: string = "voice";
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve({ type: expectedResult })),
       );
-      const actualResult = await contactClient.getType(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getType, {
-        contactId: testContactId,
-      });
+      const actualResult = await sut.getType(testContactId);
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getType,
+        {
+          contactId: testContactId,
+        },
+      );
       expect(actualResult).toBe(expectedResult);
     });
 
     test("getState returns result", async () => {
       const expectedResult: ContactState = {
-        type: ContactStateType.INIT,
+        type: "init",
         timestamp: new Date(),
       };
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve(expectedResult)),
       );
-      const actualResult = await contactClient.getState(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getState, {
-        contactId: testContactId,
-      });
+
+      const actualResult = await sut.getState(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getState,
+        {
+          contactId: testContactId,
+        },
+      );
       expect(actualResult).toBe(expectedResult);
     });
 
     test("getStateDuration returns result", async () => {
       const expectedResult = 1000;
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve({ stateDuration: expectedResult })),
       );
-      const actualResult = await contactClient.getStateDuration(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(
-        ContactRequests.getStateDuration,
+
+      const actualResult = await sut.getStateDuration(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getStateDuration,
         {
           contactId: testContactId,
         },
@@ -394,24 +414,14 @@ describe("ContactClient", () => {
         queueARN: "ARN",
         queueId: "ARN",
       };
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve(expectedResult)),
       );
-      const actualResult = await contactClient.getQueue(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getQueue, {
-        contactId: testContactId,
-      });
-      expect(actualResult).toBe(expectedResult);
-    });
 
-    test("getQueueTimestamp returns result", async () => {
-      const expectedResult = new Date();
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ queueTimestamp: expectedResult })),
-      );
-      const actualResult = await contactClient.getQueueTimestamp(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(
-        ContactRequests.getQueueTimestamp,
+      const actualResult = await sut.getQueue(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getQueue,
         {
           contactId: testContactId,
         },
@@ -419,80 +429,21 @@ describe("ContactClient", () => {
       expect(actualResult).toBe(expectedResult);
     });
 
-    test("getName returns result if available", async () => {
-      const expectedResult = "NAME";
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ name: expectedResult })),
+    test("getQueueTimestamp returns result", async () => {
+      const expectedResult = new Date();
+      moduleProxyMock.request.mockReturnValue(
+        new Promise((resolve) => resolve({ queueTimestamp: expectedResult })),
       );
-      const actualResult = await contactClient.getName(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getName, {
-        contactId: testContactId,
-      });
+
+      const actualResult = await sut.getQueueTimestamp(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getQueueTimestamp,
+        {
+          contactId: testContactId,
+        },
+      );
       expect(actualResult).toBe(expectedResult);
-    });
-
-    test("getName returns undefined if result not available", async () => {
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ name: undefined })),
-      );
-      const actualResult = await contactClient.getName(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getName, {
-        contactId: testContactId,
-      });
-      expect(actualResult).toBeUndefined();
-    });
-
-    test("getDescription returns result if available", async () => {
-      const expectedResult = "DESCRIPTION";
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ description: expectedResult })),
-      );
-      const actualResult = await contactClient.getDescription(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getDescription, {
-        contactId: testContactId,
-      });
-      expect(actualResult).toBe(expectedResult);
-    });
-
-    test("getDescription returns undefined if result not available", async () => {
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ description: undefined })),
-      );
-      const actualResult = await contactClient.getDescription(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getDescription, {
-        contactId: testContactId,
-      });
-      expect(actualResult).toBeUndefined();
-    });
-
-    test("getReferences returns result if available", async () => {
-      const expectedResult: ReferenceDictionary = {
-        Reference1: { type: ReferenceType.URL, value: "some URL" },
-      };
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve(expectedResult)),
-      );
-      const actualResult = await contactClient.getReferences(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getReferences, {
-        contactId: testContactId,
-      });
-      expect(actualResult).toBe(expectedResult);
-    });
-
-    test("getReferences returns undefined if result not available", async () => {
-      requestSpy.mockReturnValue(new Promise((resolve) => resolve(undefined)));
-      const actualResult = await contactClient.getReferences(testContactId);
-      expect(requestSpy).toHaveBeenCalledWith(ContactRequests.getReferences, {
-        contactId: testContactId,
-      });
-      expect(actualResult).toBeUndefined();
     });
   });
 });
-
-function createHandler<T>() {
-  return (data: T) => {
-    console.log(data);
-    return Promise.resolve();
-  };
-}

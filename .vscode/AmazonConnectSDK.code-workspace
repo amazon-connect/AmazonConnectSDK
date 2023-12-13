@@ -1,37 +1,37 @@
 {
-	"folders": [
-		{
-			"name": "core",
-			"path": "../core"
-		},
-		{
-			"name": "workspace-types",
-			"path": "../workspace-types"
-		},
-		{
-			"name": "app",
-			"path": "../app"
-		},
-		{
-			"name": "contact",
-			"path": "../contact"
-		},
-		{
-			"name": "theme",
-			"path": "../theme"
-		},
-		{
-			"name": "voice",
-			"path": "../voice"
-		},
-	],
-	"settings": {
-		"jest.disabledWorkspaceFolders": [
-			"AmazonConnectSDK",
-			"workspace-types"
-		],
-		"editor.codeActionsOnSave": {
-			"source.fixAll.eslint": true,
-		}
-	}
+  "folders": [
+    {
+      "name": "core",
+      "path": "../core"
+    },
+    {
+      "name": "workspace-types",
+      "path": "../workspace-types"
+    },
+    {
+      "name": "app",
+      "path": "../app"
+    },
+    {
+      "name": "contact",
+      "path": "../contact"
+    },
+    {
+      "name": "theme",
+      "path": "../theme"
+    },
+    {
+      "name": "voice",
+      "path": "../voice"
+    },
+  ],
+  "settings": {
+    "jest.disabledWorkspaceFolders": [
+      "AmazonConnectSDK",
+      "workspace-types"
+    ],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  }
 }

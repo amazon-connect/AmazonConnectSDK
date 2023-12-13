@@ -1,3 +1,3 @@
 export { voiceNamespace } from "./namespace";
+export * from "./types";
 export { VoiceClient } from "./voice-client";
-export * from "./voice-request";

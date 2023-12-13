@@ -1,75 +1,72 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
-import { AgentStateChangeHandler, AgentTopic } from "./agent-events";
+import { contactNamespace } from "./namespace";
+import { AgentRoutes } from "./routes";
+import { AgentTopicKey } from "./topic-keys";
 import {
-  AgentChannelConcurrencyMap,
-  AgentRequests,
+  AgentChannelConcurrency,
   AgentRoutingProfile,
   AgentState,
-} from "./agent-request";
-import { contactNamespace } from "./namespace";
+  AgentStateChangedHandler,
+} from "./types";
 
 export class AgentClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
     super(contactNamespace, config);
   }
 
-  // requests
   async getARN(): Promise<string> {
-    const data: Record<string, string> = await this.context.proxy.request(
-      AgentRequests.getARN,
-    );
-    return data.ARN;
+    const { ARN } = await this.context.proxy.request<{
+      ARN: string;
+    }>(AgentRoutes.getARN);
+
+    return ARN;
   }
 
   async getName(): Promise<string> {
-    const data: Record<string, string> = await this.context.proxy.request(
-      AgentRequests.getName,
+    const { name } = await this.context.proxy.request<{ name: string }>(
+      AgentRoutes.getName,
     );
-    return data.name;
+
+    return name;
   }
 
-  async getState(): Promise<AgentState> {
-    const data: AgentState = await this.context.proxy.request(
-      AgentRequests.getState,
-    );
-    return data;
+  getState(): Promise<AgentState> {
+    return this.context.proxy.request(AgentRoutes.getState);
   }
 
-  async getRoutingProfile(): Promise<AgentRoutingProfile> {
-    const data: AgentRoutingProfile = await this.context.proxy.request(
-      AgentRequests.getRoutingProfile,
-    );
-    return data;
+  getRoutingProfile(): Promise<AgentRoutingProfile> {
+    return this.context.proxy.request(AgentRoutes.getRoutingProfile);
   }
 
-  async getChannelConcurrency(): Promise<AgentChannelConcurrencyMap> {
-    const data: AgentChannelConcurrencyMap = await this.context.proxy.request(
-      AgentRequests.getChannelConcurrency,
-    );
-    return data;
+  getChannelConcurrency(): Promise<AgentChannelConcurrency> {
+    return this.context.proxy.request(AgentRoutes.getChannelConcurrency);
   }
 
   async getExtension(): Promise<string | undefined> {
-    const data: Record<string, string> = await this.context.proxy.request(
-      AgentRequests.getExtension,
-    );
-    return data.extension;
+    const { extension } = await this.context.proxy.request<{
+      extension?: string;
+    }>(AgentRoutes.getExtension);
+
+    return extension;
   }
 
   async getDialableCountries(): Promise<string[]> {
-    const data: Record<string, string[]> = await this.context.proxy.request(
-      AgentRequests.getDialableCountries,
+    const { dialableCountries } = await this.context.proxy.request<{
+      dialableCountries: string[];
+    }>(AgentRoutes.getDialableCountries);
+
+    return dialableCountries;
+  }
+
+  onStateChange(handler: AgentStateChangedHandler): void {
+    this.context.proxy.subscribe({ key: AgentTopicKey.StateChanged }, handler);
+  }
+
+  offStateChange(handler: AgentStateChangedHandler): void {
+    this.context.proxy.unsubscribe(
+      { key: AgentTopicKey.StateChanged },
+      handler,
     );
-    return data.dialableCountries;
-  }
-
-  // lifecycle
-  onStateChange(handler: AgentStateChangeHandler): void {
-    this.context.proxy.subscribe({ key: AgentTopic.STATE_CHANGE }, handler);
-  }
-
-  offStateChange(handler: AgentStateChangeHandler): void {
-    this.context.proxy.unsubscribe({ key: AgentTopic.STATE_CHANGE }, handler);
   }
 }

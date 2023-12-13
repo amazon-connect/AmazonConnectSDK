@@ -1,22 +1,19 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
 import { voiceNamespace } from "./namespace";
-import { VoiceRequests } from "./voice-request";
+import { VoiceRequests } from "./types";
 
 export class VoiceClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
     super(voiceNamespace, config);
   }
 
-  // requests
-
   async getPhoneNumber(contactId: string): Promise<string> {
-    const data: Record<string, string> = await this.context.proxy.request(
-      VoiceRequests.getPhoneNumber,
-      {
-        contactId,
-      },
-    );
-    return data.phoneNumber;
+    const { phoneNumber } = await this.context.proxy.request<{
+      phoneNumber: string;
+    }>(VoiceRequests.getPhoneNumber, {
+      contactId,
+    });
+    return phoneNumber;
   }
 }

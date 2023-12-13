@@ -1,83 +1,77 @@
-import {
-  ConnectRequestData,
-  ConnectResponseData,
-  ModuleContext,
-  ModuleProxy,
-} from "@amazon-connect/core";
+/* eslint-disable @typescript-eslint/unbound-method */
+import { ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
 
 import { AgentClient } from "./agent-client";
-import { AgentStateChangeEventData, AgentTopic } from "./agent-events";
+import { AgentRoutes } from "./routes";
+import { AgentTopicKey } from "./topic-keys";
 import {
-  AgentChannelConcurrencyMap,
-  AgentRequests,
+  AgentChannelConcurrency,
   AgentRoutingProfile,
   AgentState,
-  AgentStateType,
   Queue,
-} from "./agent-request";
+} from "./types";
 
 const moduleProxyMock = mock<ModuleProxy>();
-const moduleContextMock = mock<ModuleContext>();
-
-Object.defineProperty(moduleContextMock, "proxy", {
-  get() {
-    return moduleProxyMock;
-  },
+const moduleContextMock = mock<ModuleContext>({
+  proxy: moduleProxyMock,
 });
+
+let sut: AgentClient;
 
 beforeEach(jest.resetAllMocks);
 
+beforeEach(() => {
+  sut = new AgentClient({ context: moduleContextMock });
+});
+
 describe("AgentClient", () => {
-  const agentClient = new AgentClient({
-    context: moduleContextMock,
-  });
-
   describe("Events", () => {
-    const handler = (data: AgentStateChangeEventData) => {
-      console.log(data);
-      return Promise.resolve();
-    };
-
     test("onStateChange adds subscription", () => {
-      const spy = jest.spyOn(moduleProxyMock, "subscribe");
-      agentClient.onStateChange(handler);
-      expect(spy).toBeCalledWith({ key: AgentTopic.STATE_CHANGE }, handler);
+      const handler = jest.fn();
+
+      sut.onStateChange(handler);
+
+      expect(moduleProxyMock.subscribe).toBeCalledWith(
+        { key: AgentTopicKey.StateChanged },
+        handler,
+      );
     });
 
     test("offStateChange removes subscription", () => {
-      const spy = jest.spyOn(moduleProxyMock, "unsubscribe");
-      agentClient.offStateChange(handler);
-      expect(spy).toBeCalledWith({ key: AgentTopic.STATE_CHANGE }, handler);
+      const handler = jest.fn();
+
+      sut.offStateChange(handler);
+
+      expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+        { key: AgentTopicKey.StateChanged },
+        handler,
+      );
     });
   });
 
   describe("Requests", () => {
-    let requestSpy: jest.SpyInstance<
-      Promise<ConnectResponseData>,
-      [command: string, data?: ConnectRequestData | undefined],
-      unknown
-    >;
-
-    beforeEach(() => {
-      requestSpy = jest.spyOn(moduleProxyMock, "request");
-    });
-
     test("getARN returns result", async () => {
       const arn = "ARN";
-      requestSpy.mockReturnValue(
+      moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve({ ARN: arn })),
       );
-      const actualResult = await agentClient.getARN();
-      expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getARN);
+
+      const actualResult = await sut.getARN();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(AgentRoutes.getARN);
       expect(actualResult).toEqual(arn);
     });
 
     test("getName returns result", async () => {
       const name = "name";
-      requestSpy.mockReturnValue(new Promise((resolve) => resolve({ name })));
-      const actualResult = await agentClient.getName();
-      expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getName);
+      moduleProxyMock.request.mockReturnValue(
+        new Promise((resolve) => resolve({ name })),
+      );
+
+      const actualResult = await sut.getName();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(AgentRoutes.getName);
       expect(actualResult).toEqual(name);
     });
 
@@ -86,11 +80,17 @@ describe("AgentClient", () => {
         agentStateARN: "ARN",
         name: "name",
         startTimestamp: new Date(),
-        type: AgentStateType.INIT,
+        type: "init",
       };
-      requestSpy.mockReturnValue(new Promise((resolve) => resolve(state)));
-      const actualResult = await agentClient.getState();
-      expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getState);
+      moduleProxyMock.request.mockReturnValue(
+        new Promise((resolve) => resolve(state)),
+      );
+
+      const actualResult = await sut.getState();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getState,
+      );
       expect(actualResult).toEqual(state);
     });
 
@@ -104,53 +104,61 @@ describe("AgentClient", () => {
         routingProfileARN: "ARN",
         routingProfileId: "id",
       };
-      requestSpy.mockReturnValue(new Promise((resolve) => resolve(profile)));
-      const actualResult = await agentClient.getRoutingProfile();
-      expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getRoutingProfile);
+      moduleProxyMock.request.mockResolvedValueOnce(profile);
+
+      const actualResult = await sut.getRoutingProfile();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getRoutingProfile,
+      );
       expect(actualResult).toEqual(profile);
     });
 
     test("getChannelConcurrency returns result", async () => {
-      const concurrency: AgentChannelConcurrencyMap = {
+      const concurrency: AgentChannelConcurrency = {
         ["voice"]: 1,
       };
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve(concurrency)),
-      );
-      const actualResult = await agentClient.getChannelConcurrency();
-      expect(requestSpy).toHaveBeenCalledWith(
-        AgentRequests.getChannelConcurrency,
+      moduleProxyMock.request.mockResolvedValueOnce(concurrency);
+
+      const actualResult = await sut.getChannelConcurrency();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getChannelConcurrency,
       );
       expect(actualResult).toEqual(concurrency);
     });
 
     test("getExtension returns result when available", async () => {
       const extension = "123";
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ extension })),
+      moduleProxyMock.request.mockResolvedValueOnce({ extension });
+
+      const actualResult = await sut.getExtension();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getExtension,
       );
-      const actualResult = await agentClient.getExtension();
-      expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getExtension);
       expect(actualResult).toEqual(extension);
     });
 
     test("getExtension returns undefined when result is not available", async () => {
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ extension: undefined })),
+      moduleProxyMock.request.mockResolvedValueOnce({ extension: undefined });
+
+      const actualResult = await sut.getExtension();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getExtension,
       );
-      const actualResult = await agentClient.getExtension();
-      expect(requestSpy).toHaveBeenCalledWith(AgentRequests.getExtension);
       expect(actualResult).toBeUndefined();
     });
 
     test("getDialableCountries returns result", async () => {
       const dialableCountries = ["us"];
-      requestSpy.mockReturnValue(
-        new Promise((resolve) => resolve({ dialableCountries })),
-      );
-      const actualResult = await agentClient.getDialableCountries();
-      expect(requestSpy).toHaveBeenCalledWith(
-        AgentRequests.getDialableCountries,
+      moduleProxyMock.request.mockResolvedValueOnce({ dialableCountries });
+
+      const actualResult = await sut.getDialableCountries();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getDialableCountries,
       );
       expect(actualResult).toEqual(dialableCountries);
     });
