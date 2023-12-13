@@ -59,11 +59,11 @@ export class AgentClient extends ConnectClient {
     return dialableCountries;
   }
 
-  onStateChange(handler: AgentStateChangedHandler): void {
+  onStateChanged(handler: AgentStateChangedHandler): void {
     this.context.proxy.subscribe({ key: AgentTopicKey.StateChanged }, handler);
   }
 
-  offStateChange(handler: AgentStateChangedHandler): void {
+  offStateChanged(handler: AgentStateChangedHandler): void {
     this.context.proxy.unsubscribe(
       { key: AgentTopicKey.StateChanged },
       handler,

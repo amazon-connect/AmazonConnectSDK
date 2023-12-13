@@ -30,7 +30,7 @@ describe("AgentClient", () => {
     test("onStateChange adds subscription", () => {
       const handler = jest.fn();
 
-      sut.onStateChange(handler);
+      sut.onStateChanged(handler);
 
       expect(moduleProxyMock.subscribe).toBeCalledWith(
         { key: AgentTopicKey.StateChanged },
@@ -41,7 +41,7 @@ describe("AgentClient", () => {
     test("offStateChange removes subscription", () => {
       const handler = jest.fn();
 
-      sut.offStateChange(handler);
+      sut.offStateChanged(handler);
 
       expect(moduleProxyMock.unsubscribe).toBeCalledWith(
         { key: AgentTopicKey.StateChanged },
