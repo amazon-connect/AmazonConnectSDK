@@ -1,10 +1,12 @@
+import { Theme } from "@cloudscape-design/components/theming";
+
 import { Overrides } from "./supported-overrides";
 
 export function buildTheme({
   fontFamily,
   brandColor,
   brandColorActive,
-}: Overrides) {
+}: Overrides): Theme {
   return {
     tokens: {
       fontFamilyBase: fontFamily,

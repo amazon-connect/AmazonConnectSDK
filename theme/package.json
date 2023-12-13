@@ -23,7 +23,7 @@
     "lib/**/*"
   ],
   "peerDependencies": {
-    "@cloudscape-design/components": "^3.0.0"
+    "@cloudscape-design/components": "^3.0.383"
   },
   "devDependencies": {
     "jest-environment-jsdom": "^29.6.4",
