@@ -66,23 +66,8 @@ type BaseContactLifecycleEvent = {
 export type ContactStartingAcw = BaseContactLifecycleEvent;
 export type ContactStartingAcwHandler = SubscriptionHandler<ContactStartingAcw>;
 
-export type ContactConnected = BaseContactLifecycleEvent;
-export type ContactConnectedHandler = SubscriptionHandler<ContactConnected>;
-
-export type ContactConnecting = BaseContactLifecycleEvent;
-export type ContactConnectingHandler = SubscriptionHandler<ContactConnecting>;
-
 export type ContactDestroyed = BaseContactLifecycleEvent;
 export type ContactDestroyedHandler = SubscriptionHandler<ContactDestroyed>;
 
-export type ContactError = BaseContactLifecycleEvent;
-export type ContactErrorHandler = SubscriptionHandler<ContactError>;
-
-export type ContactIncoming = BaseContactLifecycleEvent;
-export type ContactIncomingHandler = SubscriptionHandler<ContactIncoming>;
-
 export type ContactMissed = BaseContactLifecycleEvent;
 export type ContactMissedHandler = SubscriptionHandler<ContactMissed>;
-
-export type ContactPending = BaseContactLifecycleEvent;
-export type ContactPendingHandler = SubscriptionHandler<ContactPending>;

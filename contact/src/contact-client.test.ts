@@ -56,64 +56,6 @@ describe("ContactClient", () => {
       });
     });
 
-    describe("CONNECTED", () => {
-      test("subscribes to event with handler", () => {
-        const handler = jest.fn();
-
-        sut.onConnected(handler, currentContact);
-
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
-          {
-            key: ContactLifecycleTopicKey.Connected,
-            parameter: currentContact,
-          },
-          handler,
-        );
-      });
-
-      test("unsubscribes from event with handler", () => {
-        const handler = jest.fn();
-
-        sut.offConnected(handler, currentContact);
-
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
-          {
-            key: ContactLifecycleTopicKey.Connected,
-            parameter: currentContact,
-          },
-          handler,
-        );
-      });
-    });
-
-    describe("CONNECTING", () => {
-      test("subscribes to event with handler", () => {
-        const handler = jest.fn();
-        sut.onConnecting(handler, currentContact);
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
-          {
-            key: ContactLifecycleTopicKey.Connecting,
-            parameter: currentContact,
-          },
-          handler,
-        );
-      });
-
-      test("unsubscribes from event with handler", () => {
-        const handler = jest.fn();
-
-        sut.offConnecting(handler, currentContact);
-
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
-          {
-            key: ContactLifecycleTopicKey.Connecting,
-            parameter: currentContact,
-          },
-          handler,
-        );
-      });
-    });
-
     describe("DESTROYED", () => {
       test("subscribes to event with handler", () => {
         const handler = jest.fn();
@@ -144,54 +86,6 @@ describe("ContactClient", () => {
       });
     });
 
-    describe("ERROR", () => {
-      test("subscribes to event with handler", () => {
-        const handler = jest.fn();
-
-        sut.onError(handler, currentContact);
-
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
-          { key: ContactLifecycleTopicKey.Error, parameter: currentContact },
-          handler,
-        );
-      });
-
-      test("unsubscribes from event with handler", () => {
-        const handler = jest.fn();
-
-        sut.offError(handler, currentContact);
-
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
-          { key: ContactLifecycleTopicKey.Error, parameter: currentContact },
-          handler,
-        );
-      });
-    });
-
-    describe("INCOMING", () => {
-      test("subscribes to event with handler", () => {
-        const handler = jest.fn();
-
-        sut.onIncoming(handler);
-
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
-          { key: ContactLifecycleTopicKey.Incoming },
-          handler,
-        );
-      });
-
-      test("unsubscribes from event with handler", () => {
-        const handler = jest.fn();
-
-        sut.offIncoming(handler);
-
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
-          { key: ContactLifecycleTopicKey.Incoming },
-          handler,
-        );
-      });
-    });
-
     describe("MISSED", () => {
       test("subscribes to event with handler", () => {
         const handler = jest.fn();
@@ -211,28 +105,6 @@ describe("ContactClient", () => {
 
         expect(moduleProxyMock.unsubscribe).toBeCalledWith(
           { key: ContactLifecycleTopicKey.Missed, parameter: currentContact },
-          handler,
-        );
-      });
-    });
-
-    describe("PENDING", () => {
-      test("subscribes to event with handler", () => {
-        const handler = jest.fn();
-        sut.onPending(handler, currentContact);
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
-          { key: ContactLifecycleTopicKey.Pending, parameter: currentContact },
-          handler,
-        );
-      });
-
-      test("unsubscribes from event with handler", () => {
-        const handler = jest.fn();
-
-        sut.offPending(handler, currentContact);
-
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
-          { key: ContactLifecycleTopicKey.Pending, parameter: currentContact },
           handler,
         );
       });
