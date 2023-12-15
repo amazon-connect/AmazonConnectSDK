@@ -59,17 +59,9 @@ export type ContactStateValue =
   | "rejected"
   | "error";
 
-export type ContactState = {
-  type: ContactStateValue;
-  timestamp: Date;
-};
-
 type BaseContactLifecycleEvent = {
   contactId: string;
 };
-
-export type ContactAccepted = BaseContactLifecycleEvent;
-export type ContactAcceptedHandler = SubscriptionHandler<ContactAccepted>;
 
 export type ContactStartingAcw = BaseContactLifecycleEvent;
 export type ContactStartingAcwHandler = SubscriptionHandler<ContactStartingAcw>;

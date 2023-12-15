@@ -5,7 +5,7 @@ import { mock } from "jest-mock-extended";
 import { ContactClient } from "./contact-client";
 import { ContactRoutes } from "./routes";
 import { ContactLifecycleTopicKey } from "./topic-keys";
-import { ContactState, Queue } from "./types";
+import { Queue } from "./types";
 
 const currentContact = "CURRENT_CONTACT";
 
@@ -26,30 +26,6 @@ beforeEach(() => {
 
 describe("ContactClient", () => {
   describe("Events", () => {
-    describe("ACCEPTED", () => {
-      test("subscribes to event with handler", () => {
-        const handler = jest.fn();
-
-        sut.onAccepted(handler, currentContact);
-
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
-          { key: ContactLifecycleTopicKey.Accepted, parameter: currentContact },
-          handler,
-        );
-      });
-
-      test("unsubscribes from event with handler", () => {
-        const handler = jest.fn();
-
-        sut.offAccepted(handler, currentContact);
-
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
-          { key: ContactLifecycleTopicKey.Accepted, parameter: currentContact },
-          handler,
-        );
-      });
-    });
-
     describe("Starting ACW", () => {
       test("subscribes to event with handler", () => {
         const handler = jest.fn();
@@ -364,26 +340,6 @@ describe("ContactClient", () => {
       const actualResult = await sut.getType(testContactId);
       expect(moduleProxyMock.request).toHaveBeenCalledWith(
         ContactRoutes.getType,
-        {
-          contactId: testContactId,
-        },
-      );
-      expect(actualResult).toBe(expectedResult);
-    });
-
-    test("getState returns result", async () => {
-      const expectedResult: ContactState = {
-        type: "init",
-        timestamp: new Date(),
-      };
-      moduleProxyMock.request.mockReturnValue(
-        new Promise((resolve) => resolve(expectedResult)),
-      );
-
-      const actualResult = await sut.getState(testContactId);
-
-      expect(moduleProxyMock.request).toHaveBeenCalledWith(
-        ContactRoutes.getState,
         {
           contactId: testContactId,
         },

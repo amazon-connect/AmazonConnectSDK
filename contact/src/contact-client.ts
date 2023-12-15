@@ -4,7 +4,6 @@ import { contactNamespace } from "./namespace";
 import { ContactRoutes } from "./routes";
 import { ContactLifecycleTopicKey } from "./topic-keys";
 import {
-  ContactAcceptedHandler,
   ContactAttributeFilter,
   ContactConnectedHandler,
   ContactConnectingHandler,
@@ -14,7 +13,6 @@ import {
   ContactMissedHandler,
   ContactPendingHandler,
   ContactStartingAcwHandler,
-  ContactState,
   ContactType,
   GetAttributesRequest,
   Queue,
@@ -62,16 +60,6 @@ export class ContactClient extends ConnectClient {
     return data.type;
   }
 
-  async getState(contactId: string): Promise<ContactState> {
-    const data: ContactState = await this.context.proxy.request(
-      ContactRoutes.getState,
-      {
-        contactId,
-      },
-    );
-    return data;
-  }
-
   async getStateDuration(contactId: string): Promise<number> {
     const data: Record<string, number> = await this.context.proxy.request(
       ContactRoutes.getStateDuration,
@@ -92,13 +80,6 @@ export class ContactClient extends ConnectClient {
       { contactId },
     );
     return data.queueTimestamp;
-  }
-
-  onAccepted(handler: ContactAcceptedHandler, contactId?: string): void {
-    this.context.proxy.subscribe(
-      { key: ContactLifecycleTopicKey.Accepted, parameter: contactId },
-      handler,
-    );
   }
 
   onStartingAcw(handler: ContactStartingAcwHandler, contactId?: string) {
@@ -153,13 +134,6 @@ export class ContactClient extends ConnectClient {
   onPending(handler: ContactPendingHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopicKey.Pending, parameter: contactId },
-      handler,
-    );
-  }
-
-  offAccepted(handler: ContactAcceptedHandler, contactId?: string): void {
-    this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopicKey.Accepted, parameter: contactId },
       handler,
     );
   }
