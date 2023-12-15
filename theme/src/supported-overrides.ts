@@ -11,10 +11,15 @@ export interface SupportedOverrides {
    */
   brandColor: ModeDependentValue;
   /**
-   * Slightly lighter or darker version brand color, applied when brand color elements become active,
+   * Slightly lighter or darker version of the brand color, applied when brand color elements become active,
    * focused or hovered.
    */
   brandColorActive: ModeDependentValue;
+  /**
+   * Very light version of the brand color, used as a background for selected items or light hover effects.
+   * Does not apply in dark mode.
+   */
+  lightBrandBackground: string;
 }
 
 export type Overrides = Partial<SupportedOverrides>;
@@ -24,6 +29,7 @@ const TOKENS = new Set<keyof SupportedOverrides>([
   "fontFamily",
   "brandColor",
   "brandColorActive",
+  "lightBrandBackground",
 ]);
 
 export function validateToken(
