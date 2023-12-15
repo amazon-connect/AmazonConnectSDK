@@ -49,16 +49,6 @@ export type GetAttributesRequest = {
 
 export type ContactType = string;
 
-export type ContactStateValue =
-  | "init"
-  | "incoming"
-  | "pending"
-  | "connecting"
-  | "connected"
-  | "missed"
-  | "rejected"
-  | "error";
-
 type BaseContactLifecycleEvent = {
   contactId: string;
 };
