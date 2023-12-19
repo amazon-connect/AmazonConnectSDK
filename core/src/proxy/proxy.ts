@@ -3,30 +3,44 @@ import {
   AmazonConnectError,
   AmazonConnectErrorHandler,
 } from "../amazon-connect-error";
-import { ConnectLogData, ConnectLogger } from "../logging";
+import { AmazonConnectNamespace } from "../amazon-connect-namespace";
+import {
+  ConnectLogger,
+  createLogMessage,
+  LogProxy,
+  ProxyLogData,
+} from "../logging";
 import {
   DownstreamMessage,
   ErrorMessage,
   LogMessage,
   PublishMessage,
+  ResponseMessage,
   SubscribeMessage,
   UnsubscribeMessage,
   UpstreamMessage,
+  UpstreamMessageOrigin,
 } from "../messaging";
 import {
   SubscriptionHandler,
   SubscriptionHandlerData,
-  SubscriptionSet,
+  SubscriptionHandlerIdMapping,
+  SubscriptionManager,
   SubscriptionTopic,
 } from "../messaging/subscription";
 import { AmazonConnectProvider } from "../provider";
+import {
+  ConnectRequestData,
+  ConnectResponseData,
+  createRequestMessage,
+  RequestManager,
+} from "../request";
 import { ErrorService } from "./error";
-import { ProxyConnectionStatusManager } from "./proxy-connection";
 import {
   ProxyConnectionChangedHandler,
   ProxyConnectionStatus,
-} from "./proxy-connection/types";
-import { ProxyLogData } from "./proxy-log-data";
+  ProxyConnectionStatusManager,
+} from "./proxy-connection";
 
 export abstract class Proxy<
   TConfig extends AmazonConnectConfig = AmazonConnectConfig,
@@ -34,12 +48,14 @@ export abstract class Proxy<
   TDownstreamMessage extends
     | { type: string }
     | DownstreamMessage = DownstreamMessage,
-> {
+> implements LogProxy
+{
   protected readonly provider: AmazonConnectProvider<TConfig>;
   protected readonly status: ProxyConnectionStatusManager;
-  private readonly subscriptions: SubscriptionSet<SubscriptionHandler>;
+  private readonly subscriptions: SubscriptionManager;
   private readonly errorService: ErrorService;
   private readonly logger: ConnectLogger;
+  private requestManager: RequestManager;
   private upstreamMessageQueue: TUpstreamMessage[];
   private connectionEstablished: boolean;
   private isInitialized: boolean;
@@ -51,12 +67,13 @@ export abstract class Proxy<
       mixin: () => ({ proxyType: this.proxyType }),
     });
 
+    this.requestManager = new RequestManager();
     this.status = new ProxyConnectionStatusManager();
     this.errorService = new ErrorService();
     this.upstreamMessageQueue = [];
     this.connectionEstablished = false;
     this.isInitialized = false;
-    this.subscriptions = new SubscriptionSet();
+    this.subscriptions = new SubscriptionManager();
   }
 
   init(): void {
@@ -66,15 +83,41 @@ export abstract class Proxy<
   }
   protected abstract initProxy(): void;
 
+  request<TResponse extends ConnectResponseData>(
+    namespace: AmazonConnectNamespace,
+    command: string,
+    data?: ConnectRequestData,
+    origin?: UpstreamMessageOrigin,
+  ): Promise<TResponse> {
+    const msg = createRequestMessage(
+      namespace,
+      command,
+      data,
+      origin ?? this.getUpstreamMessageOrigin(),
+    );
+
+    const resp = this.requestManager.processRequest<TResponse>(msg);
+
+    this.sendOrQueueMessageToSubject(msg as TUpstreamMessage);
+
+    return resp;
+  }
+
   subscribe<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>,
+    origin?: UpstreamMessageOrigin,
   ): void {
-    this.subscriptions.add(topic, handler as SubscriptionHandler);
+    const { handlerId } = this.subscriptions.add(
+      topic,
+      handler as SubscriptionHandler,
+    );
 
     const msg: SubscribeMessage = {
       type: "subscribe",
       topic,
+      messageOrigin: origin ?? this.getUpstreamMessageOrigin(),
+      handlerId,
     };
 
     this.sendOrQueueMessageToSubject(msg as TUpstreamMessage);
@@ -83,6 +126,7 @@ export abstract class Proxy<
   unsubscribe<THandlerData extends SubscriptionHandlerData>(
     topic: SubscriptionTopic,
     handler: SubscriptionHandler<THandlerData>,
+    origin?: UpstreamMessageOrigin,
   ): void {
     this.subscriptions.delete(topic, handler as SubscriptionHandler);
 
@@ -90,29 +134,19 @@ export abstract class Proxy<
       const msg: UnsubscribeMessage = {
         type: "unsubscribe",
         topic,
+        messageOrigin: origin ?? this.getUpstreamMessageOrigin(),
       };
 
       this.sendOrQueueMessageToSubject(msg as TUpstreamMessage);
     }
   }
 
-  log({ level, source, message, loggerId, data }: ProxyLogData): void {
-    // Sanitize guards against a caller provided data object containing a
-    // non-cloneable object which will fail if sent through a message channel
-    const sanitizedData = data
-      ? (JSON.parse(JSON.stringify(data)) as ConnectLogData)
-      : undefined;
-
-    const logMsg: LogMessage = {
-      type: "log",
-      level,
-      time: new Date(),
-      source,
-      message,
-      loggerId,
-      data: sanitizedData,
-      context: this.addContextToLogger(),
-    };
+  log(logData: ProxyLogData): void {
+    const logMsg = createLogMessage(
+      logData,
+      this.addContextToLogger(),
+      this.getUpstreamMessageOrigin(),
+    );
 
     this.sendOrQueueMessageToSubject(logMsg as TUpstreamMessage);
   }
@@ -141,6 +175,8 @@ export abstract class Proxy<
   protected abstract sendMessageToSubject(message: TUpstreamMessage): void;
 
   protected abstract addContextToLogger(): Record<string, unknown>;
+
+  protected abstract getUpstreamMessageOrigin(): UpstreamMessageOrigin;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected consumerMessageHandler(evt: MessageEvent<any>): void {
@@ -178,6 +214,9 @@ export abstract class Proxy<
       case "acknowledge":
         this.handleConnectionAcknowledge();
         break;
+      case "response":
+        this.handleResponse(msg);
+        break;
       case "publish":
         this.handlePublish(msg);
         break;
@@ -206,19 +245,35 @@ export abstract class Proxy<
     }
   }
 
+  private handleResponse(msg: ResponseMessage) {
+    this.requestManager.processResponse(msg);
+  }
+
   private handlePublish(msg: PublishMessage) {
-    this.subscriptions
-      .get(msg.topic)
-      .map((handler) =>
-        this.handleAsyncSubscriptionHandlerInvoke(handler, msg),
-      );
+    const { handlerId, topic } = msg;
+
+    if (handlerId) {
+      const handler = this.subscriptions.getById(topic, handlerId);
+      if (handler) {
+        void this.handleAsyncSubscriptionHandlerInvoke(
+          { handler, handlerId },
+          msg,
+        );
+      }
+    } else {
+      this.subscriptions
+        .get(topic)
+        .map((handlerIdMapping) =>
+          this.handleAsyncSubscriptionHandlerInvoke(handlerIdMapping, msg),
+        );
+    }
   }
 
   private handleError(msg: ErrorMessage) {
     if (msg.isFatal) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { message: reason, type: _, ...details } = msg;
-      this.status.update({ status: "error", reason, details });
+      this.status.update({ status: "error", reason: reason, details });
     }
 
     this.publishError({
@@ -242,7 +297,7 @@ export abstract class Proxy<
   }
 
   private async handleAsyncSubscriptionHandlerInvoke(
-    handler: SubscriptionHandler,
+    { handler, handlerId }: SubscriptionHandlerIdMapping,
     { topic, data }: PublishMessage,
   ): Promise<void> {
     try {
@@ -251,6 +306,7 @@ export abstract class Proxy<
       this.logger.error("An error occurred when handling subscription", {
         topic,
         error,
+        handlerId,
       });
     }
   }

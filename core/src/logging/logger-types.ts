@@ -1,5 +1,5 @@
-import { AmazonConnectProvider } from "../provider";
 import { LogLevel } from "./log-level";
+import { LogProvider } from "./log-provider";
 
 export type ConnectLogData = Record<string, unknown>;
 export type ConnectLoggerMixin = (
@@ -16,7 +16,7 @@ type BaseLoggerParams = {
 export type ConnectLoggerFromContextParams = string | BaseLoggerParams;
 
 export type ConnectLoggerParams = BaseLoggerParams & {
-  provider?: AmazonConnectProvider;
+  provider?: LogProvider | (() => LogProvider);
 };
 
 export type LogEntryOptions = {

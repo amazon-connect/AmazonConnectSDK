@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/app",
-  "version": "1.0.1",
+  "version": "1.0.2-rc.1",
   "description": "App functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "check-types": "tsc --noEmit",
-    "clean": "rm -rf ./lib",
+    "clean": "rm -rf ./lib && rm -rf ./build",
     "prepack": "npm run build",
     "test": "jest --coverage"
   },
@@ -23,7 +23,7 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@amazon-connect/workspace-types": "1.0.1",
-    "@amazon-connect/core": "1.0.1"
+    "@amazon-connect/workspace-types": "1.0.2-rc.1",
+    "@amazon-connect/core": "1.0.2-rc.1"
   }
 }

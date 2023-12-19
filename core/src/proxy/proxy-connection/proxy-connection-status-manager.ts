@@ -25,7 +25,7 @@ export class ProxyConnectionStatusManager {
 
   update(evt: ProxyConnectionEvent): void {
     this.status = evt.status;
-    this.logger.debug("Proxy Connection Status Changed", {
+    this.logger.trace("Proxy Connection Status Changed", {
       status: evt.status,
     });
     [...this.changeHandlers].forEach((handler) => {

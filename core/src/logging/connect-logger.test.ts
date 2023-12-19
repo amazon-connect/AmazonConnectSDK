@@ -2,16 +2,17 @@
 import { MockedClass, MockedObject } from "jest-mock";
 
 import { AmazonConnectConfig } from "../amazon-connect-config";
+import { UpstreamMessageOrigin } from "../messaging";
 import * as globalProvider from "../provider";
 import { AmazonConnectProvider } from "../provider";
 import { Proxy } from "../proxy";
-import { ProxyLogData } from "../proxy/proxy-log-data";
 import * as util from "../utility/id-generator";
 import { ConnectLogger } from "./connect-logger";
 import * as consoleWriter from "./log-data-console-writer";
 import { LogDataTransformer } from "./log-data-transformer";
 import { LogLevel } from "./log-level";
 import { ConnectLogData } from "./logger-types";
+import { ProxyLogData } from "./proxy-log-data";
 
 jest.mock("../utility/id-generator");
 jest.mock("../provider/global-provider");
@@ -38,6 +39,9 @@ class TestProxy extends Proxy {
     throw new Error("Method not implemented.");
   }
   public get proxyType(): string {
+    throw new Error("Method not implemented.");
+  }
+  protected getUpstreamMessageOrigin(): UpstreamMessageOrigin {
     throw new Error("Method not implemented.");
   }
 }
@@ -333,6 +337,35 @@ describe("when not using any provider level options", () => {
         LogLevel.trace,
         testMessage,
         transformTestData,
+      );
+    });
+  });
+
+  describe("when creating with a provider factory", () => {
+    let sut: ConnectLogger;
+    let logDataTransformer: MockedObject<LogDataTransformer>;
+
+    beforeEach(() => {
+      sut = new ConnectLogger({ source: testSource, provider: () => provider });
+      logDataTransformer = LogDataTransformerMock.mock.instances[0];
+      logDataTransformer.getTransformedData.mockReturnValueOnce(
+        transformTestData,
+      );
+    });
+
+    test("should be able to send a log message", () => {
+      sut.log(LogLevel.info, testMessage, testData, {});
+
+      expect(proxyLogSpy).toHaveBeenCalledWith({
+        level: LogLevel.info,
+        source: testSource,
+        loggerId: testLoggerId,
+        message: testMessage,
+        data: transformTestData,
+      });
+      expect(logDataTransformer.getTransformedData).toHaveBeenCalledWith(
+        LogLevel.info,
+        testData,
       );
     });
   });

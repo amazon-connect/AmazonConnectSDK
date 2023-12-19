@@ -16,3 +16,9 @@ export type SubscriptionHandlerData = Record<string, unknown>;
 export type SubscriptionHandler<
   T extends SubscriptionHandlerData = SubscriptionHandlerData,
 > = (evt: T) => Promise<void>;
+
+export type SubscriptionHandlerId = string;
+export type SubscriptionHandlerIdMapping = {
+  handler: SubscriptionHandler;
+  handlerId: SubscriptionHandlerId;
+};
