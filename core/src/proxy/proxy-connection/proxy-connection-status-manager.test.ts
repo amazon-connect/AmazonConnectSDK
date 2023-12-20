@@ -1,6 +1,6 @@
 import { MockedClass } from "jest-mock";
 
-import { ConnectLogger } from "../../logging";
+import { ConnectLogger, LogLevel } from "../../logging";
 import { ProxyConnectionStatusManager } from "./proxy-connection-status-manager";
 import { ProxyError, ProxyInitializing, ProxyReady } from "./types";
 
@@ -9,6 +9,20 @@ jest.mock("../../logging/connect-logger");
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 
 beforeEach(() => jest.resetAllMocks());
+
+describe("constructor", () => {
+  test("should apply the proxy type to logger mix", () => {
+    const sut = new ProxyConnectionStatusManager();
+    const loggerConfig = LoggerMock.mock.calls[0][0];
+    expect(typeof loggerConfig).not.toBe("string");
+    if (typeof loggerConfig === "string") throw Error("ts needs this");
+    const mixin = loggerConfig.mixin!;
+
+    const result = mixin({}, LogLevel.info);
+
+    expect(result.status).toEqual(sut.getStatus());
+  });
+});
 
 describe("getStatus", () => {
   test("should default to 'notConnected'", () => {

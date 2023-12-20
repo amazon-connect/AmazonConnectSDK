@@ -7,6 +7,7 @@ export function createModuleProxy(
   namespace: AmazonConnectNamespace,
 ): ModuleProxy {
   return {
+    request: (command, data) => proxy.request(namespace, command, data),
     subscribe: (topic, handler) =>
       proxy.subscribe({ ...topic, namespace }, handler),
     unsubscribe: (topic, handler) =>

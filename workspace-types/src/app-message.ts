@@ -3,9 +3,11 @@ import {
   SubscriptionHandlerData,
   SubscriptionTopic,
   UpstreamMessage,
+  UpstreamMessageOrigin,
 } from "@amazon-connect/core";
 
 import { AppConfig } from "./app-config";
+import { ContactScope } from "./contact-scope";
 import { LifecycleStage } from "./lifecycle-stage";
 
 export type LifecycleHandlerCompletedMessage = {
@@ -18,6 +20,7 @@ export type AppPublishMessage = {
   type: "appPublish";
   topic: SubscriptionTopic;
   data: SubscriptionHandlerData;
+  messageOrigin?: UpstreamMessageOrigin;
 };
 
 export type CloseAppMessage = {
@@ -38,6 +41,7 @@ export type LifecycleMessage = {
   stage: LifecycleStage;
   appInstanceId: string;
   appConfig: AppConfig;
+  contactScope?: ContactScope;
 };
 
 export type AppDownstreamMessage = DownstreamMessage | LifecycleMessage;

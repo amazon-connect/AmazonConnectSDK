@@ -1,0 +1,223 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`theming applies default Connect theme 1`] = `
+{
+  "theme": {
+    "contexts": {
+      "alert": {
+        "tokens": {
+          "colorBackgroundControlChecked": {
+            "dark": "#7CA2BB",
+            "light": "#077398",
+          },
+          "colorBackgroundDropdownItemFilterMatch": {
+            "light": "#F2FAFC",
+          },
+          "colorBackgroundItemSelected": {
+            "light": "#F2FAFC",
+          },
+          "colorBackgroundSegmentActive": {
+            "dark": "#7CA2BB",
+            "light": "#077398",
+          },
+          "colorBackgroundToggleCheckedDisabled": {
+            "dark": "#065B78",
+            "light": "#A7C1D1",
+          },
+          "colorTextAccent": {
+            "dark": "#7CA2BB",
+            "light": "#077398",
+          },
+          "colorTextDropdownItemFilterMatch": {
+            "dark": "#7CA2BB",
+            "light": "#077398",
+          },
+          "colorTextLinkDefault": {
+            "dark": "#7CA2BB",
+            "light": "#077398",
+          },
+          "colorTextLinkHover": {
+            "dark": "#A7C1D1",
+            "light": "#065B78",
+          },
+          "colorTextSegmentHover": {
+            "dark": "#7CA2BB",
+            "light": "#077398",
+          },
+        },
+      },
+      "header": {
+        "tokens": {
+          "colorBackgroundButtonNormalActive": undefined,
+          "colorBackgroundButtonNormalHover": undefined,
+          "colorBackgroundButtonPrimaryActive": "#A7C1D1",
+          "colorBackgroundButtonPrimaryDefault": "#7CA2BB",
+          "colorBackgroundButtonPrimaryHover": "#A7C1D1",
+          "colorBackgroundControlChecked": "#7CA2BB",
+          "colorBackgroundDropdownItemFilterMatch": undefined,
+          "colorBackgroundItemSelected": undefined,
+          "colorBackgroundLayoutToggleSelectedActive": "#7CA2BB",
+          "colorBackgroundLayoutToggleSelectedDefault": "#7CA2BB",
+          "colorBackgroundLayoutToggleSelectedHover": "#A7C1D1",
+          "colorBackgroundSegmentActive": "#7CA2BB",
+          "colorBackgroundToggleCheckedDisabled": "#065B78",
+          "colorBorderButtonNormalActive": "#A7C1D1",
+          "colorBorderButtonNormalDefault": "#7CA2BB",
+          "colorBorderButtonNormalHover": "#A7C1D1",
+          "colorBorderItemFocused": "#7CA2BB",
+          "colorBorderItemSelected": "#7CA2BB",
+          "colorTextAccent": "#7CA2BB",
+          "colorTextButtonNormalActive": "#A7C1D1",
+          "colorTextButtonNormalDefault": "#7CA2BB",
+          "colorTextButtonNormalHover": "#A7C1D1",
+          "colorTextDropdownItemFilterMatch": "#7CA2BB",
+          "colorTextLayoutToggleHover": "#7CA2BB",
+          "colorTextLinkDefault": "#7CA2BB",
+          "colorTextLinkHover": "#A7C1D1",
+          "colorTextSegmentHover": "#7CA2BB",
+          "fontFamilyBase": undefined,
+        },
+      },
+      "top-navigation": {
+        "tokens": {
+          "colorBackgroundButtonNormalActive": undefined,
+          "colorBackgroundButtonNormalHover": undefined,
+          "colorBackgroundButtonPrimaryActive": "#A7C1D1",
+          "colorBackgroundButtonPrimaryDefault": "#7CA2BB",
+          "colorBackgroundButtonPrimaryHover": "#A7C1D1",
+          "colorBackgroundControlChecked": "#7CA2BB",
+          "colorBackgroundDropdownItemFilterMatch": undefined,
+          "colorBackgroundItemSelected": undefined,
+          "colorBackgroundLayoutToggleSelectedActive": "#7CA2BB",
+          "colorBackgroundLayoutToggleSelectedDefault": "#7CA2BB",
+          "colorBackgroundLayoutToggleSelectedHover": "#A7C1D1",
+          "colorBackgroundSegmentActive": "#7CA2BB",
+          "colorBackgroundToggleCheckedDisabled": "#065B78",
+          "colorBorderButtonNormalActive": "#A7C1D1",
+          "colorBorderButtonNormalDefault": "#7CA2BB",
+          "colorBorderButtonNormalHover": "#A7C1D1",
+          "colorBorderItemFocused": "#7CA2BB",
+          "colorBorderItemSelected": "#7CA2BB",
+          "colorTextAccent": "#7CA2BB",
+          "colorTextButtonNormalActive": "#A7C1D1",
+          "colorTextButtonNormalDefault": "#7CA2BB",
+          "colorTextButtonNormalHover": "#A7C1D1",
+          "colorTextDropdownItemFilterMatch": "#7CA2BB",
+          "colorTextLayoutToggleHover": "#7CA2BB",
+          "colorTextLinkDefault": "#7CA2BB",
+          "colorTextLinkHover": "#A7C1D1",
+          "colorTextSegmentHover": "#7CA2BB",
+          "fontFamilyBase": undefined,
+        },
+      },
+    },
+    "tokens": {
+      "colorBackgroundButtonNormalActive": {
+        "light": "#F2FAFC",
+      },
+      "colorBackgroundButtonNormalHover": {
+        "light": "#F2FAFC",
+      },
+      "colorBackgroundButtonPrimaryActive": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorBackgroundButtonPrimaryDefault": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBackgroundButtonPrimaryHover": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorBackgroundControlChecked": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBackgroundDropdownItemFilterMatch": {
+        "light": "#F2FAFC",
+      },
+      "colorBackgroundItemSelected": {
+        "light": "#F2FAFC",
+      },
+      "colorBackgroundLayoutToggleSelectedActive": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBackgroundLayoutToggleSelectedDefault": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBackgroundLayoutToggleSelectedHover": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorBackgroundSegmentActive": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBackgroundToggleCheckedDisabled": {
+        "dark": "#065B78",
+        "light": "#A7C1D1",
+      },
+      "colorBorderButtonNormalActive": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorBorderButtonNormalDefault": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBorderButtonNormalHover": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorBorderItemFocused": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorBorderItemSelected": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextAccent": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextButtonNormalActive": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorTextButtonNormalDefault": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextButtonNormalHover": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorTextDropdownItemFilterMatch": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextLayoutToggleHover": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextLinkDefault": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "colorTextLinkHover": {
+        "dark": "#A7C1D1",
+        "light": "#065B78",
+      },
+      "colorTextSegmentHover": {
+        "dark": "#7CA2BB",
+        "light": "#077398",
+      },
+      "fontFamilyBase": undefined,
+    },
+  },
+}
+`;

@@ -8,6 +8,7 @@ import {
 } from "@amazon-connect/core";
 import {
   AppDownstreamMessage,
+  AppMessageOrigin,
   AppPublishMessage,
   AppUpstreamMessage,
   CloseAppMessage,
@@ -101,6 +102,23 @@ export class AppProxy extends Proxy<
 
   protected sendMessageToSubject(message: AppUpstreamMessage): void {
     this.channel.port1.postMessage(message);
+  }
+
+  protected getUpstreamMessageOrigin(): AppMessageOrigin {
+    if (document?.location) {
+      const { origin, pathname: path } = document.location;
+      return {
+        _type: "app",
+        origin,
+        path,
+      };
+    } else {
+      return {
+        _type: "app",
+        origin: "unknown",
+        path: "unknown",
+      };
+    }
   }
 
   protected handleConnectionAcknowledge(): void {

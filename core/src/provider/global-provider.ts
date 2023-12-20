@@ -2,9 +2,13 @@ import { AmazonConnectProvider } from "./provider";
 
 let _provider: AmazonConnectProvider | undefined;
 
-export function setGlobalProvider(provider: AmazonConnectProvider) {
+export function setGlobalProvider(provider: AmazonConnectProvider): void {
   if (_provider) throw new Error("Global Provider is already set");
 
+  _provider = provider;
+}
+
+export function resetGlobalProvider(provider: AmazonConnectProvider): void {
   _provider = provider;
 }
 

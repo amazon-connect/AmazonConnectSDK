@@ -1,6 +1,4 @@
-import { AmazonConnectNamespace } from "@amazon-connect/core";
-
-export type Permissions = Record<AmazonConnectNamespace, string[]>;
+export type Permission = string;
 
 type BaseAppConfig = {
   arn: string;
@@ -10,8 +8,7 @@ type BaseAppConfig = {
   name: string;
   description: string;
   accessUrl: string;
-  subscriptions: Permissions;
-  publications: Permissions;
+  permissions: Permission[];
 };
 
 export type IFrameAppConfig = BaseAppConfig & {

@@ -1,7 +1,6 @@
 import { AmazonConnectNamespace } from "../amazon-connect-namespace";
 import { ConnectLogger, ConnectLoggerFromContextParams } from "../logging";
-import { ModuleProxy } from "../proxy";
-import { createModuleProxy } from "../proxy";
+import { createModuleProxy, ModuleProxy } from "../proxy";
 import { Context } from "./context";
 
 export class ModuleContext {
