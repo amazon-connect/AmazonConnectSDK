@@ -109,6 +109,36 @@ describe("ContactClient", () => {
         );
       });
     });
+
+    describe("CONNECTED", () => {
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
+
+        sut.onConnected(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Connected,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offConnected(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Connected,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+    });
   });
 
   describe("Requests", () => {

@@ -61,3 +61,6 @@ export type ContactDestroyedHandler = SubscriptionHandler<ContactDestroyed>;
 
 export type ContactMissed = BaseContactLifecycleEvent;
 export type ContactMissedHandler = SubscriptionHandler<ContactMissed>;
+
+export type ContactConnected = BaseContactLifecycleEvent;
+export type ContactConnectedHandler = SubscriptionHandler<ContactConnected>;

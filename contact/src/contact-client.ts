@@ -5,6 +5,7 @@ import { ContactRoutes } from "./routes";
 import { ContactLifecycleTopicKey } from "./topic-keys";
 import {
   ContactAttributeFilter,
+  ContactConnectedHandler,
   ContactDestroyedHandler,
   ContactMissedHandler,
   ContactStartingAcwHandler,
@@ -89,6 +90,12 @@ export class ContactClient extends ConnectClient {
       handler,
     );
   }
+  onConnected(handler: ContactConnectedHandler, contactId?: string): void {
+    this.context.proxy.subscribe(
+      { key: ContactLifecycleTopicKey.Connected, parameter: contactId },
+      handler,
+    );
+  }
   onMissed(handler: ContactMissedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopicKey.Missed, parameter: contactId },
@@ -110,6 +117,12 @@ export class ContactClient extends ConnectClient {
   offMissed(handler: ContactMissedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopicKey.Missed, parameter: contactId },
+      handler,
+    );
+  }
+  offConnected(handler: ContactConnectedHandler, contactId?: string): void {
+    this.context.proxy.unsubscribe(
+      { key: ContactLifecycleTopicKey.Connected, parameter: contactId },
       handler,
     );
   }
