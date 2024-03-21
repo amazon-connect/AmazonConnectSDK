@@ -1,6 +1,7 @@
 import {
   ConnectLogger,
   Proxy,
+  sdkVersion,
   SubscriptionHandlerData,
   SubscriptionTopic,
   TimeoutTracker,
@@ -86,6 +87,7 @@ export class AppProxy extends Proxy<
   protected initProxy(): void {
     const testMessage = {
       type: "connect-app-host-init",
+      sdkVersion,
     };
 
     this.status.update({ status: "initializing" });

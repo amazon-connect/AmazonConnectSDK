@@ -71,4 +71,5 @@ export {
   noResultResponseErrorKey,
 } from "./request";
 export * from "./request";
+export { sdkVersion } from "./sdk-version";
 export * from "./utility";

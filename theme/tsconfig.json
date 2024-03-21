@@ -2,7 +2,6 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "./lib/",
-    "allowSyntheticDefaultImports": true
   },
   "include": ["./src/**/*"],
   "typeAcquisition": {

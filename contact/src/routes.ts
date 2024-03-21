@@ -12,11 +12,9 @@ export enum ContactRoutes {
   getAttributes = "contact/getAttributes",
   getInitialContactId = "contact/getInitialContactId",
   getType = "contact/getType",
-  getState = "contact/getState",
   getStateDuration = "contact/getStateDuration",
   getQueue = "contact/getQueue",
   getQueueTimestamp = "contact/getQueueTimestamp",
-  getName = "contact/getName",
   getDescription = "contact/getDescription",
   getReferences = "contact/getReferences",
 }

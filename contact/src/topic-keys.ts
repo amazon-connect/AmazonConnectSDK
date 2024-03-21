@@ -1,5 +1,4 @@
 export enum ContactLifecycleTopicKey {
-  Accepted = "contact/accepted",
   StartingACW = "contact/acw",
   Connected = "contact/connected",
   Connecting = "contact/connecting",
