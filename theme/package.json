@@ -1,14 +1,16 @@
 {
   "name": "@amazon-connect/theme",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Theme for apps functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build": "npm run build:esm && npm run build:cjs",
     "check-types": "tsc --noEmit",
-    "clean": "rm -rf ./lib",
+    "clean": "rm -rf ./lib ./lib-esm ./build",
     "prepack": "npm run build",
     "test": "jest --coverage"
   },
@@ -18,9 +20,11 @@
     "url": "https://github.com/amazon-connect/AmazonConnectSDK.git"
   },
   "main": "lib/index.js",
+  "module": "lib-esm/index.js",
   "types": "lib/index.d.ts",
   "files": [
-    "lib/**/*"
+    "lib/**/*",
+    "lib-esm/**/*"
   ],
   "peerDependencies": {
     "@cloudscape-design/components": "^3.0.383"

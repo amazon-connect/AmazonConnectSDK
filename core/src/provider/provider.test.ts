@@ -1,8 +1,12 @@
+import { mocked } from "jest-mock";
+
 import { AmazonConnectConfig } from "../amazon-connect-config";
 import { UpstreamMessageOrigin } from "../messaging";
 import { Proxy } from "../proxy";
+import { generateUUID } from "../utility";
 import { AmazonConnectProvider, AmazonConnectProviderParams } from "./provider";
 
+jest.mock("../utility/id-generator");
 jest.mock("../logging/connect-logger");
 jest.mock("../proxy/proxy");
 
@@ -69,6 +73,20 @@ describe("AmazonConnectProvider", () => {
 
     expect(result).toBeDefined();
     expect(result.config).toEqual(config);
+  });
+});
+
+describe("id", () => {
+  test("should get a randomly generated id", () => {
+    const testId = "testId";
+    mocked(generateUUID).mockReturnValueOnce(testId);
+
+    const sut = new AmazonConnectProvider({
+      config: {},
+      proxyFactory: jest.fn(),
+    });
+
+    expect(sut.id).toEqual(testId);
   });
 });
 

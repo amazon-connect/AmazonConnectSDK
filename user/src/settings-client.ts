@@ -3,16 +3,16 @@ import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 import { userNamespace } from "./namespace";
 import { UserRoutes } from "./routes";
 import { UserTopicKey } from "./topic-keys";
-import { UserLanguageChangedHandler } from "./types";
+import { Locale, UserLanguageChangedHandler } from "./types";
 
 export class SettingsClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
     super(userNamespace, config);
   }
 
-  async getLanguage(): Promise<string> {
+  async getLanguage(): Promise<Locale | null> {
     const { language } = await this.context.proxy.request<{
-      language: string;
+      language: Locale | null;
     }>(UserRoutes.getLanguage);
 
     return language;

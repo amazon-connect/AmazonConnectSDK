@@ -2,7 +2,6 @@ export {
   formatClientTimeoutError,
   isClientTimeoutResponseError,
 } from "./client-timeout-error";
-export { formatResponseError } from "./format-response-error";
 export type {
   HandlerNotFoundResponseError,
   HandlerNotFoundResponseErrorType,

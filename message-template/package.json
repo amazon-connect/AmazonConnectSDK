@@ -1,0 +1,32 @@
+{
+  "name": "@amazon-connect/message-template",
+  "version": "1.0.4",
+  "description": "Message template functionality of the Amazon Connect SDK",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build": "npm run build:esm && npm run build:cjs",
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf ./lib ./lib-esm ./build",
+    "prepack": "npm run build",
+    "test": "jest --coverage"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git.amazon.com/pkg/AmazonConnectSDK"
+  },
+  "main": "lib/index.js",
+  "module": "lib-esm/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "lib-esm/**/*"
+  ],
+  "dependencies": {
+    "@amazon-connect/core": "1.0.4"
+  }
+}

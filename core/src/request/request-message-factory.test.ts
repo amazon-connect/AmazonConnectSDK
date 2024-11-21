@@ -1,4 +1,5 @@
 import { mocked } from "jest-mock";
+import { mock } from "jest-mock-extended";
 
 import { UpstreamMessageOrigin } from "../messaging";
 import { generateUUID } from "../utility";
@@ -10,7 +11,7 @@ describe("createRequestMessage", () => {
     const namespace = "namespace-1";
     const command = "command-1";
     const data = { foo: 1 };
-    const messageOrigin: UpstreamMessageOrigin = { _type: "test" };
+    const messageOrigin = mock<UpstreamMessageOrigin>();
     const requestId = "abc";
     mocked(generateUUID).mockReturnValueOnce(requestId);
 

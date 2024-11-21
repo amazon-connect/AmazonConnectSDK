@@ -1,4 +1,4 @@
-import { ConnectLogger } from "../logging";
+import { ConnectLogger, LogProvider } from "../logging";
 import { RequestMessage, ResponseMessage } from "../messaging";
 import {
   createRequestHandler,
@@ -10,9 +10,10 @@ export class RequestManager {
   private readonly requestMap: Map<RequestId, ResponseHandler>;
   private readonly logger: ConnectLogger;
 
-  constructor() {
+  constructor(provider: LogProvider) {
     this.requestMap = new Map();
     this.logger = new ConnectLogger({
+      provider,
       source: "core.requestManager",
     });
   }

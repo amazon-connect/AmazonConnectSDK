@@ -1,4 +1,6 @@
-import { RequestMessage } from "../messaging";
+import { mock } from "jest-mock-extended";
+
+import { RequestMessage, UpstreamMessageOrigin } from "../messaging";
 import {
   clientTimeoutResponseErrorKey,
   formatClientTimeoutError,
@@ -13,7 +15,7 @@ describe("formatClientTimeoutError", () => {
       requestId: "id",
       command: "test-command",
       data: { foo: 1 },
-      messageOrigin: { _type: "test" },
+      messageOrigin: mock<UpstreamMessageOrigin>(),
     };
     const timeout = 1000;
 
@@ -59,7 +61,7 @@ describe("isClientTimeoutResponseError", () => {
         requestId: "id",
         command: "test-command",
         data: undefined,
-        messageOrigin: { _type: "test" },
+        messageOrigin: mock<UpstreamMessageOrigin>(),
       },
       5000,
     );

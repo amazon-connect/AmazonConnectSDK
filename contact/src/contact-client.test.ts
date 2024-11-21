@@ -235,7 +235,7 @@ describe("ContactClient", () => {
     });
 
     test("getType returns result", async () => {
-      const expectedResult: string = "voice";
+      const expectedResult = "voice";
       moduleProxyMock.request.mockReturnValue(
         new Promise((resolve) => resolve({ type: expectedResult })),
       );

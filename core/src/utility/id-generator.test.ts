@@ -2,10 +2,16 @@ import { webcrypto } from "crypto";
 
 import { generateStringId, generateUUID } from "./id-generator";
 
+let originalCrypto: Crypto;
+
+beforeAll(() => {
+  originalCrypto = { ...global.crypto };
+});
+
 describe("On JS runtime that supports crypto.randomUUID", () => {
   beforeAll(() => {
     global.crypto = {
-      ...global.crypto,
+      ...originalCrypto,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
       getRandomValues: (arr) => webcrypto.getRandomValues(arr as any),
       randomUUID: () => webcrypto.randomUUID(),
@@ -71,7 +77,7 @@ describe("On JS runtime that supports crypto.randomUUID", () => {
 describe("On JS runtime that doesn't support crypto.randomUUID", () => {
   beforeAll(() => {
     global.crypto = {
-      ...global.crypto,
+      ...originalCrypto,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
       getRandomValues: (arr) => webcrypto.getRandomValues(arr as any),
     };

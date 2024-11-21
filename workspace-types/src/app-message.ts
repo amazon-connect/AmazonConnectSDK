@@ -1,13 +1,14 @@
 import {
-  DownstreamMessage,
+  ChildConnectionEnabledDownstreamMessage,
+  ChildConnectionEnabledUpstreamMessage,
+  ChildUpstreamMessage,
   SubscriptionHandlerData,
   SubscriptionTopic,
-  UpstreamMessage,
   UpstreamMessageOrigin,
 } from "@amazon-connect/core";
 
 import { AppConfig } from "./app-config";
-import { ContactScope } from "./contact-scope";
+import { AppScope, ContactScope } from "./app-scope";
 import { LifecycleStage } from "./lifecycle-stage";
 
 export type LifecycleHandlerCompletedMessage = {
@@ -31,9 +32,10 @@ export type CloseAppMessage = {
 };
 
 export type AppUpstreamMessage =
-  | UpstreamMessage
-  | LifecycleHandlerCompletedMessage
+  | ChildConnectionEnabledUpstreamMessage
+  | ChildUpstreamMessage
   | AppPublishMessage
+  | LifecycleHandlerCompletedMessage
   | CloseAppMessage;
 
 export type LifecycleMessage = {
@@ -41,7 +43,14 @@ export type LifecycleMessage = {
   stage: LifecycleStage;
   appInstanceId: string;
   appConfig: AppConfig;
+  scope?: AppScope;
+
+  /**
+   * @deprecated Use `scope` instead.
+   */
   contactScope?: ContactScope;
 };
 
-export type AppDownstreamMessage = DownstreamMessage | LifecycleMessage;
+export type AppDownstreamMessage =
+  | ChildConnectionEnabledDownstreamMessage
+  | LifecycleMessage;

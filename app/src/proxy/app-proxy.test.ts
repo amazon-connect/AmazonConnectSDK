@@ -4,6 +4,7 @@
 import {
   AcknowledgeMessage,
   ConnectLogger,
+  generateUUID,
   LogLevel,
   LogMessage,
   SubscriptionTopic,
@@ -19,7 +20,7 @@ import {
   LifecycleHandlerCompletedMessage,
   LifecycleMessage,
 } from "@amazon-connect/workspace-types";
-import { MockedClass } from "jest-mock";
+import { mocked, MockedClass } from "jest-mock";
 
 import { AmazonConnectApp } from "../amazon-connect-app";
 import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
@@ -27,9 +28,16 @@ import { LifecycleManager } from "../lifecycle";
 import { AppProxy } from "./app-proxy";
 import * as connectionTimeout from "./connection-timeout";
 
+const testSdkVersion = "test-sdk-version";
+
 jest.mock("@amazon-connect/core/lib/logging/connect-logger");
+jest.mock("@amazon-connect/core/lib/sdk-version", () => ({
+  sdkVersion: testSdkVersion,
+}));
+jest.mock("@amazon-connect/core/lib/utility/id-generator");
 jest.mock("@amazon-connect/core/lib/utility/timeout-tracker");
 jest.mock("@amazon-connect/core/lib/proxy/error/error-service");
+jest.mock("@amazon-connect/core/lib/proxy/channel-manager");
 
 jest.mock("../lifecycle/lifecycle-manager");
 jest.mock("./connection-timeout");
@@ -71,14 +79,18 @@ let sut: AppProxy;
 let subjectPort: MessagePort;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockWindowPostMessage: jest.Mock<any, any, Transferable[]>;
+const testProviderId = "test-provider-id";
+const testConnectionId = "test-connection-id";
 
 let mockTimeoutTrackerStart: jest.SpyInstance<
   TimeoutTracker,
   [TimeoutTrackerCancelledHandler, number]
 >;
 
+beforeEach(jest.resetAllMocks);
+
 beforeEach(() => {
-  jest.resetAllMocks();
+  mocked(generateUUID).mockReturnValueOnce(testProviderId);
   provider = new AmazonConnectApp({} as AmazonConnectAppConfig);
   mockWindowPostMessage = jest.fn();
   global.window = {
@@ -122,6 +134,8 @@ describe("when performing the init via the provider", () => {
     const [msg, targetOrigin, [transport]] =
       mockWindowPostMessage.mock.calls[0];
     expect(msg.type).toEqual("connect-app-host-init");
+    expect(msg.providerId).toEqual(testProviderId);
+    expect(msg.sdkVersion).toEqual(testSdkVersion);
     expect(targetOrigin).toEqual("*");
     expect(transport).toEqual(subjectPort);
   });
@@ -135,11 +149,12 @@ describe("when performing the init via the provider", () => {
     const [connectionTimer] = TimeoutTrackerMock.mock.instances;
     const ackMsg: AcknowledgeMessage = {
       type: "acknowledge",
+      connectionId: testConnectionId,
       status: {
         initialized: true,
         startTime: new Date(),
       },
-    };
+    } as AcknowledgeMessage;
     connectionTimer.complete.mockReturnValue(true);
 
     subjectPort.postMessage(ackMsg);
@@ -150,6 +165,7 @@ describe("when performing the init via the provider", () => {
 
     expect(sut.connectionStatus).toEqual("ready");
     expect(connectionTimer.complete).toHaveBeenCalled();
+    expect(sut["connectionId"]).toEqual(testConnectionId);
   });
 
   describe("when the workspace connection times out", () => {
@@ -193,11 +209,12 @@ describe("when performing the init via the provider", () => {
       const logger = getAppProxyLogger();
       const ackMsg: AcknowledgeMessage = {
         type: "acknowledge",
+        connectionId: testConnectionId,
         status: {
           initialized: true,
           startTime: new Date(),
         },
-      };
+      } as AcknowledgeMessage;
       connectionTimer.complete.mockReturnValue(false);
 
       subjectPort.postMessage(ackMsg);
@@ -211,6 +228,7 @@ describe("when performing the init via the provider", () => {
       expect(sut.connectionStatus).not.toEqual("ready");
       expect(connectionTimer.complete).toHaveBeenCalled();
       expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(sut["connectionId"]).toEqual(null);
     });
   });
 });
@@ -232,11 +250,12 @@ describe("when appProxy is ready", () => {
     connectionTimer.complete.mockReturnValueOnce(true);
     const ackMsg: AcknowledgeMessage = {
       type: "acknowledge",
+      connectionId: testConnectionId,
       status: {
         initialized: true,
         startTime: new Date(),
       },
-    };
+    } as AcknowledgeMessage;
     subjectPort.postMessage(ackMsg);
 
     await waitForMessageChannel(() => sut.connectionStatus === "initializing");

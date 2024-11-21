@@ -2,15 +2,16 @@ import {
   AmazonConnectError,
   AmazonConnectErrorHandler,
 } from "../../amazon-connect-error";
-import { ConnectLogger } from "../../logging";
+import { ConnectLogger, LogProvider } from "../../logging";
 
 export class ErrorService {
   private readonly errorHandlers: Set<AmazonConnectErrorHandler>;
   private readonly logger: ConnectLogger;
 
-  constructor() {
+  constructor(provider: LogProvider) {
     this.errorHandlers = new Set();
     this.logger = new ConnectLogger({
+      provider,
       source: "core.proxy.error",
     });
   }

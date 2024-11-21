@@ -2,7 +2,7 @@
 import { ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
 
-import { VoiceRequests } from "./types";
+import { VoiceRoutes } from "./routes";
 import { VoiceClient } from "./voice-client";
 
 const moduleProxyMock = mock<ModuleProxy>();
@@ -31,7 +31,7 @@ describe("VoiceClient", () => {
       const actualResult = await sut.getPhoneNumber(testContactId);
 
       expect(moduleProxyMock.request).toHaveBeenCalledWith(
-        VoiceRequests.getPhoneNumber,
+        VoiceRoutes.getPhoneNumber,
         {
           contactId: testContactId,
         },

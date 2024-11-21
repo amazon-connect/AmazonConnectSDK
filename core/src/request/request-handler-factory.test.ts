@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { mocked } from "jest-mock";
 
+import { ConnectError } from "../error";
 import { RequestMessage, ResponseMessage } from "../messaging";
 import { formatClientTimeoutError } from "./client-timeout-error";
-import { formatResponseError } from "./format-response-error";
 import {
   createRequestHandler,
   ResponseHandler,
@@ -14,7 +14,7 @@ import {
 } from "./request-handlers";
 
 jest.mock("./client-timeout-error");
-jest.mock("./format-response-error");
+jest.mock("../error/connect-error");
 
 const onStart: (handler: ResponseHandler) => void = jest.fn();
 const onTimeout: (details: {
@@ -94,15 +94,10 @@ describe("when the request errors", () => {
     details: { command: "test", requestData: requestMessage.data },
   };
 
-  const expectedError = {
-    errorKey: "testError",
-  } as ReturnType<typeof formatResponseError>;
   let isPromiseComplete: boolean;
 
   beforeAll(() => {
     jest.resetAllMocks();
-
-    mocked(formatResponseError).mockReturnValueOnce(expectedError);
 
     requestPromise = createRequestHandler<TestResponseData>(
       requestMessage,
@@ -132,9 +127,13 @@ describe("when the request errors", () => {
   });
 
   test("should reject with error information", async () => {
+    try {
+      await requestPromise;
+    } catch (e) {
+      expect(e).toBeInstanceOf(ConnectError);
+      expect(ConnectError).toHaveBeenCalledWith(responseMessage);
+    }
     expect.hasAssertions();
-    await expect(requestPromise).rejects.toEqual(expectedError);
-    expect(formatResponseError).toHaveBeenCalledWith(responseMessage);
   });
 
   test("should not have called onTimeout", () => {
@@ -202,6 +201,6 @@ describe("when the request times out", () => {
     responseHandler(responseMessage);
 
     await expect(requestPromise).rejects.toEqual(expectedError);
-    expect(formatResponseError).not.toHaveBeenCalled();
+    expect(ConnectError).not.toHaveBeenCalled();
   });
 });

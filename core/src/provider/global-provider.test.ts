@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { AmazonConnectConfig } from "../amazon-connect-config";
 import { AmazonConnectProvider } from "./provider";
+
+jest.mock("../utility/id-generator");
 
 beforeEach(() => {
   jest.resetModules();

@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass, MockedObject } from "jest-mock";
+import { mock } from "jest-mock-extended";
 
 import { AmazonConnectError } from "../../amazon-connect-error";
-import { ConnectLogger } from "../../logging";
+import { ConnectLogger, LogProvider } from "../../logging";
 import { ErrorService } from "./error-service";
 
 jest.mock("../../logging/connect-logger");
 
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
+const logProvider = mock<LogProvider>();
 
 beforeEach(() => jest.resetAllMocks());
 
@@ -17,7 +19,7 @@ describe("invoke", () => {
   let testErr: AmazonConnectError;
 
   beforeEach(() => {
-    sut = new ErrorService();
+    sut = new ErrorService(logProvider);
     logger = LoggerMock.mock.instances[0];
 
     testErr = {

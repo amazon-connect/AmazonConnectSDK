@@ -1,6 +1,6 @@
+import { ConnectError } from "../error";
 import { RequestMessage, ResponseMessage } from "../messaging";
 import { formatClientTimeoutError } from "./client-timeout-error";
-import { formatResponseError } from "./format-response-error";
 import { ConnectResponseData } from "./request-handlers";
 
 export type ResponseHandler = (msg: ResponseMessage) => void;
@@ -19,6 +19,7 @@ export function createRequestHandler<TResponse extends ConnectResponseData>(
     let isTimedOut = false;
     const timeout = setTimeout(() => {
       onTimeout({ timeoutMs: adjustedTimeoutMs, request });
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       reject(formatClientTimeoutError(request, adjustedTimeoutMs));
       isTimedOut = true;
     }, adjustedTimeoutMs);
@@ -27,7 +28,7 @@ export function createRequestHandler<TResponse extends ConnectResponseData>(
       clearTimeout(timeout);
       if (!isTimedOut) {
         if (msg.isError) {
-          reject(formatResponseError(msg));
+          reject(new ConnectError(msg));
         } else {
           resolve(msg.data as TResponse);
         }

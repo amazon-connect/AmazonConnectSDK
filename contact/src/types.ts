@@ -1,13 +1,23 @@
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import { SubscriptionHandler } from "@amazon-connect/core";
 
-export type AgentStateType = "init" | "routable" | "not_routable" | "offline";
-
-export type AgentState = {
-  agentStateARN: string | null;
-  name: string;
-  startTimestamp: Date;
+export interface AgentState {
+  agentStateARN?: AgentStateARN;
   type: AgentStateType;
-};
+  name: AgentStateName;
+  startTimestamp?: Timestamp;
+}
+export type AgentStateARN = string;
+export type AgentStateName = string;
+export type AgentStateType =
+  | "routable"
+  | "not_routable"
+  | "after_call_work"
+  | "system"
+  | "error"
+  | "offline"
+  | string;
+export type Timestamp = Date;
 
 export type AgentChannelConcurrency = Record<string, number>;
 
@@ -27,9 +37,9 @@ export type Queue = {
 };
 
 export type AgentStateChanged = {
-  state: string;
-  previous: {
-    state: string;
+  state: AgentState;
+  previous?: {
+    state: AgentState;
   };
 };
 
@@ -49,9 +59,10 @@ export type GetAttributesRequest = {
 
 export type ContactType = string;
 
-type BaseContactLifecycleEvent = {
+export interface BaseContactLifecycleEvent {
   contactId: string;
-};
+  initialContactId: string | undefined;
+}
 
 export type ContactStartingAcw = BaseContactLifecycleEvent;
 export type ContactStartingAcwHandler = SubscriptionHandler<ContactStartingAcw>;

@@ -8,6 +8,7 @@ import {
   AgentRoutingProfile,
   AgentState,
   AgentStateChangedHandler,
+  Queue,
 } from "./types";
 
 export class AgentClient extends ConnectClient {
@@ -41,6 +42,14 @@ export class AgentClient extends ConnectClient {
 
   getChannelConcurrency(): Promise<AgentChannelConcurrency> {
     return this.context.proxy.request(AgentRoutes.getChannelConcurrency);
+  }
+
+  getDefaultOutboundQueue(): Promise<Queue> {
+    return this.context.proxy.request(AgentRoutes.getDefaultOutboundQueue);
+  }
+
+  getRoutingProfileQueues(): Promise<Queue[]> {
+    return this.context.proxy.request(AgentRoutes.getRoutingProfileQueues);
   }
 
   async getExtension(): Promise<string | undefined> {

@@ -1,4 +1,4 @@
-import { ConnectLogger } from "../../logging";
+import { ConnectLogger, LogProvider } from "../../logging";
 import {
   ProxyConnectionChangedHandler,
   ProxyConnectionEvent,
@@ -10,11 +10,12 @@ export class ProxyConnectionStatusManager {
   private readonly logger: ConnectLogger;
   private status: ProxyConnectionStatus;
 
-  constructor() {
+  constructor(provider: LogProvider) {
     this.status = "notConnected";
     this.changeHandlers = new Set();
     this.logger = new ConnectLogger({
       source: "core.proxy.connection-status-manager",
+      provider,
       mixin: () => ({ status: this.status }),
     });
   }

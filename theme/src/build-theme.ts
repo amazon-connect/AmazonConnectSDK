@@ -2,6 +2,7 @@ import { Theme } from "@cloudscape-design/components/theming";
 
 import { darkModeValues } from "./dark-mode-values";
 import type { Overrides } from "./supported-overrides";
+import { trimUndefinedValues } from "./trimUndefinedValues";
 
 export function buildTheme({
   fontFamily,
@@ -52,6 +53,7 @@ export function buildTheme({
       colorTextSegmentHover: brandColor,
     },
   };
+  trimUndefinedValues(theme);
 
   theme.contexts = {
     "top-navigation": { tokens: darkModeValues(theme) },

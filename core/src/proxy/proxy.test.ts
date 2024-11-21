@@ -3,15 +3,20 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { mocked, MockedClass, MockedObject } from "jest-mock";
+import { mock } from "jest-mock-extended";
 
 import { AmazonConnectErrorHandler } from "../amazon-connect-error";
 import { LogLevel } from "../logging";
 import { ConnectLogger } from "../logging/connect-logger";
 import {
   AcknowledgeMessage,
+  ChildConnectionCloseMessage,
+  ChildConnectionEnabledDownstreamMessage,
+  ChildUpstreamMessage,
   DownstreamMessage,
   ErrorMessage,
   LogMessage,
+  MetricMessage,
   PublishMessage,
   RequestMessage,
   ResponseMessage,
@@ -26,9 +31,12 @@ import {
   SubscriptionHandlerId,
   SubscriptionManager,
   SubscriptionTopic,
+  SubscriptionTopicHandlerIdItem,
 } from "../messaging/subscription";
+import { ProxyMetricData, Unit } from "../metric";
 import { AmazonConnectProvider } from "../provider";
 import { createRequestMessage, RequestManager } from "../request";
+import { AddChannelParams, ChannelManager } from "./channel-manager";
 import { ErrorService } from "./error";
 import { Proxy } from "./proxy";
 import {
@@ -37,12 +45,14 @@ import {
   ProxyConnectionStatusManager,
 } from "./proxy-connection";
 
+jest.mock("../utility/id-generator");
 jest.mock("../logging/connect-logger");
 jest.mock("../messaging/subscription/subscription-manager");
 jest.mock("./error/error-service");
 jest.mock("./proxy-connection/proxy-connection-status-manager");
 jest.mock("../request/request-manager");
 jest.mock("../request/request-message-factory");
+jest.mock("./channel-manager");
 
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 const RequestManagerMock = RequestManager as MockedClass<typeof RequestManager>;
@@ -50,12 +60,16 @@ const SubscriptionManagerMock = SubscriptionManager as MockedClass<
   typeof SubscriptionManager
 >;
 const ErrorServiceMock = ErrorService as MockedClass<typeof ErrorService>;
+
 const ProxyConnectionStatusManagerMock =
   ProxyConnectionStatusManager as MockedClass<
     typeof ProxyConnectionStatusManager
   >;
 
-const testOrigin = { _type: "test_origin" };
+const testOrigin: UpstreamMessageOrigin = {
+  _type: "test",
+  providerId: "test-provider",
+};
 
 class TestProxy extends Proxy {
   public readonly upstreamMessagesSent: UpstreamMessage[];
@@ -63,6 +77,10 @@ class TestProxy extends Proxy {
   constructor(private readonly loggerContext?: Record<string, unknown>) {
     super(new AmazonConnectProvider({ config: {}, proxyFactory: () => this }));
     this.upstreamMessagesSent = [];
+  }
+
+  getProviderForTesting(): AmazonConnectProvider {
+    return this.provider;
   }
 
   protected initProxy(): void {
@@ -82,10 +100,14 @@ class TestProxy extends Proxy {
     return testOrigin;
   }
 
-  public mockPushAcknowledgeMessage() {
+  public mockPushAcknowledgeMessage(options?: {
+    healthCheckInterval?: number;
+  }) {
     const ackMsg: AcknowledgeMessage = {
       type: "acknowledge",
+      connectionId: testConnectionId,
       status: { startTime: new Date(), initialized: true },
+      healthCheckInterval: options?.healthCheckInterval ?? 5000,
     };
 
     this.mockPushMessage(ackMsg);
@@ -122,12 +144,18 @@ class TestProxy extends Proxy {
     proxy.mockPushAcknowledgeMessage();
     return proxy;
   }
+
+  resetConnection(reason: string): void {
+    super.resetConnection(reason);
+  }
 }
 
+const testConnectionId = "test-connection-id";
 const testTopic: Readonly<SubscriptionTopic> = {
   namespace: "test",
   key: "foo",
 };
+const testTimeStamp = new Date("2024-02-09T19:18:53.891Z");
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -144,6 +172,31 @@ describe("constructor", () => {
     const result = mixin({}, LogLevel.info);
 
     expect(result.proxyType).toEqual(sut.proxyType);
+    expect(result.connectionId).toEqual(null);
+  });
+
+  test("should create channel manager with provider", () => {
+    const sut = new TestProxy();
+    const provider = sut.getProviderForTesting();
+
+    const [providerParam] = mocked(ChannelManager).mock.calls[0];
+
+    expect(providerParam).toEqual(provider);
+  });
+
+  test("should create channel with way upstream relay", () => {
+    const sut = new TestProxy();
+    sut.init();
+    sut.mockPushAcknowledgeMessage();
+    const upstreamRelay = mocked(ChannelManager).mock.calls[0][1];
+    const childUpstreamMessage = mock<ChildUpstreamMessage>({
+      type: "childUpstream",
+    });
+
+    expect(upstreamRelay).toBeDefined();
+    upstreamRelay(childUpstreamMessage);
+    expect(sut.upstreamMessagesSent).toHaveLength(1);
+    expect(sut.upstreamMessagesSent[0]).toEqual(childUpstreamMessage);
   });
 });
 
@@ -184,9 +237,9 @@ describe("request", () => {
   const testNamespace = "test-namespace";
   const testCommand = "test-command";
   const testData = { foo: 1 };
-  const testOverrideOrigin: UpstreamMessageOrigin = {
+  const testOverrideOrigin = mock<UpstreamMessageOrigin>({
     _type: "override-origin",
-  };
+  });
 
   describe("when proxy is ready", () => {
     let sut: TestProxy;
@@ -580,6 +633,102 @@ describe("sendLogMessage", () => {
   });
 });
 
+describe("sendMetric", () => {
+  test("should send a metric message", () => {
+    const testMetricName = "test-metric-name";
+    const testUnit = "Count" as Unit;
+    const testValue = 1;
+    const testDimensions = { name1: "value1" };
+    const testNamespace = "test-namespace";
+    const proxyMetricData: ProxyMetricData = {
+      metricData: {
+        metricName: testMetricName,
+        unit: testUnit,
+        value: testValue,
+        dimensions: testDimensions,
+        optionalDimensions: testDimensions,
+      },
+      time: testTimeStamp,
+      namespace: testNamespace,
+    };
+    const metricMessage: MetricMessage = {
+      type: "metric",
+      metricName: testMetricName,
+      unit: testUnit,
+      value: testValue,
+      time: testTimeStamp,
+      namespace: testNamespace,
+      dimensions: testDimensions,
+      optionalDimensions: testDimensions,
+      messageOrigin: testOrigin,
+    };
+    const sut = TestProxy.getReadyTestProxy();
+
+    sut.sendMetric(proxyMetricData);
+
+    expect(sut.upstreamMessagesSent).toHaveLength(1);
+    const msg = sut.upstreamMessagesSent[0] as MetricMessage;
+    expect(msg.type).toEqual(metricMessage.type);
+    expect(msg.metricName).toEqual(metricMessage.metricName);
+    expect(msg.unit).toEqual(metricMessage.unit);
+    expect(msg.value).toEqual(metricMessage.value);
+    expect(msg.time).toEqual(metricMessage.time);
+    expect(msg.namespace).toEqual(metricMessage.namespace);
+    expect(msg.dimensions).toEqual(metricMessage.dimensions);
+    expect(msg.optionalDimensions).toEqual(metricMessage.optionalDimensions);
+    expect(msg.messageOrigin).toEqual(metricMessage.messageOrigin);
+  });
+});
+
+describe("sendMetricMessage", () => {
+  test("should send a metric message", () => {
+    const testMetricName = "test-metric-name";
+    const testUnit = "Count" as Unit;
+    const testValue = 1;
+    const testDimensions = { name1: "value1" };
+    const testNamespace = "test-namespace";
+    const metricMessage: MetricMessage = {
+      type: "metric",
+      metricName: testMetricName,
+      unit: testUnit,
+      value: testValue,
+      time: testTimeStamp,
+      namespace: testNamespace,
+      dimensions: testDimensions,
+      optionalDimensions: testDimensions,
+      messageOrigin: testOrigin,
+    };
+    const sut = TestProxy.getReadyTestProxy();
+
+    sut.sendMetricMessage(metricMessage);
+
+    expect(sut.upstreamMessagesSent).toHaveLength(1);
+    const msg = sut.upstreamMessagesSent[0] as MetricMessage;
+    expect(msg.type).toEqual(metricMessage.type);
+    expect(msg.metricName).toEqual(metricMessage.metricName);
+    expect(msg.unit).toEqual(metricMessage.unit);
+    expect(msg.value).toEqual(metricMessage.value);
+    expect(msg.time).toEqual(metricMessage.time);
+    expect(msg.namespace).toEqual(metricMessage.namespace);
+    expect(msg.dimensions).toEqual(metricMessage.dimensions);
+    expect(msg.optionalDimensions).toEqual(metricMessage.optionalDimensions);
+    expect(msg.messageOrigin).toEqual(metricMessage.messageOrigin);
+  });
+
+  test("should throw when message is not of type metric", () => {
+    const msg: MetricMessage = { type: "notLog" } as unknown as MetricMessage;
+    const sut = TestProxy.getReadyTestProxy();
+    const [logger] = LoggerMock.mock.instances;
+
+    sut.sendMetricMessage(msg);
+
+    expect(sut.upstreamMessagesSent).toHaveLength(0);
+    expect(logger.error).toHaveBeenCalled();
+    const errorData = logger.error.mock.calls[0][1] as { metricMessage: any };
+    expect(errorData?.metricMessage).toEqual(expect.objectContaining(msg));
+  });
+});
+
 describe("acknowledge", () => {
   test("should be ready after acknowledge is received", () => {
     const sut = new TestProxy();
@@ -600,6 +749,26 @@ describe("acknowledge", () => {
     expect(statusHistory).toHaveLength(2);
     expect(statusHistory[0]).toEqual("initializing");
     expect(statusHistory[1]).toEqual("ready");
+    expect(proxyConnectionStatusManager.update.mock.calls[1][0]).toEqual({
+      status: "ready",
+      connectionId: testConnectionId,
+    });
+  });
+
+  test("should add the connection id to logger mixin", () => {
+    const sut = new TestProxy();
+    sut.init();
+    sut.mockPushAcknowledgeMessage();
+
+    const loggerConfig = LoggerMock.mock.calls[0][0];
+    expect(typeof loggerConfig).not.toBe("string");
+    if (typeof loggerConfig === "string") throw Error("ts needs this");
+    const mixin = loggerConfig.mixin!;
+
+    const result = mixin({}, LogLevel.info);
+
+    expect(result.proxyType).toEqual(sut.proxyType);
+    expect(result.connectionId).toEqual(testConnectionId);
   });
 
   test("should throw if acknowledge comes before init is called", () => {
@@ -683,9 +852,10 @@ describe("publish", () => {
     });
 
     test("should catch and log when handler throws error", async () => {
+      const testError = new Error("test error");
       const mockHandler = jest.fn();
       const handlerId = "handler_1";
-      mockHandler.mockImplementation(() => Promise.reject("test error"));
+      mockHandler.mockImplementation(() => Promise.reject(testError));
       mockSubscriptionMgr.get.mockReturnValueOnce([
         { handler: mockHandler, handlerId },
       ]);
@@ -711,7 +881,7 @@ describe("publish", () => {
         handlerId: SubscriptionHandlerId;
       };
       expect(errorData.topic).toEqual(testTopic);
-      expect(errorData.error).toEqual("test error");
+      expect(errorData.error).toEqual(testError);
       expect(errorData.handlerId).toEqual(handlerId);
     });
   });
@@ -745,8 +915,9 @@ describe("publish", () => {
     });
 
     test("should catch and log when handler throws error", async () => {
+      const testError = new Error("test error");
       const mockHandler = jest.fn();
-      mockHandler.mockImplementation(() => Promise.reject("test error"));
+      mockHandler.mockImplementation(() => Promise.reject(testError));
       mockSubscriptionMgr.getById.mockReturnValueOnce(mockHandler);
 
       const [logger] = LoggerMock.mock.instances;
@@ -774,7 +945,7 @@ describe("publish", () => {
         handlerId: SubscriptionHandlerId;
       };
       expect(errorData.topic).toEqual(testTopic);
-      expect(errorData.error).toEqual("test error");
+      expect(errorData.error).toEqual(testError);
       expect(errorData.handlerId).toEqual(handlerId);
     });
   });
@@ -924,5 +1095,158 @@ describe("Connection Status Change Handlers", () => {
     expect(proxyConnectionStatusManager.offChange).toHaveBeenCalledWith(
       handler,
     );
+  });
+});
+
+describe("when handling a downstream message", () => {
+  let sut: TestProxy;
+  let channelManagerMock: MockedObject<ChannelManager>;
+
+  beforeEach(() => {
+    sut = new TestProxy();
+    channelManagerMock = mocked(ChannelManager).mock.instances[0];
+  });
+
+  describe("childDownstreamMessage", () => {
+    test("should route childDownstreamMessage to channel manager", () => {
+      sut.init();
+      const message = mock<ChildConnectionEnabledDownstreamMessage>({
+        type: "childDownstreamMessage",
+      });
+
+      sut.mockPushMessage(message);
+
+      expect(channelManagerMock.handleDownstreamMessage).toBeCalledWith(
+        message,
+      );
+    });
+  });
+
+  describe("childConnectionClose", () => {
+    test("should route childConnectionClose message to channel manager", () => {
+      sut.init();
+      const message = mock<ChildConnectionCloseMessage>({
+        type: "childConnectionClose",
+      });
+
+      sut.mockPushMessage(message);
+
+      expect(channelManagerMock.handleCloseMessage).toBeCalledWith(message);
+    });
+  });
+
+  describe("when handling a default message", () => {
+    test("should be ready after acknowledge is received", () => {
+      const [proxyConnectionStatusManager] =
+        ProxyConnectionStatusManagerMock.mock.instances;
+      const statusHistory: ProxyConnectionStatus[] = [];
+      proxyConnectionStatusManager.update.mockImplementation((evt) =>
+        statusHistory.push(evt.status),
+      );
+      proxyConnectionStatusManager.getStatus.mockImplementation(
+        () => statusHistory[statusHistory.length - 1],
+      );
+
+      sut.init();
+      sut.mockPushAcknowledgeMessage();
+
+      expect(sut.connectionStatus).toEqual("ready");
+      expect(statusHistory).toHaveLength(2);
+      expect(statusHistory[0]).toEqual("initializing");
+      expect(statusHistory[1]).toEqual("ready");
+      expect(proxyConnectionStatusManager.update.mock.calls[1][0]).toEqual({
+        status: "ready",
+        connectionId: testConnectionId,
+      });
+    });
+  });
+});
+
+describe("addChildChannel", () => {
+  test("should add channel to channel manager", () => {
+    const sut = new TestProxy();
+    const channelManagerMock = mocked(ChannelManager).mock.instances[0];
+    const params = mock<AddChannelParams>();
+
+    sut.addChildChannel(params);
+
+    expect(channelManagerMock.addChannel).toBeCalledWith(params);
+  });
+});
+
+describe("resetConnection", () => {
+  const testResetReason = "test-reset-reason";
+  let sut: TestProxy;
+  let mockSubscriptionMgr: MockedObject<SubscriptionManager>;
+  const topicHandler1: SubscriptionTopicHandlerIdItem = {
+    topic: mock<SubscriptionTopic>(),
+    handlerId: "handler-1",
+  };
+  const topicHandler2: SubscriptionTopicHandlerIdItem = {
+    topic: mock<SubscriptionTopic>(),
+    handlerId: "handler-2",
+  };
+
+  beforeEach(() => {
+    sut = TestProxy.getReadyTestProxy();
+    mockSubscriptionMgr = SubscriptionManagerMock.mock.instances[0];
+  });
+
+  test("should set connection established to false", () => {
+    sut.resetConnection(testResetReason);
+
+    expect(sut["connectionEstablished"]).toEqual(false);
+  });
+
+  test("should set connection established to false", () => {
+    mockSubscriptionMgr.getAllSubscriptionHandlerIds.mockReturnValueOnce([]);
+    const [proxyConnectionStatusManager] =
+      ProxyConnectionStatusManagerMock.mock.instances;
+    proxyConnectionStatusManager.update.mockReset();
+
+    sut.resetConnection(testResetReason);
+
+    expect(proxyConnectionStatusManager.update).toHaveBeenCalledTimes(1);
+    expect(proxyConnectionStatusManager.update).toHaveBeenCalledWith({
+      status: "reset",
+      reason: testResetReason,
+    });
+  });
+
+  test("should log resetting proxy", () => {
+    mockSubscriptionMgr.getAllSubscriptionHandlerIds.mockReturnValueOnce([
+      topicHandler1,
+      topicHandler2,
+    ]);
+    const [logger] = LoggerMock.mock.instances;
+
+    sut.resetConnection(testResetReason);
+
+    expect(logger.info).toHaveBeenCalledWith(expect.any(String), {
+      reason: testResetReason,
+      subscriptionHandlerCount: 2,
+    });
+  });
+
+  test("should resend all handlers", () => {
+    mockSubscriptionMgr.getAllSubscriptionHandlerIds.mockReturnValueOnce([
+      topicHandler1,
+      topicHandler2,
+    ]);
+
+    sut.resetConnection(testResetReason);
+    sut.mockPushAcknowledgeMessage();
+
+    expect(sut.upstreamMessagesSent).toHaveLength(2);
+    expect(sut.upstreamMessagesSent).toContainEqual({
+      type: "subscribe",
+      ...topicHandler1,
+      messageOrigin: testOrigin,
+    });
+    expect(sut.upstreamMessagesSent).toContainEqual({
+      type: "subscribe",
+      ...topicHandler2,
+      messageOrigin: testOrigin,
+    });
   });
 });
