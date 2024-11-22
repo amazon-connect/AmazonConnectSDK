@@ -32,7 +32,7 @@ describe("AgentClient", () => {
 
       sut.onStateChanged(handler);
 
-      expect(moduleProxyMock.subscribe).toBeCalledWith(
+      expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
         { key: AgentTopicKey.StateChanged },
         handler,
       );
@@ -43,7 +43,7 @@ describe("AgentClient", () => {
 
       sut.offStateChanged(handler);
 
-      expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+      expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
         { key: AgentTopicKey.StateChanged },
         handler,
       );

@@ -14,7 +14,6 @@ export enum ContactRoutes {
   getAttributes = "contact/getAttributes",
   getInitialContactId = "contact/getInitialContactId",
   getType = "contact/getType",
-  getChannelType = "contact/getChannelType",
   getStateDuration = "contact/getStateDuration",
   getQueue = "contact/getQueue",
   getQueueTimestamp = "contact/getQueueTimestamp",
