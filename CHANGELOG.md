@@ -9,9 +9,11 @@
 
 ### Updated
   - `@amazon-connect/contact`
-   - `AgentClient`: Fixed AgentState and AgentStateChanged type
+    - `AgentClient`: Fixed AgentState and AgentStateChanged type
   - `@amazon-connect/user`
-   - `SettingsClient`: Fixed the getLanguage type and UserLanguageChanged type
+    - `SettingsClient`: Fixed the getLanguage type and UserLanguageChanged type
+  - `@amazon-connect/voice`
+    - Renamed `VoiceRequests` enum to `VoiceRoutes`
 
 ## 1.0.3
   - Initial release of the `user` module

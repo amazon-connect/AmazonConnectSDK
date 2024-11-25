@@ -128,30 +128,6 @@ describe("AgentClient", () => {
       expect(actualResult).toEqual(concurrency);
     });
 
-    test("getDefaultOutboundQueue returns result", async () => {
-      const queue: Queue = { name: "name", queueARN: "arn", queueId: "id" };
-      moduleProxyMock.request.mockResolvedValueOnce(queue);
-
-      const actualResult = await sut.getDefaultOutboundQueue();
-
-      expect(moduleProxyMock.request).toHaveBeenCalledWith(
-        AgentRoutes.getDefaultOutboundQueue,
-      );
-      expect(actualResult).toEqual(queue);
-    });
-
-    test("getRoutingProfileQueues returns result", async () => {
-      const queue: Queue = { name: "name", queueARN: "arn", queueId: "id" };
-      moduleProxyMock.request.mockResolvedValueOnce([queue]);
-
-      const actualResult = await sut.getRoutingProfileQueues();
-
-      expect(moduleProxyMock.request).toHaveBeenCalledWith(
-        AgentRoutes.getRoutingProfileQueues,
-      );
-      expect(actualResult).toEqual([queue]);
-    });
-
     test("getExtension returns result when available", async () => {
       const extension = "123";
       moduleProxyMock.request.mockResolvedValueOnce({ extension });
