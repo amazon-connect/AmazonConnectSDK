@@ -49,6 +49,7 @@ export {
   resetGlobalProvider,
 } from "./provider";
 export type {
+  HealthCheckStatus,
   ModuleProxy,
   ProxyConnecting,
   ProxyConnectionChangedHandler,

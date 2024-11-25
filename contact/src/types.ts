@@ -37,9 +37,9 @@ export type Queue = {
 };
 
 export type AgentStateChanged = {
-  state: AgentState;
+  state: AgentStateName;
   previous?: {
-    state: AgentState;
+    state: AgentStateName;
   };
 };
 
@@ -61,7 +61,6 @@ export type ContactType = string;
 
 export interface BaseContactLifecycleEvent {
   contactId: string;
-  initialContactId: string | undefined;
 }
 
 export type ContactStartingAcw = BaseContactLifecycleEvent;
