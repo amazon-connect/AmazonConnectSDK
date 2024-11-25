@@ -1,6 +1,6 @@
 import { AmazonConnectNamespace } from "../amazon-connect-namespace";
 
-export type ConnectRequestData = Record<string, unknown> | void;
+export type ConnectRequestData = object | void;
 
 export type RequestId = string | number;
 
@@ -17,7 +17,7 @@ type BaseConnectResponse = {
   requestId: RequestId;
 };
 
-export type ConnectResponseData = Record<string, unknown> | void;
+export type ConnectResponseData = object | void;
 
 export type ConnectResponseSuccess<
   T extends ConnectResponseData = ConnectResponseData,

@@ -11,7 +11,7 @@ export type SubscriptionTopic = {
 
 export type ModuleSubscriptionTopic = Omit<SubscriptionTopic, "namespace">;
 
-export type SubscriptionHandlerData = Record<string, unknown>;
+export type SubscriptionHandlerData = object;
 
 export type SubscriptionHandler<
   T extends SubscriptionHandlerData = SubscriptionHandlerData,
@@ -20,5 +20,10 @@ export type SubscriptionHandler<
 export type SubscriptionHandlerId = string;
 export type SubscriptionHandlerIdMapping = {
   handler: SubscriptionHandler;
+  handlerId: SubscriptionHandlerId;
+};
+
+export type SubscriptionTopicHandlerIdItem = {
+  topic: SubscriptionTopic;
   handlerId: SubscriptionHandlerId;
 };

@@ -138,8 +138,8 @@ export class ConnectLogger {
     if (!this._logToConsoleLevel) {
       this._logToConsoleLevel = this.logOptions?.minLogToConsoleLevelOverride
         ? this.logOptions.minLogToConsoleLevelOverride
-        : this.getProvider().config?.logging?.minLogToConsoleLevel ??
-          LogLevel.error;
+        : (this.getProvider().config?.logging?.minLogToConsoleLevel ??
+          LogLevel.error);
     }
 
     return this._logToConsoleLevel;

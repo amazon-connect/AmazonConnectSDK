@@ -1,6 +1,7 @@
 build/
 node_modules/
 */lib/
+*/lib-esm/
 jest.config.js
 coverage/
 */babel.config.js

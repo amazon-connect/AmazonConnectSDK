@@ -6,13 +6,24 @@ export type {
 export type { AmazonConnectNamespace } from "./amazon-connect-namespace";
 export { ConnectClient, ConnectClientConfig } from "./client";
 export { Context, ModuleContext } from "./context";
+export { ConnectError, isConnectError } from "./error";
 export * from "./logging";
 export type {
   AcknowledgeMessage,
+  ChildConnectionCloseMessage,
+  ChildConnectionEnabledDownstreamMessage,
+  ChildConnectionEnabledUpstreamMessage,
+  ChildConnectionReadyMessage,
+  ChildDownstreamMessage,
+  ChildUpstreamMessage,
   CloseChannelMessage,
   DownstreamMessage,
+  ErrorMessage,
   HasUpstreamMessageOrigin,
+  HealthCheckMessage,
+  HealthCheckResponseMessage,
   LogMessage,
+  MetricMessage,
   PublishMessage,
   RequestMessage,
   ResponseMessage,
@@ -31,12 +42,14 @@ export type {
   SubscriptionTopicParameter,
 } from "./messaging/subscription";
 export { SubscriptionMap, SubscriptionSet } from "./messaging/subscription";
+export * from "./metric";
 export {
   AmazonConnectProvider,
   getGlobalProvider,
   resetGlobalProvider,
 } from "./provider";
 export type {
+  HealthCheckStatus,
   ModuleProxy,
   ProxyConnecting,
   ProxyConnectionChangedHandler,
@@ -64,7 +77,6 @@ export type {
 } from "./request";
 export {
   formatClientTimeoutError,
-  formatResponseError,
   handlerNotFoundResponseErrorKey,
   isClientTimeoutResponseError,
   isNoResultResponseError,

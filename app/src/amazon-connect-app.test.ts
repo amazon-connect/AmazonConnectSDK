@@ -11,8 +11,9 @@ import { AmazonConnectAppConfig } from "./amazon-connect-app-config";
 import { AppStartHandler, AppStopHandler, LifecycleManager } from "./lifecycle";
 import { AppProxy } from "./proxy";
 
-jest.mock("./lifecycle/lifecycle-manager");
 jest.mock("@amazon-connect/core/lib/logging/connect-logger");
+jest.mock("@amazon-connect/core/lib/utility/id-generator");
+jest.mock("./lifecycle/lifecycle-manager");
 jest.mock("./proxy/app-proxy");
 
 let sut: AmazonConnectApp;

@@ -8,6 +8,7 @@ export type {
   SubscriptionHandlerId,
   SubscriptionHandlerIdMapping,
   SubscriptionTopic,
+  SubscriptionTopicHandlerIdItem,
   SubscriptionTopicKey,
   SubscriptionTopicParameter,
 } from "./types";

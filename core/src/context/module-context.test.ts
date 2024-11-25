@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/unbound-method */
 // import { ModuleProxy, ModuleProxy, createModuleProxy } from "../proxy";
 import * as proxy from "../proxy";

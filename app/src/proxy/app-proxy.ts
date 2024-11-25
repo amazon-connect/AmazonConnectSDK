@@ -1,4 +1,5 @@
 import {
+  AcknowledgeMessage,
   ConnectLogger,
   Proxy,
   sdkVersion,
@@ -9,6 +10,7 @@ import {
 } from "@amazon-connect/core";
 import {
   AppDownstreamMessage,
+  AppHostInitMessage,
   AppMessageOrigin,
   AppPublishMessage,
   AppUpstreamMessage,
@@ -85,9 +87,10 @@ export class AppProxy extends Proxy<
   }
 
   protected initProxy(): void {
-    const testMessage = {
+    const hostInitMessage: AppHostInitMessage = {
       type: "connect-app-host-init",
       sdkVersion,
+      providerId: this.provider.id,
     };
 
     this.status.update({ status: "initializing" });
@@ -98,7 +101,7 @@ export class AppProxy extends Proxy<
       getConnectionTimeout(this.provider.config),
     );
 
-    window.parent.postMessage(testMessage, "*", [this.channel.port2]);
+    window.parent.postMessage(hostInitMessage, "*", [this.channel.port2]);
     this.appLogger.debug("Send connect message to configure proxy");
   }
 
@@ -111,19 +114,21 @@ export class AppProxy extends Proxy<
       const { origin, pathname: path } = document.location;
       return {
         _type: "app",
+        providerId: this.provider.id,
         origin,
         path,
       };
     } else {
       return {
         _type: "app",
+        providerId: this.provider.id,
         origin: "unknown",
         path: "unknown",
       };
     }
   }
 
-  protected handleConnectionAcknowledge(): void {
+  protected handleConnectionAcknowledge(msg: AcknowledgeMessage): void {
     // ConnectionTimer will always be defined here
     if (!this.connectionTimer!.complete()) {
       this.appLogger.error(
@@ -135,7 +140,7 @@ export class AppProxy extends Proxy<
       return;
     }
 
-    super.handleConnectionAcknowledge();
+    super.handleConnectionAcknowledge(msg);
   }
 
   protected handleMessageFromSubject(msg: AppDownstreamMessage): void {

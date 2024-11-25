@@ -2,8 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { mocked, MockedClass, MockedObject } from "jest-mock";
+import { mock } from "jest-mock-extended";
 
-import { ConnectLogger } from "../logging";
+import { ConnectLogger, LogProvider } from "../logging";
 import { RequestMessage, ResponseMessage } from "../messaging";
 import {
   createRequestHandler,
@@ -17,6 +18,7 @@ jest.mock("./request-handler-factory");
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 
 const requestId = "abc-123";
+const logProvider = mock<LogProvider>();
 let sut: RequestManager;
 let logger: MockedObject<ConnectLogger>;
 
@@ -25,7 +27,7 @@ describe("for a successful request and response flow", () => {
 
   beforeAll(() => {
     jest.resetAllMocks();
-    sut = new RequestManager();
+    sut = new RequestManager(logProvider);
     handler = jest.fn();
     logger = LoggerMock.mock.instances[0];
   });
@@ -85,7 +87,7 @@ describe("for a response with an unknown request id", () => {
   beforeAll(jest.resetAllMocks);
 
   test("should log an error", () => {
-    const sut = new RequestManager();
+    const sut = new RequestManager(logProvider);
     const logger = LoggerMock.mock.instances[0];
     const responseMsg = {
       type: "response",
@@ -114,7 +116,7 @@ describe("when a request times out on the client", () => {
 
   beforeAll(() => {
     jest.resetAllMocks();
-    sut = new RequestManager();
+    sut = new RequestManager(logProvider);
     handler = jest.fn();
     logger = LoggerMock.mock.instances[0];
 

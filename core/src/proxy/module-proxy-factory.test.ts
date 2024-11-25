@@ -1,3 +1,5 @@
+import { mock } from "jest-mock-extended";
+
 import { UpstreamMessageOrigin } from "../messaging";
 import {
   ModuleSubscriptionTopic,
@@ -9,6 +11,7 @@ import { Proxy } from "./proxy";
 
 jest.mock("../logging/connect-logger");
 jest.mock("../messaging/subscription/subscription-manager");
+jest.mock("../utility/id-generator");
 
 class TestProxy extends Proxy {
   constructor() {
@@ -28,7 +31,7 @@ class TestProxy extends Proxy {
     throw new Error("Method not implemented.");
   }
   protected getUpstreamMessageOrigin(): UpstreamMessageOrigin {
-    return { _type: "test" };
+    return mock<UpstreamMessageOrigin>();
   }
 }
 

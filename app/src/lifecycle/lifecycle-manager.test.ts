@@ -19,6 +19,7 @@ import {
 import { LifecycleManager } from "./lifecycle-manager";
 
 jest.mock("@amazon-connect/core/lib/logging/connect-logger");
+jest.mock("@amazon-connect/core/lib/utility/id-generator");
 jest.mock("../proxy/app-proxy");
 
 const AppProxyMock = AppProxy as MockedClass<typeof AppProxy>;

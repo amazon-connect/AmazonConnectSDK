@@ -11,14 +11,17 @@ import {
   ProxyLogData,
 } from "../logging";
 import {
-  DownstreamMessage,
+  AcknowledgeMessage,
+  ChildConnectionEnabledDownstreamMessage,
+  ChildConnectionEnabledUpstreamMessage,
+  ChildUpstreamMessage,
   ErrorMessage,
   LogMessage,
+  MetricMessage,
   PublishMessage,
   ResponseMessage,
   SubscribeMessage,
   UnsubscribeMessage,
-  UpstreamMessage,
   UpstreamMessageOrigin,
 } from "../messaging";
 import {
@@ -28,6 +31,7 @@ import {
   SubscriptionManager,
   SubscriptionTopic,
 } from "../messaging/subscription";
+import { createMetricMessage, MetricProxy, ProxyMetricData } from "../metric";
 import { AmazonConnectProvider } from "../provider";
 import {
   ConnectRequestData,
@@ -35,6 +39,7 @@ import {
   createRequestMessage,
   RequestManager,
 } from "../request";
+import { AddChannelParams, ChannelManager } from "./channel-manager";
 import { ErrorService } from "./error";
 import {
   ProxyConnectionChangedHandler,
@@ -43,37 +48,55 @@ import {
 } from "./proxy-connection";
 
 export abstract class Proxy<
-  TConfig extends AmazonConnectConfig = AmazonConnectConfig,
-  TUpstreamMessage extends { type: string } | UpstreamMessage = UpstreamMessage,
-  TDownstreamMessage extends
-    | { type: string }
-    | DownstreamMessage = DownstreamMessage,
-> implements LogProxy
+    TConfig extends AmazonConnectConfig = AmazonConnectConfig,
+    TUpstreamMessage extends
+      | { type: string }
+      | ChildConnectionEnabledUpstreamMessage = ChildConnectionEnabledUpstreamMessage,
+    TDownstreamMessage extends
+      | { type: string }
+      | ChildConnectionEnabledDownstreamMessage = ChildConnectionEnabledDownstreamMessage,
+  >
+  implements LogProxy, MetricProxy
 {
   protected readonly provider: AmazonConnectProvider<TConfig>;
   protected readonly status: ProxyConnectionStatusManager;
   private readonly subscriptions: SubscriptionManager;
   private readonly errorService: ErrorService;
   private readonly logger: ConnectLogger;
+  private readonly channelManager: ChannelManager;
+
   private requestManager: RequestManager;
   private upstreamMessageQueue: TUpstreamMessage[];
   private connectionEstablished: boolean;
   private isInitialized: boolean;
+  private connectionId: string | null;
 
   constructor(provider: AmazonConnectProvider<TConfig>) {
     this.provider = provider;
     this.logger = new ConnectLogger({
       source: "core.proxy",
-      mixin: () => ({ proxyType: this.proxyType }),
+      provider,
+      mixin: () => ({
+        proxyType: this.proxyType,
+        connectionId: this.connectionId,
+      }),
     });
 
-    this.requestManager = new RequestManager();
-    this.status = new ProxyConnectionStatusManager();
-    this.errorService = new ErrorService();
+    this.requestManager = new RequestManager(provider);
+    this.status = new ProxyConnectionStatusManager(provider);
+    this.errorService = new ErrorService(provider);
     this.upstreamMessageQueue = [];
     this.connectionEstablished = false;
     this.isInitialized = false;
     this.subscriptions = new SubscriptionManager();
+    this.connectionId = null;
+
+    this.channelManager = new ChannelManager(
+      provider,
+      this.sendOrQueueMessageToSubject.bind(this) as (
+        message: ChildUpstreamMessage,
+      ) => void,
+    );
   }
 
   init(): void {
@@ -164,6 +187,29 @@ export abstract class Proxy<
     this.sendOrQueueMessageToSubject(message as TUpstreamMessage);
   }
 
+  sendMetric({ metricData, time, namespace }: ProxyMetricData): void {
+    const metricMessage = createMetricMessage(
+      {
+        metricData,
+        time,
+        namespace,
+      },
+      this.getUpstreamMessageOrigin(),
+    );
+
+    this.sendOrQueueMessageToSubject(metricMessage as TUpstreamMessage);
+  }
+
+  sendMetricMessage(metricMessage: MetricMessage): void {
+    if (metricMessage.type !== "metric") {
+      this.logger.error("Attempted to send invalid metric message", {
+        metricMessage,
+      });
+      return;
+    }
+    this.sendOrQueueMessageToSubject(metricMessage as TUpstreamMessage);
+  }
+
   protected sendOrQueueMessageToSubject(message: TUpstreamMessage): void {
     if (this.connectionEstablished) {
       this.sendMessageToSubject(message);
@@ -206,13 +252,17 @@ export abstract class Proxy<
   }
 
   protected handleMessageFromSubject(msg: TDownstreamMessage) {
-    this.handleDefaultMessageFromSubject(msg as DownstreamMessage);
+    this.handleDefaultMessageFromSubject(
+      msg as ChildConnectionEnabledDownstreamMessage,
+    );
   }
 
-  private handleDefaultMessageFromSubject(msg: DownstreamMessage) {
+  private handleDefaultMessageFromSubject(
+    msg: ChildConnectionEnabledDownstreamMessage,
+  ) {
     switch (msg.type) {
       case "acknowledge":
-        this.handleConnectionAcknowledge();
+        this.handleConnectionAcknowledge(msg);
         break;
       case "response":
         this.handleResponse(msg);
@@ -223,6 +273,12 @@ export abstract class Proxy<
       case "error":
         this.handleError(msg);
         break;
+      case "childDownstreamMessage":
+        this.channelManager.handleDownstreamMessage(msg);
+        break;
+      case "childConnectionClose":
+        this.channelManager.handleCloseMessage(msg);
+        break;
       default:
         this.logger.error("Unknown inbound message", {
           originalMessageEventData: msg,
@@ -231,9 +287,12 @@ export abstract class Proxy<
     }
   }
 
-  protected handleConnectionAcknowledge(): void {
+  protected handleConnectionAcknowledge(msg: AcknowledgeMessage): void {
+    this.connectionId = msg.connectionId;
+
     this.status.update({
       status: "ready",
+      connectionId: msg.connectionId,
     });
 
     this.connectionEstablished = true;
@@ -263,8 +322,12 @@ export abstract class Proxy<
     } else {
       this.subscriptions
         .get(topic)
-        .map((handlerIdMapping) =>
-          this.handleAsyncSubscriptionHandlerInvoke(handlerIdMapping, msg),
+        .map(
+          (handlerIdMapping) =>
+            void this.handleAsyncSubscriptionHandlerInvoke(
+              handlerIdMapping,
+              msg,
+            ),
         );
     }
   }
@@ -328,5 +391,40 @@ export abstract class Proxy<
   }
   offConnectionStatusChange(handler: ProxyConnectionChangedHandler): void {
     this.status.offChange(handler);
+  }
+
+  addChildChannel(params: AddChannelParams): void {
+    this.channelManager.addChannel(params);
+  }
+
+  protected resetConnection(reason: string): void {
+    this.connectionEstablished = false;
+
+    this.status.update({
+      status: "reset",
+      reason,
+    });
+
+    const subscriptionHandlerIds =
+      this.subscriptions.getAllSubscriptionHandlerIds();
+
+    this.logger.info("Resetting proxy", {
+      reason,
+      subscriptionHandlerCount: subscriptionHandlerIds?.length ?? -1,
+    });
+
+    // Restore all subscriptions
+    subscriptionHandlerIds
+      ?.map<SubscribeMessage>(({ topic, handlerId }) => ({
+        type: "subscribe",
+        topic,
+        messageOrigin: this.getUpstreamMessageOrigin(),
+        handlerId,
+      }))
+      .forEach((msg) =>
+        this.sendOrQueueMessageToSubject(msg as TUpstreamMessage),
+      );
+
+    // TODO Notify Connection has repaired
   }
 }

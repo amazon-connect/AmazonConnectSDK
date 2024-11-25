@@ -5,6 +5,7 @@ import {
   SubscriptionHandlerId,
   SubscriptionHandlerIdMapping,
   SubscriptionTopic,
+  SubscriptionTopicHandlerIdItem,
 } from "./types";
 
 export class SubscriptionManager {
@@ -50,5 +51,20 @@ export class SubscriptionManager {
 
   getAllSubscriptions(): SubscriptionTopic[] {
     return this.subscriptions.getAllSubscriptions();
+  }
+
+  getAllSubscriptionHandlerIds(): SubscriptionTopicHandlerIdItem[] {
+    return this.subscriptions
+      .getAllSubscriptions()
+      .reduce<SubscriptionTopicHandlerIdItem[]>(
+        (acc, topic) =>
+          acc.concat(
+            this.get(topic).map(({ handlerId }) => ({
+              topic,
+              handlerId,
+            })),
+          ),
+        [],
+      );
   }
 }

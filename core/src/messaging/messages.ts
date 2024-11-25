@@ -36,22 +36,41 @@ export type LogMessage = {
   context: Record<string, unknown>;
 } & HasUpstreamMessageOrigin;
 
+export type MetricMessage = {
+  type: "metric";
+  namespace: string;
+  metricName: string;
+  unit: string;
+  value: number;
+  time: Date;
+  dimensions: Record<string, string>;
+  optionalDimensions: Record<string, string>;
+} & HasUpstreamMessageOrigin;
+
 export type CloseChannelMessage = {
   type: "closeChannel";
 };
+
+export type HealthCheckMessage = {
+  type: "healthCheck";
+} & HasUpstreamMessageOrigin;
 
 export type UpstreamMessage =
   | RequestMessage
   | SubscribeMessage
   | UnsubscribeMessage
   | LogMessage
-  | CloseChannelMessage;
+  | MetricMessage
+  | CloseChannelMessage
+  | HealthCheckMessage;
 
 export type AcknowledgeMessage<
   T extends ProxySubjectStatus = ProxySubjectStatus,
 > = {
   type: "acknowledge";
+  connectionId: string;
   status: T;
+  healthCheckInterval: number;
 };
 
 export type ErrorMessage<T extends ProxySubjectStatus = ProxySubjectStatus> = {
@@ -70,10 +89,21 @@ export type ResponseMessage = {
 export type PublishMessage = {
   type: "publish";
   topic: SubscriptionTopic;
-  data: Record<string, unknown>;
+  data: object;
   handlerId?: SubscriptionHandlerId;
+};
+
+export type HealthCheckResponseMessage = {
+  type: "healthCheckResponse";
+  time: number;
+  counter: number;
 };
 
 export type DownstreamMessage<
   T extends ProxySubjectStatus = ProxySubjectStatus,
-> = AcknowledgeMessage<T> | ResponseMessage | PublishMessage | ErrorMessage<T>;
+> =
+  | AcknowledgeMessage<T>
+  | ResponseMessage
+  | PublishMessage
+  | ErrorMessage<T>
+  | HealthCheckResponseMessage;

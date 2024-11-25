@@ -3,8 +3,11 @@ node_modules/
 .cache/
 coverage/
 lib/*
+lib-esm/*
 **/lib/*
+**/lib-esm/*
 *.log
 .git
 build
 *.iml
+.DS_Store

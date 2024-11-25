@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass, MockedObject } from "jest-mock";
+import { mock } from "jest-mock-extended";
 
 import { SubscriptionHandlerIdMap } from "./subscription-handler-id-map";
 import { SubscriptionManager } from "./subscription-manager";
@@ -8,6 +9,7 @@ import {
   SubscriptionHandler,
   SubscriptionHandlerIdMapping,
   SubscriptionTopic,
+  SubscriptionTopicHandlerIdItem,
 } from "./types";
 
 jest.mock("./subscription-handler-id-map");
@@ -217,5 +219,55 @@ describe("getAllSubscriptions", () => {
     const result = sut.getAllSubscriptions();
 
     expect(result).toEqual(subscriptions);
+  });
+});
+
+describe("getAllSubscriptionHandlerIds", () => {
+  test("should return empty array when no topics", () => {
+    subscriptionMapMock.getAllSubscriptions.mockReturnValueOnce([]);
+
+    const result = sut.getAllSubscriptionHandlerIds();
+
+    expect(result).toEqual([]);
+  });
+
+  test("should return all subscription handler ids", () => {
+    const topic1 = mock<SubscriptionTopic>();
+    const topic2 = mock<SubscriptionTopic>();
+    const topic3 = mock<SubscriptionTopic>();
+    const topic1H1 = "t1h1";
+    const topic3H1 = "t3h1";
+    const topic3H2 = "t3h2";
+    const topic3H3 = "t3h3";
+    subscriptionMapMock.getAllSubscriptions.mockReturnValueOnce([
+      topic1,
+      topic2,
+      topic3,
+    ]);
+    subscriptionMapMock.get.mockImplementation((topic) => {
+      if (topic === topic1) {
+        return mock<SubscriptionHandlerIdMap>({
+          get: () => [{ handlerId: topic1H1, handler: jest.fn() }],
+        });
+      } else if (topic === topic3) {
+        return mock<SubscriptionHandlerIdMap>({
+          get: () =>
+            [topic3H1, topic3H2, topic3H3].map((handlerId) => ({
+              handlerId,
+              handler: jest.fn(),
+            })),
+        });
+      } else return mock<SubscriptionHandlerIdMap>({ get: () => [] });
+    });
+    const expectedResult: SubscriptionTopicHandlerIdItem[] = [
+      { topic: topic1, handlerId: topic1H1 },
+      { topic: topic3, handlerId: topic3H1 },
+      { topic: topic3, handlerId: topic3H2 },
+      { topic: topic3, handlerId: topic3H3 },
+    ];
+
+    const result = sut.getAllSubscriptionHandlerIds();
+
+    expect(result).toEqual(expectedResult);
   });
 });
