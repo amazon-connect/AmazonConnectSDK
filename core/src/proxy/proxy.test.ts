@@ -15,6 +15,7 @@ import {
   ChildUpstreamMessage,
   DownstreamMessage,
   ErrorMessage,
+  HealthCheckResponseMessage,
   LogMessage,
   MetricMessage,
   PublishMessage,
@@ -36,8 +37,16 @@ import {
 import { ProxyMetricData, Unit } from "../metric";
 import { AmazonConnectProvider } from "../provider";
 import { createRequestMessage, RequestManager } from "../request";
-import { AddChannelParams, ChannelManager } from "./channel-manager";
+import {
+  AddChannelParams,
+  ChannelManager,
+  UpdateChannelPortParams,
+} from "./channel-manager";
 import { ErrorService } from "./error";
+import {
+  HealthCheckManager,
+  HealthCheckStatusChangedHandler,
+} from "./health-check";
 import { Proxy } from "./proxy";
 import {
   ProxyConnectionChangedHandler,
@@ -53,6 +62,7 @@ jest.mock("./proxy-connection/proxy-connection-status-manager");
 jest.mock("../request/request-manager");
 jest.mock("../request/request-message-factory");
 jest.mock("./channel-manager");
+jest.mock("./health-check/health-check-manager");
 
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 const RequestManagerMock = RequestManager as MockedClass<typeof RequestManager>;
@@ -60,6 +70,9 @@ const SubscriptionManagerMock = SubscriptionManager as MockedClass<
   typeof SubscriptionManager
 >;
 const ErrorServiceMock = ErrorService as MockedClass<typeof ErrorService>;
+const HealthCheckManagerMock = HealthCheckManager as MockedClass<
+  typeof HealthCheckManager
+>;
 
 const ProxyConnectionStatusManagerMock =
   ProxyConnectionStatusManager as MockedClass<
@@ -75,7 +88,7 @@ class TestProxy extends Proxy {
   public readonly upstreamMessagesSent: UpstreamMessage[];
 
   constructor(private readonly loggerContext?: Record<string, unknown>) {
-    super(new AmazonConnectProvider({ config: {}, proxyFactory: () => this }));
+    super(mock<AmazonConnectProvider>({ getProxy: () => this }));
     this.upstreamMessagesSent = [];
   }
 
@@ -1098,6 +1111,28 @@ describe("Connection Status Change Handlers", () => {
   });
 });
 
+describe("Health Check Status Change Handlers", () => {
+  test("should add handler", () => {
+    const sut = new TestProxy();
+    const handler: HealthCheckStatusChangedHandler = jest.fn();
+    const [healthCheckManager] = HealthCheckManagerMock.mock.instances;
+
+    sut.onHealthCheckStatusChanged(handler);
+
+    expect(healthCheckManager.onStatusChanged).toHaveBeenCalledWith(handler);
+  });
+
+  test("should remove handler", () => {
+    const sut = new TestProxy();
+    const handler: HealthCheckStatusChangedHandler = jest.fn();
+    const [healthCheckManager] = HealthCheckManagerMock.mock.instances;
+
+    sut.offHealthCheckStatusChanged(handler);
+
+    expect(healthCheckManager.offStatusChanged).toHaveBeenCalledWith(handler);
+  });
+});
+
 describe("when handling a downstream message", () => {
   let sut: TestProxy;
   let channelManagerMock: MockedObject<ChannelManager>;
@@ -1132,6 +1167,22 @@ describe("when handling a downstream message", () => {
       sut.mockPushMessage(message);
 
       expect(channelManagerMock.handleCloseMessage).toBeCalledWith(message);
+    });
+  });
+
+  describe("healthCheckResponse", () => {
+    test("should send to health check manager", () => {
+      sut.init();
+      const [healthCheckManagerMock] = HealthCheckManagerMock.mock.instances;
+      const message = mock<HealthCheckResponseMessage>({
+        type: "healthCheckResponse",
+      });
+
+      sut.mockPushMessage(message);
+
+      expect(healthCheckManagerMock.handleResponse).toHaveBeenCalledWith(
+        message,
+      );
     });
   });
 
@@ -1171,6 +1222,18 @@ describe("addChildChannel", () => {
     sut.addChildChannel(params);
 
     expect(channelManagerMock.addChannel).toBeCalledWith(params);
+  });
+});
+
+describe("updateChildChannelPort", () => {
+  test("should update channel port on channel manager", () => {
+    const sut = new TestProxy();
+    const channelManagerMock = mocked(ChannelManager).mock.instances[0];
+    const params = mock<UpdateChannelPortParams>();
+
+    sut.updateChildChannelPort(params);
+
+    expect(channelManagerMock.updateChannelPort).toHaveBeenCalledWith(params);
   });
 });
 

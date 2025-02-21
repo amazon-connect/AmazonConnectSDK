@@ -21,3 +21,16 @@ export type UserLanguageChanged = {
 
 export type UserLanguageChangedHandler =
   SubscriptionHandler<UserLanguageChanged>;
+
+export type SetLanguageResult = {
+  language?: Locale;
+};
+
+export type SetLanguageOptions = MutableOperationOptions;
+
+export interface MutableOperationOptions {
+  /**
+   * Default is false. If false, the returned promise will be resolved only after the backend returns a new agent configuration in a desired state. If true, the returned promise will be resolved as soon as the backend API call succeeds, which is the StreamsJS' behavior. The promise will be immediately rejected if the backend API call fails in both cases.
+   * */
+  resolveBeforeConfirmation?: boolean;
+}

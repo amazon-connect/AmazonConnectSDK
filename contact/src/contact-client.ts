@@ -4,7 +4,12 @@ import { contactNamespace } from "./namespace";
 import { ContactRoutes } from "./routes";
 import { ContactLifecycleTopicKey } from "./topic-keys";
 import {
+  AddParticipantOptions,
+  AddParticipantResult,
+  AgentQuickConnect,
   ContactAttributeFilter,
+  ContactChannelType,
+  ContactClearedHandler,
   ContactConnectedHandler,
   ContactDestroyedHandler,
   ContactMissedHandler,
@@ -12,6 +17,9 @@ import {
   ContactType,
   GetAttributesRequest,
   Queue,
+  QueueQuickConnect,
+  QuickConnect,
+  TransferOptions,
 } from "./types";
 
 export class ContactClient extends ConnectClient {
@@ -48,6 +56,9 @@ export class ContactClient extends ConnectClient {
     return data.initialContactId;
   }
 
+  /**
+   * @deprecated Use `getChannelType` instead.
+   */
   async getType(contactId: string): Promise<ContactType> {
     const data: Record<string, ContactType> = await this.context.proxy.request(
       ContactRoutes.getType,
@@ -84,6 +95,9 @@ export class ContactClient extends ConnectClient {
       handler,
     );
   }
+  /**
+   * @deprecated Use `onCleared` instead.
+   */
   onDestroyed(handler: ContactDestroyedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopicKey.Destroyed, parameter: contactId },
@@ -108,6 +122,9 @@ export class ContactClient extends ConnectClient {
       handler,
     );
   }
+  /**
+   * @deprecated Use `offCleared` instead.
+   */
   offDestroyed(handler: ContactDestroyedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopicKey.Destroyed, parameter: contactId },
@@ -123,6 +140,50 @@ export class ContactClient extends ConnectClient {
   offConnected(handler: ContactConnectedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopicKey.Connected, parameter: contactId },
+      handler,
+    );
+  }
+
+  async getChannelType(contactId: string): Promise<ContactChannelType> {
+    return await this.context.proxy.request(ContactRoutes.getChannelType, {
+      contactId,
+    });
+  }
+
+  addParticipant(
+    contactId: string,
+    quickConnect: QuickConnect,
+    options?: AddParticipantOptions,
+  ): Promise<AddParticipantResult> {
+    return this.context.proxy.request(ContactRoutes.addParticipant, {
+      contactId,
+      quickConnect,
+      options,
+    });
+  }
+
+  transfer(
+    contactId: string,
+    quickConnect: AgentQuickConnect | QueueQuickConnect,
+    options?: TransferOptions,
+  ): Promise<void> {
+    return this.context.proxy.request(ContactRoutes.transfer, {
+      contactId,
+      quickConnect,
+      options,
+    });
+  }
+
+  onCleared(handler: ContactClearedHandler, contactId?: string): void {
+    this.context.proxy.subscribe(
+      { key: ContactLifecycleTopicKey.Cleared, parameter: contactId },
+      handler,
+    );
+  }
+
+  offCleared(handler: ContactClearedHandler, contactId?: string): void {
+    this.context.proxy.unsubscribe(
+      { key: ContactLifecycleTopicKey.Cleared, parameter: contactId },
       handler,
     );
   }

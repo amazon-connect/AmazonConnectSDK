@@ -1,9 +1,14 @@
 import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
 
 import { userNamespace } from "./namespace";
-import { UserRoutes } from "./routes";
+import { SettingsRoutes, UserRoutes } from "./routes";
 import { UserTopicKey } from "./topic-keys";
-import { Locale, UserLanguageChangedHandler } from "./types";
+import {
+  Locale,
+  SetLanguageOptions,
+  SetLanguageResult,
+  UserLanguageChangedHandler,
+} from "./types";
 
 export class SettingsClient extends ConnectClient {
   constructor(config?: ConnectClientConfig) {
@@ -29,6 +34,19 @@ export class SettingsClient extends ConnectClient {
     this.context.proxy.unsubscribe(
       { key: UserTopicKey.LanguageChanged },
       handler,
+    );
+  }
+
+  setLanguage(
+    language: Locale,
+    options?: SetLanguageOptions,
+  ): Promise<SetLanguageResult> {
+    return this.context.proxy.request<SetLanguageResult>(
+      SettingsRoutes.setLanguage,
+      {
+        language,
+        options,
+      },
     );
   }
 }

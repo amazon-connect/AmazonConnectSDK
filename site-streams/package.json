@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/site-streams",
-  "version": "1.0.4",
+  "version": "1.0.5-beta",
   "description": "Used for building sites integrated with StreamsJS",
   "publishConfig": {
     "access": "public"
@@ -27,6 +27,6 @@
     "lib-esm/**/*"
   ],
   "dependencies": {
-    "@amazon-connect/site": "1.0.4"
+    "@amazon-connect/site": "1.0.5-beta"
   }
 }

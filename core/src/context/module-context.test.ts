@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/unbound-method */
-// import { ModuleProxy, ModuleProxy, createModuleProxy } from "../proxy";
 import * as proxy from "../proxy";
 import { Context, ModuleContext } from "./";
 
@@ -36,5 +35,15 @@ describe("ModuleContext", () => {
 
     testModuleContext.createLogger("test");
     expect(testContext.createLogger).toHaveBeenCalled();
+  });
+
+  test("createMetricRecorder", () => {
+    const testContext = new Context();
+    const testNameSpace = "test";
+    const testModuleContext = new ModuleContext(testContext, testNameSpace);
+    jest.spyOn(testContext, "createMetricRecorder");
+
+    testModuleContext.createMetricRecorder({ namespace: "test" });
+    expect(testContext.createMetricRecorder).toHaveBeenCalled();
   });
 });

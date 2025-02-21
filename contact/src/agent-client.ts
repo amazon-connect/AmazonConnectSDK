@@ -8,6 +8,11 @@ import {
   AgentRoutingProfile,
   AgentState,
   AgentStateChangedHandler,
+  ListQuickConnectsOptions,
+  ListQuickConnectsResult,
+  QueueARN,
+  SetAvailabilityStateOptions,
+  SetAvailabilityStateResult,
 } from "./types";
 
 export class AgentClient extends ConnectClient {
@@ -50,7 +55,9 @@ export class AgentClient extends ConnectClient {
 
     return extension;
   }
-
+  /**
+   * @deprecated Use `VoiceClient.listDialableCountries` instead.
+   */
   async getDialableCountries(): Promise<string[]> {
     const { dialableCountries } = await this.context.proxy.request<{
       dialableCountries: string[];
@@ -68,5 +75,44 @@ export class AgentClient extends ConnectClient {
       { key: AgentTopicKey.StateChanged },
       handler,
     );
+  }
+  setAvailabilityState(
+    agentStateARN: string,
+    options?: SetAvailabilityStateOptions,
+  ): Promise<SetAvailabilityStateResult> {
+    return this.context.proxy.request(AgentRoutes.setAvailabilityState, {
+      agentStateARN,
+      options,
+    });
+  }
+
+  setAvailabilityStateByName(
+    agentStateName: string,
+    options?: SetAvailabilityStateOptions,
+  ): Promise<SetAvailabilityStateResult> {
+    return this.context.proxy.request(AgentRoutes.setAvailabilityStateByName, {
+      agentStateName,
+      options,
+    });
+  }
+
+  setOffline(
+    options?: SetAvailabilityStateOptions,
+  ): Promise<SetAvailabilityStateResult> {
+    return this.context.proxy.request(AgentRoutes.setOffline, { options });
+  }
+
+  listAvailabilityStates(): Promise<AgentState[]> {
+    return this.context.proxy.request(AgentRoutes.listAvailabilityStates);
+  }
+
+  listQuickConnects(
+    queueARNs: QueueARN | QueueARN[],
+    options?: ListQuickConnectsOptions,
+  ): Promise<ListQuickConnectsResult> {
+    return this.context.proxy.request(AgentRoutes.listQuickConnects, {
+      queueARNs,
+      options,
+    });
   }
 }

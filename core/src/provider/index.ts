@@ -3,5 +3,6 @@ export {
   resetGlobalProvider,
   setGlobalProvider,
 } from "./global-provider";
-export type { AmazonConnectProviderParams } from "./provider";
-export { AmazonConnectProvider } from "./provider";
+export type { AmazonConnectProvider } from "./provider";
+export type { AmazonConnectProviderParams } from "./provider-base";
+export { AmazonConnectProviderBase } from "./provider-base";

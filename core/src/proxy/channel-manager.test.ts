@@ -148,6 +148,136 @@ describe("addChannel", () => {
   });
 });
 
+describe("updateChannelPort", () => {
+  describe("when the original connection exists", () => {
+    const originalMessagePort = mock<MessagePort>({ onmessage: jest.fn() });
+
+    beforeEach(() => {
+      sut.addChannel({
+        connectionId: testConnectionId,
+        port: originalMessagePort,
+        providerId: "original-provider-id",
+      });
+      relayChildUpstreamMessageMock.mockReset();
+    });
+
+    test("should close the original message port", () => {
+      sut.updateChannelPort({
+        connectionId: testConnectionId,
+        port: mockMessagePort,
+        providerId: testProviderId,
+      });
+
+      expect(originalMessagePort.onmessage).toBeNull();
+      expect(originalMessagePort.close).toHaveBeenCalled();
+    });
+
+    test("should update message port with started handler", () => {
+      mockMessagePort.addEventListener.mockImplementationOnce(() => {
+        expect(mockMessagePort.start).not.toHaveBeenCalled();
+      });
+      const testUpstreamMessage = mock<ChildConnectionEnabledUpstreamMessage>();
+
+      sut.updateChannelPort({
+        connectionId: testConnectionId,
+        port: mockMessagePort,
+        providerId: testProviderId,
+      });
+
+      expect(mockMessagePort.addEventListener).toHaveBeenCalledWith(
+        "message",
+        expect.any(Function),
+      );
+      expect(mockMessagePort.start).toHaveBeenCalled();
+      relayChildUpstreamMessageMock.mockReset();
+      const messageHandler = mockMessagePort.addEventListener.mock
+        .calls[0][1] as (message: MessageEvent<unknown>) => void;
+      messageHandler({ data: testUpstreamMessage } as MessageEvent<unknown>);
+      expect(relayChildUpstreamMessageMock).toHaveBeenCalledWith({
+        type: "childUpstream",
+        sourceProviderId: testProviderId,
+        parentProviderId: testSourceProviderId,
+        connectionId: testConnectionId,
+        message: testUpstreamMessage,
+      });
+    });
+
+    test("should set the connection on the map", () => {
+      sut.updateChannelPort({
+        connectionId: testConnectionId,
+        port: mockMessagePort,
+        providerId: testProviderId,
+      });
+
+      const mapItem = sut["messagePorts"].get(testConnectionId)!;
+
+      expect(mapItem).toBeDefined();
+      expect(mapItem.port).toEqual(mockMessagePort);
+      expect(mapItem.providerId).toEqual(testProviderId);
+      expect(mapItem.handler).toEqual(
+        mockMessagePort.addEventListener.mock.calls[0][1],
+      );
+    });
+
+    test("should send connection ready message after message is setup", () => {
+      mockMessagePort.addEventListener.mockImplementationOnce(() => {
+        expect(relayChildUpstreamMessageMock).not.toHaveBeenCalled();
+      });
+
+      sut.updateChannelPort({
+        connectionId: testConnectionId,
+        port: mockMessagePort,
+        providerId: testProviderId,
+      });
+
+      expect(mockMessagePort.addEventListener).toHaveBeenCalled();
+      expect(relayChildUpstreamMessageMock).toHaveBeenCalledWith({
+        type: "childUpstream",
+        sourceProviderId: testProviderId,
+        parentProviderId: testSourceProviderId,
+        connectionId: testConnectionId,
+        message: {
+          type: "childConnectionReady",
+        },
+      });
+      expect(loggerMock.debug).toHaveBeenCalledWith(expect.any(String), {
+        connectionId: testConnectionId,
+      });
+      expect(loggerMock.error).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when attempting to update the port for a non existing connection", () => {
+    const newMessagePort = mock<MessagePort>();
+    beforeEach(() => {
+      relayChildUpstreamMessageMock.mockReset();
+      sut.updateChannelPort({
+        connectionId: testConnectionId,
+        port: newMessagePort,
+        providerId: "updated-provider-id",
+      });
+    });
+
+    test("should log error", () => {
+      expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
+        connectionId: testConnectionId,
+      });
+    });
+
+    test("should not start message port", () => {
+      expect(newMessagePort.close).not.toHaveBeenCalled();
+    });
+
+    test("should not send child connection ready message", () => {
+      expect(relayChildUpstreamMessageMock).not.toHaveBeenCalled();
+    });
+
+    test("should not set message port", () => {
+      expect(sut["messagePorts"].get(testConnectionId)).toBeUndefined();
+    });
+  });
+});
+
 describe("handleDownstreamMessage", () => {
   describe("when the connectionId does not exist", () => {
     test("should warn and take no action", () => {

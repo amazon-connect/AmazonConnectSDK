@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/sdk",
-  "version": "1.0.4",
+  "version": "1.0.5-beta",
   "description": "",
   "scripts": {
     "build": "npm run --ws build",
@@ -35,6 +35,10 @@
   },
   "workspaces": [
     "core",
+    "aws-sdk",
+    "internal-utilities",
+    "leader-manager",
+    "debug",
     "workspace-types",
     "app",
     "site",

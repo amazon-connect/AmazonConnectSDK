@@ -3,6 +3,7 @@ export enum ContactLifecycleTopicKey {
   Connected = "contact/connected",
   Destroyed = "contact/destroy",
   Missed = "contact/missed",
+  Cleared = "contact/cleared",
 }
 
 export enum AgentTopicKey {

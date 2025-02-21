@@ -42,8 +42,6 @@ export class ConnectMetricRecorder {
       ...(metricOptions?.dimensions ?? {}),
     };
 
-    processedDimensions["Metric"] = "Error";
-
     const processedMetricOptions = {
       ...metricOptions,
       dimensions: processedDimensions,
@@ -62,8 +60,6 @@ export class ConnectMetricRecorder {
     const processedDimensions: Record<string, string> = {
       ...(metricOptions?.dimensions ?? {}),
     };
-
-    processedDimensions["Metric"] = "Error";
 
     const processedMetricOptions = {
       ...metricOptions,

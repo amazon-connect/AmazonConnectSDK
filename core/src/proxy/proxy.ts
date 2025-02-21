@@ -16,6 +16,7 @@ import {
   ChildConnectionEnabledUpstreamMessage,
   ChildUpstreamMessage,
   ErrorMessage,
+  HealthCheckMessage,
   LogMessage,
   MetricMessage,
   PublishMessage,
@@ -39,8 +40,16 @@ import {
   createRequestMessage,
   RequestManager,
 } from "../request";
-import { AddChannelParams, ChannelManager } from "./channel-manager";
+import {
+  AddChannelParams,
+  ChannelManager,
+  UpdateChannelPortParams,
+} from "./channel-manager";
 import { ErrorService } from "./error";
+import {
+  HealthCheckManager,
+  HealthCheckStatusChangedHandler,
+} from "./health-check";
 import {
   ProxyConnectionChangedHandler,
   ProxyConnectionStatus,
@@ -64,6 +73,7 @@ export abstract class Proxy<
   private readonly errorService: ErrorService;
   private readonly logger: ConnectLogger;
   private readonly channelManager: ChannelManager;
+  private readonly healthCheck: HealthCheckManager;
 
   private requestManager: RequestManager;
   private upstreamMessageQueue: TUpstreamMessage[];
@@ -97,6 +107,13 @@ export abstract class Proxy<
         message: ChildUpstreamMessage,
       ) => void,
     );
+    this.healthCheck = new HealthCheckManager({
+      provider,
+      sendHealthCheck: this.sendOrQueueMessageToSubject.bind(this) as (
+        message: HealthCheckMessage,
+      ) => void,
+      getUpstreamMessageOrigin: this.getUpstreamMessageOrigin.bind(this),
+    });
   }
 
   init(): void {
@@ -279,6 +296,9 @@ export abstract class Proxy<
       case "childConnectionClose":
         this.channelManager.handleCloseMessage(msg);
         break;
+      case "healthCheckResponse":
+        this.healthCheck.handleResponse(msg);
+        break;
       default:
         this.logger.error("Unknown inbound message", {
           originalMessageEventData: msg,
@@ -302,6 +322,8 @@ export abstract class Proxy<
       const msg = this.upstreamMessageQueue.shift();
       this.sendMessageToSubject(msg as TUpstreamMessage);
     }
+
+    this.healthCheck.start(msg);
   }
 
   private handleResponse(msg: ResponseMessage) {
@@ -393,8 +415,19 @@ export abstract class Proxy<
     this.status.offChange(handler);
   }
 
+  onHealthCheckStatusChanged(handler: HealthCheckStatusChangedHandler): void {
+    this.healthCheck.onStatusChanged(handler);
+  }
+  offHealthCheckStatusChanged(handler: HealthCheckStatusChangedHandler): void {
+    this.healthCheck.offStatusChanged(handler);
+  }
+
   addChildChannel(params: AddChannelParams): void {
     this.channelManager.addChannel(params);
+  }
+
+  updateChildChannelPort(params: UpdateChannelPortParams): void {
+    this.channelManager.updateChannelPort(params);
   }
 
   protected resetConnection(reason: string): void {

@@ -19,6 +19,7 @@ jest.mock("@amazon-connect/core/lib/utility/id-generator");
 jest.mock("@amazon-connect/core/lib/utility/timeout-tracker");
 jest.mock("@amazon-connect/core/lib/proxy/error/error-service");
 jest.mock("@amazon-connect/core/lib/proxy/channel-manager");
+jest.mock("@amazon-connect/core/lib/proxy/health-check/health-check-manager");
 
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 
@@ -39,15 +40,12 @@ const verifyEventSourceMock = jest.fn<
 const invalidInitMessageHandlerMock = jest.fn<void, [unknown]>();
 const consumerMessageHandlerMock = jest.fn<void, [MessageEvent<unknown>]>();
 const connectionEventHandlerMock = jest.fn<void, [ProxyConnectionEvent]>();
-
 class TestProxy extends SiteProxy<TestProxyConfig> {
   constructor(params?: { instanceUrlOverride?: string }) {
     super(
-      new AmazonConnectProvider<TestProxyConfig>({
-        config: {
-          instanceUrl: params?.instanceUrlOverride ?? testInstanceUrl,
-        },
-        proxyFactory: () => this,
+      mock<AmazonConnectProvider<TestProxyConfig>>({
+        config: { instanceUrl: params?.instanceUrlOverride ?? testInstanceUrl },
+        getProxy: () => this,
       }),
     );
   }
@@ -127,7 +125,7 @@ describe("constructor", () => {
     expect(LoggerMock).toHaveBeenCalledTimes(4);
     expect(LoggerMock.mock.calls[3][0]).toEqual({
       source: "siteProxy",
-      provider: expect.any(AmazonConnectProvider) as AmazonConnectProvider,
+      provider: sut["provider"],
     });
   });
 });
@@ -160,119 +158,123 @@ describe("listenForInitialMessage", () => {
     ) => void;
   });
 
-  describe("when the event source is not valid", () => {
+  describe("when the event does not contain an origin", () => {
     test("should take no action", () => {
-      verifyEventSourceMock.mockReturnValue(false);
-      const testEvent = mock<MessageEventWithType>();
+      const testEvent = mock<MessageEventWithType>({
+        origin: undefined,
+      });
 
       handler(testEvent);
 
-      expect(verifyEventSourceMock).toHaveBeenCalledWith(testEvent);
       expect(sut.connectionStatus).toEqual("connecting");
       expect(loggerMock.debug).not.toHaveBeenCalled();
+      expect(loggerMock.error).not.toHaveBeenCalled();
+      expect(loggerMock.warn).toHaveBeenCalledWith(expect.any(String));
+    });
+  });
+
+  describe("when the instanceUrl is invalid", () => {
+    test("should log error and take no action", () => {
+      const invalidUrl = "invalidUrl";
+      const eventOrigin = "https://test2.com";
+      LoggerMock.mockReset();
+      mocked(window.addEventListener).mockReset();
+      sut = new TestProxy({ instanceUrlOverride: invalidUrl });
+      loggerMock = LoggerMock.mock.instances[3];
+      sut.init();
+      handler = mocked(window.addEventListener).mock.calls[0][1] as (
+        evt: MessageEventWithType,
+      ) => void;
+
+      const testEvent = mock<MessageEventWithType>({
+        origin: eventOrigin,
+      });
+
+      handler(testEvent);
+
+      expect(sut.connectionStatus).toEqual("connecting");
+      expect(loggerMock.error).toHaveBeenCalledTimes(1);
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        expect.any(String),
+        {
+          error: expect.anything() as Error,
+          eventOrigin,
+          configInstanceUrl: invalidUrl,
+        },
+        { duplicateMessageToConsole: true },
+      );
+      expect(loggerMock.debug).not.toHaveBeenCalled();
       expect(loggerMock.warn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when the origin is not expected for a unknown type", () => {
+    test("should do nothing", () => {
+      const eventOrigin = "https://test2.com";
+      const testEvent = mock<MessageEventWithType>({
+        origin: eventOrigin,
+        data: { type: "not-expected" },
+      });
+
+      handler(testEvent);
+
+      expect(sut.connectionStatus).toEqual("connecting");
+      expect(loggerMock.warn).not.toHaveBeenCalled();
+      expect(loggerMock.debug).not.toHaveBeenCalled();
       expect(loggerMock.error).not.toHaveBeenCalled();
     });
   });
 
-  describe("when the event source is valid", () => {
-    beforeEach(() => {
-      verifyEventSourceMock.mockReturnValue(true);
-    });
+  describe("when the origin is not expected for a the expected message type", () => {
+    test("should log error and take no action", () => {
+      const eventOrigin = "https://test2.com";
+      const testEvent = mock<MessageEventWithType>({
+        origin: eventOrigin,
+        data: { type: "cross-domain-adapter-init" },
+      });
 
-    describe("when the event does not contain an origin", () => {
+      handler(testEvent);
+
+      expect(sut.connectionStatus).toEqual("connecting");
+      expect(loggerMock.warn).toHaveBeenCalledTimes(1);
+      expect(loggerMock.warn).toHaveBeenCalledWith(
+        expect.any(String),
+        {
+          eventOrigin,
+          expectedOrigin: "https://test.com",
+        },
+        { duplicateMessageToConsole: true },
+      );
+      expect(loggerMock.debug).not.toHaveBeenCalled();
+      expect(loggerMock.error).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when the origin is valid", () => {
+    describe("when the event source is not valid", () => {
       test("should take no action", () => {
+        verifyEventSourceMock.mockReturnValue(false);
         const testEvent = mock<MessageEventWithType>({
-          origin: undefined,
-        });
-
-        handler(testEvent);
-
-        expect(sut.connectionStatus).toEqual("connecting");
-        expect(loggerMock.debug).not.toHaveBeenCalled();
-        expect(loggerMock.error).not.toHaveBeenCalled();
-        expect(loggerMock.warn).toHaveBeenCalledWith(expect.any(String));
-      });
-    });
-
-    describe("when the instanceUrl is invalid", () => {
-      test("should log error and take no action", () => {
-        const invalidUrl = "invalidUrl";
-        const eventOrigin = "https://test2.com";
-        LoggerMock.mockReset();
-        mocked(window.addEventListener).mockReset();
-        sut = new TestProxy({ instanceUrlOverride: invalidUrl });
-        loggerMock = LoggerMock.mock.instances[3];
-        sut.init();
-        handler = mocked(window.addEventListener).mock.calls[0][1] as (
-          evt: MessageEventWithType,
-        ) => void;
-
-        const testEvent = mock<MessageEventWithType>({
-          origin: eventOrigin,
-        });
-
-        handler(testEvent);
-
-        expect(sut.connectionStatus).toEqual("connecting");
-        expect(loggerMock.error).toHaveBeenCalledTimes(1);
-        expect(loggerMock.error).toHaveBeenCalledWith(
-          expect.any(String),
-          {
-            error: expect.anything() as Error,
-            eventOrigin,
-            configInstanceUrl: invalidUrl,
-          },
-          { duplicateMessageToConsole: true },
-        );
-        expect(loggerMock.debug).not.toHaveBeenCalled();
-        expect(loggerMock.warn).not.toHaveBeenCalled();
-      });
-    });
-
-    describe("when the origin is not expected for a unknown type", () => {
-      test("should do nothing", () => {
-        const eventOrigin = "https://test2.com";
-        const testEvent = mock<MessageEventWithType>({
-          origin: eventOrigin,
-          data: { type: "not-expected" },
-        });
-
-        handler(testEvent);
-
-        expect(sut.connectionStatus).toEqual("connecting");
-        expect(loggerMock.warn).not.toHaveBeenCalled();
-        expect(loggerMock.debug).not.toHaveBeenCalled();
-        expect(loggerMock.error).not.toHaveBeenCalled();
-      });
-    });
-
-    describe("when the origin is not expected for a the expected message type", () => {
-      test("should log error and take no action", () => {
-        const eventOrigin = "https://test2.com";
-        const testEvent = mock<MessageEventWithType>({
-          origin: eventOrigin,
+          origin: validOrigin,
           data: { type: "cross-domain-adapter-init" },
+          ports: [],
         });
 
         handler(testEvent);
 
+        expect(verifyEventSourceMock).toHaveBeenCalledWith(testEvent);
         expect(sut.connectionStatus).toEqual("connecting");
-        expect(loggerMock.warn).toHaveBeenCalledTimes(1);
-        expect(loggerMock.warn).toHaveBeenCalledWith(
-          expect.any(String),
-          {
-            eventOrigin,
-            expectedOrigin: "https://test.com",
-          },
-          { duplicateMessageToConsole: true },
-        );
         expect(loggerMock.debug).not.toHaveBeenCalled();
+        expect(loggerMock.warn).not.toHaveBeenCalled();
         expect(loggerMock.error).not.toHaveBeenCalled();
       });
     });
 
-    describe("when the origin is valid", () => {
+    describe("when the event source is valid", () => {
+      beforeEach(() => {
+        verifyEventSourceMock.mockReturnValue(true);
+      });
+
       describe("when the message is not of type'cross-domain-adapter-init'", () => {
         test("should invoke invalidInitMessageHandler and take no action", () => {
           const messagePortMock = mock<MessagePort>({
