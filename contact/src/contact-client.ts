@@ -4,7 +4,6 @@ import { contactNamespace } from "./namespace";
 import { ContactRoutes } from "./routes";
 import { ContactLifecycleTopicKey } from "./topic-keys";
 import {
-  AddParticipantOptions,
   AddParticipantResult,
   AgentQuickConnect,
   ContactAttributeFilter,
@@ -19,7 +18,6 @@ import {
   Queue,
   QueueQuickConnect,
   QuickConnect,
-  TransferOptions,
 } from "./types";
 
 export class ContactClient extends ConnectClient {
@@ -153,24 +151,20 @@ export class ContactClient extends ConnectClient {
   addParticipant(
     contactId: string,
     quickConnect: QuickConnect,
-    options?: AddParticipantOptions,
   ): Promise<AddParticipantResult> {
     return this.context.proxy.request(ContactRoutes.addParticipant, {
       contactId,
       quickConnect,
-      options,
     });
   }
 
   transfer(
     contactId: string,
     quickConnect: AgentQuickConnect | QueueQuickConnect,
-    options?: TransferOptions,
   ): Promise<void> {
     return this.context.proxy.request(ContactRoutes.transfer, {
       contactId,
       quickConnect,
-      options,
     });
   }
 

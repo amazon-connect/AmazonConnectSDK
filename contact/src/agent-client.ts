@@ -11,7 +11,6 @@ import {
   ListQuickConnectsOptions,
   ListQuickConnectsResult,
   QueueARN,
-  SetAvailabilityStateOptions,
   SetAvailabilityStateResult,
 } from "./types";
 
@@ -78,28 +77,22 @@ export class AgentClient extends ConnectClient {
   }
   setAvailabilityState(
     agentStateARN: string,
-    options?: SetAvailabilityStateOptions,
   ): Promise<SetAvailabilityStateResult> {
     return this.context.proxy.request(AgentRoutes.setAvailabilityState, {
       agentStateARN,
-      options,
     });
   }
 
   setAvailabilityStateByName(
     agentStateName: string,
-    options?: SetAvailabilityStateOptions,
   ): Promise<SetAvailabilityStateResult> {
     return this.context.proxy.request(AgentRoutes.setAvailabilityStateByName, {
       agentStateName,
-      options,
     });
   }
 
-  setOffline(
-    options?: SetAvailabilityStateOptions,
-  ): Promise<SetAvailabilityStateResult> {
-    return this.context.proxy.request(AgentRoutes.setOffline, { options });
+  setOffline(): Promise<SetAvailabilityStateResult> {
+    return this.context.proxy.request(AgentRoutes.setOffline);
   }
 
   listAvailabilityStates(): Promise<AgentState[]> {

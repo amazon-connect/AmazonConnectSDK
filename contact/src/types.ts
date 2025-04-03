@@ -78,8 +78,6 @@ export type ContactMissedHandler = SubscriptionHandler<ContactMissed>;
 export type ContactConnected = BaseContactLifecycleEvent;
 export type ContactConnectedHandler = SubscriptionHandler<ContactConnected>;
 
-export type SetAvailabilityStateOptions = MutableOperationOptions;
-
 export type SetAvailabilityStateResult =
   | {
       /**
@@ -218,18 +216,9 @@ export type CoreContactData = {
 
 export type ListContactsResult = CoreContactData[];
 
-export type AcceptOptions = MutableOperationOptions;
-export type RejectOptions = MutableOperationOptions;
-export type DisconnectSelfOptions = MutableOperationOptions;
-export type ClearOptions = MutableOperationOptions;
-
-export type AddParticipantOptions = MutableOperationOptions;
 export type AddParticipantResult = {
   participantId?: string;
 };
-
-export type DisconnectOptions = MutableOperationOptions;
-export type TransferOptions = MutableOperationOptions;
 
 export type ContactCleared = BaseContactLifecycleEvent;
 export type ContactClearedHandler = SubscriptionHandler<ContactCleared>;
@@ -285,10 +274,4 @@ export interface AgentRoutingProfileChanged {
   previous?: {
     routingProfile: AgentRoutingProfile;
   };
-}
-export interface MutableOperationOptions {
-  /**
-   * Default is false. If false, the returned promise will be resolved only after the backend returns a new agent snapshot in a desired state. If true, the returned promise will be resolved as soon as the backend API call succeeds, which is the StreamsJS' behavior. The promise will be immediately rejected if the backend API call fails in both cases.
-   * */
-  resolveBeforeConfirmation?: boolean;
 }
