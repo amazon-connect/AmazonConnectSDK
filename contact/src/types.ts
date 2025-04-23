@@ -127,40 +127,6 @@ export type ContactChannelType =
   | TaskChannelType
   | EmailChannelType;
 
-export type ConnectionType = string;
-
-export type AssociatedContact = {
-  contactId: string;
-  contactArn: string;
-  contactType: string;
-
-  previousContactId?: string;
-  initialContactId?: string;
-  relatedContactId?: string;
-
-  initiationMethod: string;
-
-  initiationTimestamp: Date;
-  disconnectTimestamp: Date | undefined;
-};
-
-export type ListAssociatedContactsOptions = {
-  /**
-   * The max number of related contacts to return.
-   *
-   * Default maxResults is 25.
-   */
-  maxResults?: number;
-
-  nextToken?: string;
-};
-
-export type ListAssociatedContactsResponse = {
-  associatedContacts: AssociatedContact[];
-
-  nextToken?: string;
-};
-
 export type ListQuickConnectsOptions = {
   /**
    * The max number of quick connects to return.
@@ -201,71 +167,9 @@ export type PhoneNumberQuickConnect = {
   phoneNumber: string;
 };
 
-export type CoreContactData = {
-  type: ContactChannelType["type"];
-  subtype: ContactChannelType["subtype"];
-  contactId: string;
-  initialContactId?: string;
-};
-
-export type ListContactsResult = CoreContactData[];
-
 export type AddParticipantResult = {
   participantId?: string;
 };
 
 export type ContactCleared = BaseContactLifecycleEvent;
 export type ContactClearedHandler = SubscriptionHandler<ContactCleared>;
-
-export type ContactConnecting = BaseContactLifecycleEvent;
-export type ContactConnectingHandler = SubscriptionHandler<ContactConnecting>;
-
-export type ContactError = BaseContactLifecycleEvent;
-export type ContactErrorHandler = SubscriptionHandler<ContactError>;
-
-export type ContactIncoming = BaseContactLifecycleEvent;
-export type ContactIncomingHandler = SubscriptionHandler<ContactIncoming>;
-
-export type ContactPending = BaseContactLifecycleEvent;
-export type ContactPendingHandler = SubscriptionHandler<ContactPending>;
-
-export type AvailabilityStateChangedHandler =
-  SubscriptionHandler<AgentAvailabilityStateChanged>;
-export type NextAvailabilityStateChangedHandler =
-  SubscriptionHandler<NextAgentAvailabilityStateChanged>;
-export type AgentAvailabilityStateChanged = {
-  state: AgentState;
-  previous?: {
-    state: AgentState;
-  };
-};
-export type NextAgentAvailabilityStateChanged = {
-  nextState: AgentState | null;
-  previous?: {
-    nextState: AgentState;
-  };
-};
-
-export type EnabledChannelListChangedHandler =
-  SubscriptionHandler<EnabledChannelListChanged>;
-
-export type AgentRoutingProfileChannelTypes =
-  | "voice"
-  | "chat"
-  | "task"
-  | "email";
-export interface EnabledChannelListChanged {
-  enabledChannels: AgentRoutingProfileChannelTypes[];
-  previous?: {
-    enabledChannels: AgentRoutingProfileChannelTypes[];
-  };
-}
-
-export type RoutingProfileChangedHandler =
-  SubscriptionHandler<AgentRoutingProfileChanged>;
-export interface AgentRoutingProfileChanged {
-  routingProfile: AgentRoutingProfile;
-  previous?: {
-    routingProfile: AgentRoutingProfile;
-  };
-}

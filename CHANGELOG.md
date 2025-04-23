@@ -1,8 +1,8 @@
 # CHANGELOG.md
 
-## 1.0.5-beta
+## 1.0.5
 ### Added
-  - New APIs to `ContactClient`, `AgentClient`, `SettingsClient` and `VoiceClient`
+  - New APIs to `ContactClient`, `AgentClient` and `VoiceClient`
 ### Updated
   - Deprecated `getType`,`onDestroyed` and `offDestroyed` from `ContactClient`
   - Deprecated `getDialableCountries` from `AgentClient`
