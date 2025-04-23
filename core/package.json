@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/core",
-  "version": "1.0.5-ca",
+  "version": "1.0.5",
   "description": "Core functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"

@@ -10,6 +10,8 @@ import {
   AgentRoutingProfile,
   AgentState,
   Queue,
+  QuickConnect,
+  SetAvailabilityStateResult,
 } from "./types";
 
 const moduleProxyMock = mock<ModuleProxy>();
@@ -162,5 +164,93 @@ describe("AgentClient", () => {
       );
       expect(actualResult).toEqual(dialableCountries);
     });
+  });
+
+  test("setAvailabilityState sends request to AgentRoutes.setAvailabilityState", async () => {
+    const expectedResult: SetAvailabilityStateResult = {
+      status: "in_progress",
+    };
+    moduleProxyMock.request.mockResolvedValueOnce(expectedResult);
+    const agentStateARN = "dummyAgentStateARN";
+
+    const actualResult = await sut.setAvailabilityState(agentStateARN);
+
+    expect(moduleProxyMock.request).toHaveBeenCalledWith(
+      AgentRoutes.setAvailabilityState,
+      { agentStateARN },
+    );
+    expect(actualResult).toEqual(expectedResult);
+  });
+
+  test("setStateByName sends request to AgentRoutes.setStateByName", async () => {
+    const expectedResult: SetAvailabilityStateResult = {
+      status: "in_progress",
+    };
+    moduleProxyMock.request.mockResolvedValueOnce(expectedResult);
+    const agentStateName = "agent-state-name";
+
+    const actualResult = await sut.setAvailabilityStateByName(agentStateName);
+
+    expect(moduleProxyMock.request).toHaveBeenCalledWith(
+      AgentRoutes.setAvailabilityStateByName,
+      { agentStateName },
+    );
+    expect(actualResult).toEqual(expectedResult);
+  });
+
+  test("setOffline sends request to AgentRoutes.setOffline", async () => {
+    const expectedResult: SetAvailabilityStateResult = {
+      status: "in_progress",
+    };
+    moduleProxyMock.request.mockResolvedValueOnce(expectedResult);
+
+    const actualResult = await sut.setOffline();
+
+    expect(moduleProxyMock.request).toHaveBeenCalledWith(
+      AgentRoutes.setOffline,
+    );
+    expect(actualResult).toEqual(expectedResult);
+  });
+
+  test("listAvailabilityStates returns result", async () => {
+    const agentState: AgentState = {
+      name: "myStateName",
+      agentStateARN: "myStateARN",
+      type: "not_routable",
+    };
+    moduleProxyMock.request.mockResolvedValueOnce([agentState]);
+
+    const actualResult = await sut.listAvailabilityStates();
+
+    expect(moduleProxyMock.request).toHaveBeenCalledWith(
+      AgentRoutes.listAvailabilityStates,
+    );
+    expect(actualResult).toEqual([agentState]);
+  });
+
+  test("listQuickConnects returns result", async () => {
+    const quickConnects: QuickConnect[] = [
+      {
+        type: "agent",
+        endpointARN: "test-agent-arn",
+        name: "Test Agent",
+      },
+    ];
+    moduleProxyMock.request.mockResolvedValueOnce([quickConnects]);
+
+    const queueARNs = ["my-queue-arn"];
+    const options = {
+      maxResults: 1000,
+    };
+
+    const actualResult = await sut.listQuickConnects(queueARNs, {
+      maxResults: 1000,
+    });
+
+    expect(moduleProxyMock.request).toHaveBeenCalledWith(
+      AgentRoutes.listQuickConnects,
+      { queueARNs, options },
+    );
+    expect(actualResult).toEqual([quickConnects]);
   });
 });

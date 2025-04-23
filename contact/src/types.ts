@@ -81,24 +81,18 @@ export type ContactConnectedHandler = SubscriptionHandler<ContactConnected>;
 export type SetAvailabilityStateResult =
   | {
       /**
-       * Means PutAgentState API succeeded and the agent state change has been reflected in the agent snapshot. Only applicable if resolveBeforeConfirmation is false.
+       * Means PutAgentState API succeeded and the agent state change has been reflected in the agent snapshot.
        */
       status: "updated";
       current: AgentState;
     }
   | {
       /**
-       * Means PutAgentState API succeeded but the target agent state has been queued as next agent state because the agent is handling a contact. The agent state will change when all contacts are cleared. Only applicable if resolveBeforeConfirmation is false.
+       * Means PutAgentState API succeeded but the target agent state has been queued as next agent state because the agent is handling a contact. The agent state will change when all contacts are cleared.
        */
       status: "queued";
       current: AgentState;
       next: AgentState;
-    }
-  | {
-      /**
-       * Means PutAgentState API has just succeeded but the agent state change hasn't been reflected in the agent snapshot yet. Only applicable if resolveBeforeConfirmation is true.
-       */
-      status: "in_progress";
     };
 
 export type VoiceChannelType = {

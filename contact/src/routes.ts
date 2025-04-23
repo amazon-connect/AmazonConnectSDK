@@ -25,4 +25,6 @@ export enum ContactRoutes {
   getChannelType = "contact/getChannelType",
   addParticipant = "contact/addParticipant",
   transfer = "contact/transfer",
+  accept = "contact/accept",
+  clear = "contact/clear",
 }

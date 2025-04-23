@@ -181,4 +181,16 @@ export class ContactClient extends ConnectClient {
       handler,
     );
   }
+
+  accept(contactId: string): Promise<void> {
+    return this.context.proxy.request(ContactRoutes.accept, {
+      contactId,
+    });
+  }
+
+  clear(contactId: string): Promise<void> {
+    return this.context.proxy.request(ContactRoutes.clear, {
+      contactId,
+    });
+  }
 }

@@ -5,7 +5,7 @@ import { mock } from "jest-mock-extended";
 import { ContactClient } from "./contact-client";
 import { ContactRoutes } from "./routes";
 import { ContactLifecycleTopicKey } from "./topic-keys";
-import { Queue } from "./types";
+import { AgentQuickConnect, Queue, QuickConnect } from "./types";
 
 const currentContact = "CURRENT_CONTACT";
 
@@ -133,6 +133,36 @@ describe("ContactClient", () => {
         expect(moduleProxyMock.unsubscribe).toBeCalledWith(
           {
             key: ContactLifecycleTopicKey.Connected,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+    });
+
+    describe("CLEARED", () => {
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
+
+        sut.onCleared(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Cleared,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offCleared(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Cleared,
             parameter: currentContact,
           },
           handler,
@@ -302,6 +332,85 @@ describe("ContactClient", () => {
         },
       );
       expect(actualResult).toBe(expectedResult);
+    });
+
+    test("getChannelType returns result", async () => {
+      const expectedResult = {
+        type: "voice",
+        subtype: "WebRTC",
+      };
+      moduleProxyMock.request.mockReturnValue(
+        new Promise((resolve) => resolve(expectedResult)),
+      );
+      const actualResult = await sut.getChannelType(testContactId);
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getChannelType,
+        {
+          contactId: testContactId,
+        },
+      );
+      expect(actualResult).toBe(expectedResult);
+    });
+
+    test("accept sends with request with contactId and options", async () => {
+      const contactId = "dummyContactId";
+
+      await sut.accept(contactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.accept,
+        { contactId },
+      );
+    });
+
+    test("clear sends with request with contactId and options", async () => {
+      await sut.clear(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.clear,
+        {
+          contactId: testContactId,
+        },
+      );
+    });
+
+    test("addParticipant sends with request with contactId, quickConnect, and options", async () => {
+      const testQuickConnect = mock<QuickConnect>({
+        endpointARN: "my-endpoint-arn",
+      });
+
+      const expectedResult = {
+        connectionId: "my-connection-id",
+      };
+      moduleProxyMock.request.mockResolvedValue(expectedResult);
+
+      const actualResult = await sut.addParticipant(
+        testContactId,
+        testQuickConnect,
+      );
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.addParticipant,
+        {
+          contactId: testContactId,
+          quickConnect: testQuickConnect,
+        },
+      );
+      expect(actualResult).toBe(expectedResult);
+    });
+
+    test("transfer sends with request with contactId, quickConnect, and options", async () => {
+      const testQuickConnect = mock<AgentQuickConnect>();
+
+      await sut.transfer(testContactId, testQuickConnect);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.transfer,
+        {
+          contactId: testContactId,
+          quickConnect: testQuickConnect,
+        },
+      );
     });
   });
 });
