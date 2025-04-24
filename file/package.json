@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/file",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Files functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
@@ -27,6 +27,6 @@
     "lib-esm/**/*"
   ],
   "dependencies": {
-    "@amazon-connect/core": "1.0.4"
+    "@amazon-connect/core": "1.0.5"
   }
 }

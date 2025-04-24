@@ -63,13 +63,13 @@ export abstract class SiteProxy<
   protected abstract invalidInitMessageHandler(data: { type?: string }): void;
 
   private listenForInitialMessage(evt: MessageEvent<{ type?: string }>) {
-    if (this.verifyEventSource(evt)) {
-      // Verify origin
-      if (!this.verifyOrigin(evt)) {
-        // Log message is handled in the function with the actual reason for failure
-        return;
-      }
+    // Verify origin
+    if (!this.verifyOrigin(evt)) {
+      // Log message is handled in the function with the actual reason for failure
+      return;
+    }
 
+    if (this.verifyEventSource(evt)) {
       // Verify message
       if (evt.data.type !== "cross-domain-adapter-init") {
         this.invalidInitMessageHandler(evt.data);

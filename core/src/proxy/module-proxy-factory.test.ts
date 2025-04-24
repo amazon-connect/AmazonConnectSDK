@@ -15,7 +15,7 @@ jest.mock("../utility/id-generator");
 
 class TestProxy extends Proxy {
   constructor() {
-    super(new AmazonConnectProvider({ config: {}, proxyFactory: () => this }));
+    super(mock<AmazonConnectProvider>({ getProxy: () => this }));
   }
 
   protected initProxy(): void {

@@ -1,5 +1,13 @@
 # CHANGELOG.md
 
+## 1.0.5
+### Added
+  - New APIs to `ContactClient`, `AgentClient` and `VoiceClient`
+### Updated
+  - Deprecated `getType`,`onDestroyed` and `offDestroyed` from `ContactClient`
+  - Deprecated `getDialableCountries` from `AgentClient`
+  - Deprecated `getPhoneNumber` from `VoiceClient`
+
 ## 1.0.4
 ### Added
   - Initial release of `@amazon-connect/email`, providing the ability to handle email contacts through the `EmailClient`

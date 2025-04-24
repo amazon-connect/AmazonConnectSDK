@@ -1,5 +1,9 @@
 import { AmazonConnectNamespace } from "../amazon-connect-namespace";
 import { ConnectLogger, ConnectLoggerFromContextParams } from "../logging";
+import {
+  ConnectMetricRecorder,
+  ConnectMetricRecorderFromContextParams,
+} from "../metric";
 import { AmazonConnectProvider, getGlobalProvider } from "../provider";
 import { Proxy } from "../proxy";
 import { ModuleContext } from "./module-context";
@@ -35,6 +39,22 @@ export class Context<
     } else {
       return new ConnectLogger({
         source: params,
+        provider: () => this.getProvider(),
+      });
+    }
+  }
+
+  createMetricRecorder(
+    params: ConnectMetricRecorderFromContextParams,
+  ): ConnectMetricRecorder {
+    if (typeof params === "object") {
+      return new ConnectMetricRecorder({
+        ...params,
+        provider: () => this.getProvider(),
+      });
+    } else {
+      return new ConnectMetricRecorder({
+        namespace: params,
         provider: () => this.getProvider(),
       });
     }

@@ -38,6 +38,7 @@ jest.mock("@amazon-connect/core/lib/utility/id-generator");
 jest.mock("@amazon-connect/core/lib/utility/timeout-tracker");
 jest.mock("@amazon-connect/core/lib/proxy/error/error-service");
 jest.mock("@amazon-connect/core/lib/proxy/channel-manager");
+jest.mock("@amazon-connect/core/lib/proxy/health-check/health-check-manager");
 
 jest.mock("../lifecycle/lifecycle-manager");
 jest.mock("./connection-timeout");

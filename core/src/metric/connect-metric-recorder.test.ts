@@ -1,38 +1,16 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { UpstreamMessageOrigin } from "../messaging";
+import { mock } from "jest-mock-extended";
+
 import * as globalProvider from "../provider";
 import { AmazonConnectProvider } from "../provider";
 import { Proxy } from "../proxy";
 import { ConnectMetricRecorder } from "./connect-metric-recorder";
 import * as metricHelper from "./metric-helpers";
-import { ProxyMetricData } from "./proxy-metric-data";
 
 jest.mock("../provider/global-provider");
 jest.mock("../proxy/proxy");
 jest.mock("./metric-helpers");
 jest.mock("../utility/id-generator");
-
-class TestProxy extends Proxy {
-  constructor(provider: AmazonConnectProvider) {
-    super(provider);
-  }
-
-  protected initProxy(): void {
-    throw new Error("Method not implemented.");
-  }
-  protected sendMessageToSubject(): void {
-    throw new Error("Method not implemented.");
-  }
-  protected addContextToLogger(): Record<string, unknown> {
-    throw new Error("Method not implemented.");
-  }
-  public get proxyType(): string {
-    throw new Error("Method not implemented.");
-  }
-  protected getUpstreamMessageOrigin(): UpstreamMessageOrigin {
-    throw new Error("Method not implemented.");
-  }
-}
 
 const testSource = "test-metric-recorder";
 const testMetricName = "dummy-metric-name";
@@ -40,31 +18,24 @@ const testDimensions = { name1: "value1", name2: "value2" };
 const testProcessedDimensions = {
   name1: "value1",
   name2: "value2",
-  Metric: "Error",
 };
 const testTimeStamp = "2024-01-01";
 
-let provider: AmazonConnectProvider;
-let proxyMetricSpy: jest.SpyInstance<void, [ProxyMetricData]>;
-
-const proxyFactory = (p: AmazonConnectProvider) => {
-  const proxy = new TestProxy(p);
-  proxyMetricSpy = jest.spyOn(proxy, "sendMetric");
-  return proxy;
-};
+const proxyMock = mock<Proxy>();
+const providerMock = mock<AmazonConnectProvider>({
+  getProxy: () => proxyMock,
+});
 
 beforeEach(() => {
   jest.resetAllMocks();
   jest.useFakeTimers().setSystemTime(new Date(testTimeStamp));
-  provider = new AmazonConnectProvider({
-    config: {},
-    proxyFactory,
-  });
 });
 
 describe("When ConnectMetricRecorder is created with namespace only", () => {
   beforeEach(() => {
-    jest.spyOn(globalProvider, "getGlobalProvider").mockReturnValue(provider);
+    jest
+      .spyOn(globalProvider, "getGlobalProvider")
+      .mockReturnValue(providerMock);
   });
 
   test("should record success metric, with dimensions param", () => {
@@ -83,15 +54,15 @@ describe("When ConnectMetricRecorder is created with namespace only", () => {
       optionalDimensions: testDimensions,
     });
 
-    expect(mockRecordCount).toBeCalledWith(testMetricName, 0, {
+    expect(mockRecordCount).toHaveBeenCalledWith(testMetricName, 0, {
       dimensions: testProcessedDimensions,
       optionalDimensions: testDimensions,
     });
-    expect(metricHelper.checkDimensionLength).toBeCalledWith(
+    expect(metricHelper.checkDimensionLength).toHaveBeenCalledWith(
       testProcessedDimensions,
       testDimensions,
     );
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: testMetricData,
       time: new Date(testTimeStamp),
       namespace: testSource,
@@ -99,12 +70,12 @@ describe("When ConnectMetricRecorder is created with namespace only", () => {
   });
 
   test("should record success metric, without dimensions param", () => {
-    const defaultDimension = { Metric: "Error" };
+    const defaultDimension = {};
     const testMetricData = {
       metricName: testMetricName,
       unit: "Count",
       value: 0,
-      dimensions: { Metric: "Error" },
+      dimensions: {},
       optionalDimensions: undefined,
     };
     const sut = new ConnectMetricRecorder({ namespace: testSource });
@@ -112,15 +83,15 @@ describe("When ConnectMetricRecorder is created with namespace only", () => {
 
     sut.recordSuccess(testMetricName);
 
-    expect(mockRecordCount).toBeCalledWith(testMetricName, 0, {
+    expect(mockRecordCount).toHaveBeenCalledWith(testMetricName, 0, {
       dimensions: defaultDimension,
       optionalDimensions: undefined,
     });
-    expect(metricHelper.checkDimensionLength).toBeCalledWith(
+    expect(metricHelper.checkDimensionLength).toHaveBeenCalledWith(
       defaultDimension,
       undefined,
     );
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: testMetricData,
       time: new Date(testTimeStamp),
       namespace: testSource,
@@ -143,15 +114,15 @@ describe("When ConnectMetricRecorder is created with namespace only", () => {
       optionalDimensions: testDimensions,
     });
 
-    expect(mockRecordCount).toBeCalledWith(testMetricName, 1, {
+    expect(mockRecordCount).toHaveBeenCalledWith(testMetricName, 1, {
       dimensions: testProcessedDimensions,
       optionalDimensions: testDimensions,
     });
-    expect(metricHelper.checkDimensionLength).toBeCalledWith(
+    expect(metricHelper.checkDimensionLength).toHaveBeenCalledWith(
       testProcessedDimensions,
       testDimensions,
     );
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: testMetricData,
       time: new Date(testTimeStamp),
       namespace: testSource,
@@ -159,12 +130,12 @@ describe("When ConnectMetricRecorder is created with namespace only", () => {
   });
 
   test("should record error metric, without dimensions param", () => {
-    const defaultDimension = { Metric: "Error" };
+    const defaultDimension = {};
     const testMetricData = {
       metricName: testMetricName,
       unit: "Count",
       value: 1,
-      dimensions: { Metric: "Error" },
+      dimensions: {},
       optionalDimensions: undefined,
     };
     const sut = new ConnectMetricRecorder({ namespace: testSource });
@@ -172,15 +143,15 @@ describe("When ConnectMetricRecorder is created with namespace only", () => {
 
     sut.recordError(testMetricName);
 
-    expect(mockRecordCount).toBeCalledWith(testMetricName, 1, {
+    expect(mockRecordCount).toHaveBeenCalledWith(testMetricName, 1, {
       dimensions: defaultDimension,
       optionalDimensions: undefined,
     });
-    expect(metricHelper.checkDimensionLength).toBeCalledWith(
+    expect(metricHelper.checkDimensionLength).toHaveBeenCalledWith(
       defaultDimension,
       undefined,
     );
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: testMetricData,
       time: new Date(testTimeStamp),
       namespace: testSource,
@@ -202,11 +173,11 @@ describe("When ConnectMetricRecorder is created with namespace only", () => {
       optionalDimensions: testDimensions,
     });
 
-    expect(metricHelper.checkDimensionLength).toBeCalledWith(
+    expect(metricHelper.checkDimensionLength).toHaveBeenCalledWith(
       testDimensions,
       testDimensions,
     );
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: testMetricData,
       time: new Date(testTimeStamp),
       namespace: testSource,
@@ -226,7 +197,7 @@ describe("When ConnectMetricRecorder is created with namespace only", () => {
     sut.recordCount(testMetricName, 1);
 
     expect(metricHelper.checkDimensionLength).not.toHaveBeenCalled();
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: testMetricData,
       time: new Date(testTimeStamp),
       namespace: testSource,
@@ -241,7 +212,7 @@ describe("When ConnectMetricRecorder is created with namespace only", () => {
     });
     durationMetricRecorder.stopDurationCounter();
 
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: {
         metricName: testMetricName,
         unit: "Milliseconds",
@@ -264,32 +235,38 @@ describe("When ConnectMetricRecorder is created with default provider", () => {
       dimensions: testDimensions,
       optionalDimensions: testDimensions,
     };
-    const sut = new ConnectMetricRecorder({ namespace: testSource, provider });
+    const sut = new ConnectMetricRecorder({
+      namespace: testSource,
+      provider: providerMock,
+    });
 
     sut.recordCount(testMetricName, 1, {
       dimensions: testDimensions,
       optionalDimensions: testDimensions,
     });
 
-    expect(metricHelper.checkDimensionLength).toBeCalledWith(
+    expect(metricHelper.checkDimensionLength).toHaveBeenCalledWith(
       testDimensions,
       testDimensions,
     );
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: testMetricData,
       time: new Date(testTimeStamp),
       namespace: testSource,
     });
   });
   test("should start duration counter and send duration metric when stopDurationCounter is called", () => {
-    const sut = new ConnectMetricRecorder({ namespace: testSource, provider });
+    const sut = new ConnectMetricRecorder({
+      namespace: testSource,
+      provider: providerMock,
+    });
     const durationMetricRecorder = sut.startDurationCounter(testMetricName, {
       dimensions: testDimensions,
       optionalDimensions: testDimensions,
     });
     durationMetricRecorder.stopDurationCounter();
 
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: {
         metricName: testMetricName,
         unit: "Milliseconds",
@@ -314,7 +291,7 @@ describe("When ConnectMetricRecorder is created with provider factory", () => {
     };
     const sut = new ConnectMetricRecorder({
       namespace: testSource,
-      provider: () => provider,
+      provider: () => providerMock,
     });
 
     sut.recordCount(testMetricName, 1, {
@@ -322,11 +299,11 @@ describe("When ConnectMetricRecorder is created with provider factory", () => {
       optionalDimensions: testDimensions,
     });
 
-    expect(metricHelper.checkDimensionLength).toBeCalledWith(
+    expect(metricHelper.checkDimensionLength).toHaveBeenCalledWith(
       testDimensions,
       testDimensions,
     );
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: testMetricData,
       time: new Date(testTimeStamp),
       namespace: testSource,
@@ -335,7 +312,7 @@ describe("When ConnectMetricRecorder is created with provider factory", () => {
   test("should start duration counter and send duration metric when stopDurationCounter is called", () => {
     const sut = new ConnectMetricRecorder({
       namespace: testSource,
-      provider: () => provider,
+      provider: () => providerMock,
     });
     const durationMetricRecorder = sut.startDurationCounter(testMetricName, {
       dimensions: testDimensions,
@@ -343,7 +320,7 @@ describe("When ConnectMetricRecorder is created with provider factory", () => {
     });
     durationMetricRecorder.stopDurationCounter();
 
-    expect(proxyMetricSpy).toHaveBeenCalledWith({
+    expect(proxyMock.sendMetric).toHaveBeenCalledWith({
       metricData: {
         metricName: testMetricName,
         unit: "Milliseconds",

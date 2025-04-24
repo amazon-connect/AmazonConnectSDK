@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { AmazonConnectConfig } from "../amazon-connect-config";
+import { mock } from "jest-mock-extended";
+
 import { AmazonConnectProvider } from "./provider";
 
 jest.mock("../utility/id-generator");
@@ -14,10 +15,7 @@ beforeEach(() => {
 describe("setGlobalProvider", () => {
   test("should throw error when attempting to set a global provider a second time", () => {
     const { setGlobalProvider } = require("./global-provider");
-    const provider = new AmazonConnectProvider({
-      proxyFactory: jest.fn(),
-      config: {} as AmazonConnectConfig,
-    });
+    const provider = mock<AmazonConnectProvider>();
     setGlobalProvider(provider);
 
     try {
@@ -33,16 +31,47 @@ describe("setGlobalProvider", () => {
   });
 });
 
+describe("resetGlobalProvider", () => {
+  describe("when provider is set", () => {
+    test("test previous should set the provider", () => {
+      const {
+        resetGlobalProvider,
+        getGlobalProvider,
+        setGlobalProvider,
+      } = require("./global-provider");
+      const originalProvider = mock<AmazonConnectProvider>();
+      const newProvider = mock<AmazonConnectProvider>();
+      setGlobalProvider(originalProvider);
+
+      resetGlobalProvider(newProvider);
+
+      expect(getGlobalProvider()).toEqual(newProvider);
+    });
+  });
+
+  describe("when previous provider is not set", () => {
+    test("test should set the provider", () => {
+      const {
+        resetGlobalProvider,
+        getGlobalProvider,
+      } = require("./global-provider");
+
+      const provider = mock<AmazonConnectProvider>();
+
+      resetGlobalProvider(provider);
+
+      expect(getGlobalProvider()).toEqual(provider);
+    });
+  });
+});
+
 describe("getGlobalProvider", () => {
   test("should get provider it after it is set", () => {
     const {
       setGlobalProvider,
       getGlobalProvider,
     } = require("./global-provider");
-    const provider = new AmazonConnectProvider({
-      proxyFactory: jest.fn(),
-      config: {} as AmazonConnectConfig,
-    });
+    const provider = mock<AmazonConnectProvider>();
     setGlobalProvider(provider);
 
     const result = getGlobalProvider(provider);

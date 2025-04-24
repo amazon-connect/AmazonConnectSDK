@@ -1,7 +1,14 @@
 import { MetricProvider } from "./metric-provider";
 
-export type ConnectRecorderMetricParams = {
+type BaseMetricRecorderParams = {
   namespace: string;
+};
+
+export type ConnectMetricRecorderFromContextParams =
+  | string
+  | BaseMetricRecorderParams;
+
+export type ConnectRecorderMetricParams = BaseMetricRecorderParams & {
   provider?: MetricProvider | (() => MetricProvider);
 };
 

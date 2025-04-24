@@ -45,11 +45,14 @@ export { SubscriptionMap, SubscriptionSet } from "./messaging/subscription";
 export * from "./metric";
 export {
   AmazonConnectProvider,
+  AmazonConnectProviderBase,
   getGlobalProvider,
   resetGlobalProvider,
 } from "./provider";
 export type {
   HealthCheckStatus,
+  HealthCheckStatusChanged,
+  HealthCheckStatusChangedHandler,
   ModuleProxy,
   ProxyConnecting,
   ProxyConnectionChangedHandler,

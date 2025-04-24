@@ -1,5 +1,5 @@
 import {
-  AmazonConnectProvider,
+  AmazonConnectProviderBase,
   ConnectLogData,
   ConnectLogger,
   getGlobalProvider,
@@ -17,7 +17,7 @@ import {
 } from "./lifecycle";
 import { AppProxy } from "./proxy";
 
-export class AmazonConnectApp extends AmazonConnectProvider<AmazonConnectAppConfig> {
+export class AmazonConnectApp extends AmazonConnectProviderBase<AmazonConnectAppConfig> {
   private readonly lifecycleManager: LifecycleManager;
   private readonly logger: ConnectLogger;
 

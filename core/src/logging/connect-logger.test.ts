@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass, MockedObject } from "jest-mock";
+import { mock } from "jest-mock-extended";
 
-import { AmazonConnectConfig } from "../amazon-connect-config";
-import { UpstreamMessageOrigin } from "../messaging";
 import * as globalProvider from "../provider";
 import { AmazonConnectProvider } from "../provider";
 import { Proxy } from "../proxy";
@@ -12,7 +11,6 @@ import * as consoleWriter from "./log-data-console-writer";
 import { LogDataTransformer } from "./log-data-transformer";
 import { LogLevel } from "./log-level";
 import { ConnectLogData } from "./logger-types";
-import { ProxyLogData } from "./proxy-log-data";
 
 jest.mock("../utility/id-generator");
 jest.mock("../provider/global-provider");
@@ -24,36 +22,16 @@ const LogDataTransformerMock = LogDataTransformer as MockedClass<
   typeof LogDataTransformer
 >;
 
-class TestProxy extends Proxy {
-  constructor(provider: AmazonConnectProvider) {
-    super(provider);
-  }
-
-  protected initProxy(): void {
-    throw new Error("Method not implemented.");
-  }
-  protected sendMessageToSubject(): void {
-    throw new Error("Method not implemented.");
-  }
-  protected addContextToLogger(): Record<string, unknown> {
-    throw new Error("Method not implemented.");
-  }
-  public get proxyType(): string {
-    throw new Error("Method not implemented.");
-  }
-  protected getUpstreamMessageOrigin(): UpstreamMessageOrigin {
-    throw new Error("Method not implemented.");
-  }
-}
-
 const testSource = "test-logger";
 const testLoggerId = "12345678";
 const testMessage = "test-message";
 const testData = { foo: 1 };
 const transformTestData = { foo: 1, bar: 2 };
 
-let provider: AmazonConnectProvider;
-let proxyLogSpy: jest.SpyInstance<void, [ProxyLogData]>;
+const proxyMock = mock<Proxy>();
+const providerMock = mock<AmazonConnectProvider>({
+  getProxy: () => proxyMock,
+});
 let consoleWriteSpy: jest.SpyInstance<
   void,
   [
@@ -63,12 +41,6 @@ let consoleWriteSpy: jest.SpyInstance<
   ]
 >;
 
-const proxyFactory = (p: AmazonConnectProvider) => {
-  const proxy = new TestProxy(p);
-  proxyLogSpy = jest.spyOn(proxy, "log");
-  return proxy;
-};
-
 beforeEach(() => {
   jest.resetAllMocks();
   jest.spyOn(util, "generateStringId").mockReturnValue(testLoggerId);
@@ -77,16 +49,11 @@ beforeEach(() => {
 });
 
 describe("when not using any provider level options", () => {
-  beforeEach(() => {
-    provider = new AmazonConnectProvider({
-      config: {},
-      proxyFactory,
-    });
-  });
-
   describe("when the logger is created with a source string", () => {
     beforeEach(() => {
-      jest.spyOn(globalProvider, "getGlobalProvider").mockReturnValue(provider);
+      jest
+        .spyOn(globalProvider, "getGlobalProvider")
+        .mockReturnValue(providerMock);
     });
 
     test("should log a trace message", () => {
@@ -98,7 +65,7 @@ describe("when not using any provider level options", () => {
 
       sut.trace(testMessage, testData, {});
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.trace,
         source: testSource,
         loggerId: testLoggerId,
@@ -120,7 +87,7 @@ describe("when not using any provider level options", () => {
 
       sut.debug(testMessage, testData, {});
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.debug,
         source: testSource,
         loggerId: testLoggerId,
@@ -142,7 +109,7 @@ describe("when not using any provider level options", () => {
 
       sut.info(testMessage, testData, {});
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.info,
         source: testSource,
         loggerId: testLoggerId,
@@ -164,7 +131,7 @@ describe("when not using any provider level options", () => {
 
       sut.warn(testMessage, testData, {});
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.warn,
         source: testSource,
         loggerId: testLoggerId,
@@ -186,7 +153,7 @@ describe("when not using any provider level options", () => {
 
       sut.error(testMessage, testData, {});
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.error,
         source: testSource,
         loggerId: testLoggerId,
@@ -214,14 +181,14 @@ describe("when not using any provider level options", () => {
       sut.log(LogLevel.info, testMessage, testData, {});
       sut.log(LogLevel.error, testErrorMessage, testErrorData);
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.info,
         source: testSource,
         loggerId: testLoggerId,
         message: testMessage,
         data: transformTestData,
       });
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.error,
         source: testSource,
         loggerId: testLoggerId,
@@ -239,7 +206,7 @@ describe("when not using any provider level options", () => {
 
       sut.log(LogLevel.info, testMessage, testData, {});
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.info,
         source: testSource,
         loggerId: testLoggerId,
@@ -258,7 +225,7 @@ describe("when not using any provider level options", () => {
     let logDataTransformer: MockedObject<LogDataTransformer>;
 
     beforeEach(() => {
-      sut = new ConnectLogger({ source: testSource, provider });
+      sut = new ConnectLogger({ source: testSource, provider: providerMock });
       logDataTransformer = LogDataTransformerMock.mock.instances[0];
       logDataTransformer.getTransformedData.mockReturnValueOnce(
         transformTestData,
@@ -268,7 +235,7 @@ describe("when not using any provider level options", () => {
     test("should be able to send a log message", () => {
       sut.log(LogLevel.info, testMessage, testData, {});
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.info,
         source: testSource,
         loggerId: testLoggerId,
@@ -284,7 +251,7 @@ describe("when not using any provider level options", () => {
     test("should not send to remote when log message remoteIgnore is true", () => {
       sut.log(LogLevel.info, testMessage, testData, { remoteIgnore: true });
 
-      expect(proxyLogSpy).not.toHaveBeenCalled();
+      expect(proxyMock.log).not.toHaveBeenCalled();
     });
 
     test("should not send trace to console when duplicateMessageToConsole is false", () => {
@@ -292,7 +259,7 @@ describe("when not using any provider level options", () => {
         duplicateMessageToConsole: false,
       });
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.trace,
         source: testSource,
         loggerId: testLoggerId,
@@ -307,7 +274,7 @@ describe("when not using any provider level options", () => {
         duplicateMessageToConsole: false,
       });
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.error,
         source: testSource,
         loggerId: testLoggerId,
@@ -326,7 +293,7 @@ describe("when not using any provider level options", () => {
         duplicateMessageToConsole: true,
       });
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.trace,
         source: testSource,
         loggerId: testLoggerId,
@@ -346,7 +313,10 @@ describe("when not using any provider level options", () => {
     let logDataTransformer: MockedObject<LogDataTransformer>;
 
     beforeEach(() => {
-      sut = new ConnectLogger({ source: testSource, provider: () => provider });
+      sut = new ConnectLogger({
+        source: testSource,
+        provider: () => providerMock,
+      });
       logDataTransformer = LogDataTransformerMock.mock.instances[0];
       logDataTransformer.getTransformedData.mockReturnValueOnce(
         transformTestData,
@@ -356,7 +326,7 @@ describe("when not using any provider level options", () => {
     test("should be able to send a log message", () => {
       sut.log(LogLevel.info, testMessage, testData, {});
 
-      expect(proxyLogSpy).toHaveBeenCalledWith({
+      expect(proxyMock.log).toHaveBeenCalledWith({
         level: LogLevel.info,
         source: testSource,
         loggerId: testLoggerId,
@@ -372,13 +342,9 @@ describe("when not using any provider level options", () => {
 
   describe("when setting custom logger options", () => {
     test("should ignore remote when set logger level", () => {
-      provider = new AmazonConnectProvider({
-        config: {},
-        proxyFactory,
-      });
       const sut = new ConnectLogger({
         source: testSource,
-        provider,
+        provider: providerMock,
         options: { remoteIgnore: true },
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];
@@ -388,17 +354,13 @@ describe("when not using any provider level options", () => {
 
       sut.log(LogLevel.trace, testMessage, testData);
 
-      expect(proxyLogSpy).not.toBeCalled();
+      expect(proxyMock.log).not.toBeCalled();
     });
 
     test("should ignore remote when set logger level even when log entry is false", () => {
-      provider = new AmazonConnectProvider({
-        config: {},
-        proxyFactory,
-      });
       const sut = new ConnectLogger({
         source: testSource,
-        provider,
+        provider: providerMock,
         options: { remoteIgnore: true },
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];
@@ -410,17 +372,13 @@ describe("when not using any provider level options", () => {
         remoteIgnore: false,
       });
 
-      expect(proxyLogSpy).not.toBeCalled();
+      expect(proxyMock.log).not.toBeCalled();
     });
 
     test("should ignore remote logger is set to false but entry is set to true", () => {
-      provider = new AmazonConnectProvider({
-        config: {},
-        proxyFactory,
-      });
       const sut = new ConnectLogger({
         source: testSource,
-        provider,
+        provider: providerMock,
         options: { remoteIgnore: false },
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];
@@ -432,7 +390,7 @@ describe("when not using any provider level options", () => {
         remoteIgnore: true,
       });
 
-      expect(proxyLogSpy).not.toBeCalled();
+      expect(proxyMock.log).not.toBeCalled();
     });
 
     describe("when the logger logToConsole level is set to info", () => {
@@ -441,7 +399,7 @@ describe("when not using any provider level options", () => {
       beforeEach(() => {
         sut = new ConnectLogger({
           source: testSource,
-          provider,
+          provider: providerMock,
           options: { minLogToConsoleLevelOverride: LogLevel.info },
         });
         const logDataTransformer = LogDataTransformerMock.mock.instances[0];
@@ -486,11 +444,9 @@ describe("when not using any provider level options", () => {
 });
 
 describe("when setting the provider minLogToConsoleLevel to info", () => {
-  beforeEach(() => {
-    provider = new AmazonConnectProvider<AmazonConnectConfig>({
-      proxyFactory,
-      config: { logging: { minLogToConsoleLevel: LogLevel.info } },
-    });
+  const providerWithConfig = mock<AmazonConnectProvider>({
+    getProxy: () => proxyMock,
+    config: { logging: { minLogToConsoleLevel: LogLevel.info } },
   });
 
   describe("when the logger does not have an override set", () => {
@@ -499,7 +455,7 @@ describe("when setting the provider minLogToConsoleLevel to info", () => {
     beforeEach(() => {
       sut = new ConnectLogger({
         source: testSource,
-        provider,
+        provider: providerWithConfig,
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];
       logDataTransformer.getTransformedData.mockReturnValueOnce(
@@ -546,7 +502,8 @@ describe("when setting the provider minLogToConsoleLevel to info", () => {
     beforeEach(() => {
       sut = new ConnectLogger({
         source: testSource,
-        provider,
+        provider: providerWithConfig,
+
         options: { minLogToConsoleLevelOverride: LogLevel.warn },
       });
       const logDataTransformer = LogDataTransformerMock.mock.instances[0];

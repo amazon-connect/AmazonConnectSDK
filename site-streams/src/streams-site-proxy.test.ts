@@ -19,6 +19,7 @@ jest.mock("@amazon-connect/core/lib/utility/location-helpers");
 jest.mock("@amazon-connect/core/lib/utility/timeout-tracker");
 jest.mock("@amazon-connect/core/lib/proxy/error/error-service");
 jest.mock("@amazon-connect/core/lib/proxy/channel-manager");
+jest.mock("@amazon-connect/core/lib/proxy/health-check/health-check-manager");
 
 const instanceUrl = "https://test.com";
 const providerMock = mock<AmazonConnectStreamsSite>({

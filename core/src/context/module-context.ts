@@ -1,5 +1,9 @@
 import { AmazonConnectNamespace } from "../amazon-connect-namespace";
 import { ConnectLogger, ConnectLoggerFromContextParams } from "../logging";
+import {
+  ConnectMetricRecorder,
+  ConnectMetricRecorderFromContextParams,
+} from "../metric";
 import { createModuleProxy, ModuleProxy } from "../proxy";
 import { Context } from "./context";
 
@@ -22,5 +26,11 @@ export class ModuleContext {
 
   createLogger(params: ConnectLoggerFromContextParams): ConnectLogger {
     return this.engineContext.createLogger(params);
+  }
+
+  createMetricRecorder(
+    params: ConnectMetricRecorderFromContextParams,
+  ): ConnectMetricRecorder {
+    return this.engineContext.createMetricRecorder(params);
   }
 }

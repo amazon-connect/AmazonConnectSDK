@@ -1,4 +1,8 @@
-export type { HealthCheckStatus } from "./health-check";
+export type {
+  HealthCheckStatus,
+  HealthCheckStatusChanged,
+  HealthCheckStatusChangedHandler,
+} from "./health-check";
 export type { ModuleProxy } from "./module-proxy";
 export { createModuleProxy } from "./module-proxy-factory";
 export { Proxy } from "./proxy";

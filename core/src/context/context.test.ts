@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { AmazonConnectConfig } from "../amazon-connect-config";
+import { mock } from "jest-mock-extended";
+
 import { ConnectLogger } from "../logging";
-import {
-  AmazonConnectProvider,
-  AmazonConnectProviderParams,
-  getGlobalProvider,
-} from "../provider";
+import { ConnectMetricRecorder } from "../metric";
+import { AmazonConnectProvider, getGlobalProvider } from "../provider";
 import { Context } from "./";
 import { ModuleContext } from "./module-context";
 
 jest.mock("../logging");
+jest.mock("../metric");
 jest.mock("../provider");
 jest.mock("./module-context");
 
@@ -19,9 +18,7 @@ beforeEach(() => {
 
 describe("getProxy", () => {
   test("should call getProvider().getProxy()", () => {
-    const testProvider = new AmazonConnectProvider(
-      {} as unknown as AmazonConnectProviderParams<AmazonConnectConfig>,
-    );
+    const testProvider = mock<AmazonConnectProvider>();
     const testContext = new Context(testProvider);
     jest.spyOn(testProvider, "getProxy");
     jest.spyOn(testContext, "getProvider");
@@ -61,5 +58,22 @@ describe("createLogger", () => {
     testContext.createLogger("test");
 
     expect(ConnectLogger).toHaveBeenCalled();
+  });
+});
+
+describe("createMetricRecorder", () => {
+  test("should initialize ConnectMetricRecorder object if param is an object", () => {
+    const testContext = new Context();
+
+    testContext.createMetricRecorder({ namespace: "test" });
+
+    expect(ConnectMetricRecorder).toHaveBeenCalled();
+  });
+  test("should initialize ConnectMetricRecorder object if param is a string", () => {
+    const testContext = new Context();
+
+    testContext.createMetricRecorder("test");
+
+    expect(ConnectMetricRecorder).toHaveBeenCalled();
   });
 });

@@ -1,9 +1,12 @@
-import { AmazonConnectProvider, getGlobalProvider } from "@amazon-connect/core";
+import {
+  AmazonConnectProviderBase,
+  getGlobalProvider,
+} from "@amazon-connect/core";
 
 import { AmazonConnectStreamsSiteConfig } from "./amazon-connect-streams-site-config";
 import { StreamsSiteProxy } from "./streams-site-proxy";
 
-export class AmazonConnectStreamsSite extends AmazonConnectProvider<AmazonConnectStreamsSiteConfig> {
+export class AmazonConnectStreamsSite extends AmazonConnectProviderBase<AmazonConnectStreamsSiteConfig> {
   private constructor(config: AmazonConnectStreamsSiteConfig) {
     super({
       config,
