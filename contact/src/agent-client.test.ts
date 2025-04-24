@@ -167,8 +167,15 @@ describe("AgentClient", () => {
   });
 
   test("setAvailabilityState sends request to AgentRoutes.setAvailabilityState", async () => {
+    const agentState: AgentState = {
+      name: "myStateName",
+      agentStateARN: "myStateARN",
+      type: "not_routable",
+    };
+
     const expectedResult: SetAvailabilityStateResult = {
-      status: "in_progress",
+      status: "updated",
+      current: agentState,
     };
     moduleProxyMock.request.mockResolvedValueOnce(expectedResult);
     const agentStateARN = "dummyAgentStateARN";
@@ -183,8 +190,14 @@ describe("AgentClient", () => {
   });
 
   test("setStateByName sends request to AgentRoutes.setStateByName", async () => {
+    const agentState: AgentState = {
+      name: "myStateName",
+      agentStateARN: "myStateARN",
+      type: "not_routable",
+    };
     const expectedResult: SetAvailabilityStateResult = {
-      status: "in_progress",
+      status: "updated",
+      current: agentState,
     };
     moduleProxyMock.request.mockResolvedValueOnce(expectedResult);
     const agentStateName = "agent-state-name";
@@ -199,8 +212,14 @@ describe("AgentClient", () => {
   });
 
   test("setOffline sends request to AgentRoutes.setOffline", async () => {
+    const agentState: AgentState = {
+      name: "myStateName",
+      agentStateARN: "myStateARN",
+      type: "not_routable",
+    };
     const expectedResult: SetAvailabilityStateResult = {
-      status: "in_progress",
+      status: "updated",
+      current: agentState,
     };
     moduleProxyMock.request.mockResolvedValueOnce(expectedResult);
 

@@ -3,6 +3,7 @@ import { ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
 
 import { VoiceRoutes } from "./routes";
+import { DialableCountry } from "./types";
 import { VoiceClient } from "./voice-client";
 
 const moduleProxyMock = mock<ModuleProxy>();
