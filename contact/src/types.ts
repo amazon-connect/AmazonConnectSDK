@@ -168,7 +168,7 @@ export type PhoneNumberQuickConnect = {
 };
 
 export type AddParticipantResult = {
-  participantId?: string;
+  participantId: string;
 };
 
 export type ContactCleared = BaseContactLifecycleEvent;
