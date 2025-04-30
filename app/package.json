@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/app",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "App functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
@@ -27,7 +27,7 @@
     "lib-esm/**/*"
   ],
   "dependencies": {
-    "@amazon-connect/workspace-types": "1.0.5",
-    "@amazon-connect/core": "1.0.5"
+    "@amazon-connect/workspace-types": "1.0.6",
+    "@amazon-connect/core": "1.0.6"
   }
 }

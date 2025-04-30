@@ -1,7 +1,7 @@
-export type CreateOutboundCallOptions = {
+export interface CreateOutboundCallOptions {
   queueARN?: string;
   relatedContactId?: string;
-};
+}
 
 export type CreateOutboundCallResult = {
   contactId?: string;
