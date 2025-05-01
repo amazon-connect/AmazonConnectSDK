@@ -1,5 +1,10 @@
 # CHANGELOG.md
 
+## 1.0.6
+### Updated
+  - `@amazon-connect/contact`
+    - `AgentClient`: Fixed `setOffline` to support empty parameters 
+
 ## 1.0.5
 ### Added
   - New APIs to `ContactClient`, `AgentClient` and `VoiceClient`
