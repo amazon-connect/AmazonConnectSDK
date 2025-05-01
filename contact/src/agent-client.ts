@@ -75,6 +75,7 @@ export class AgentClient extends ConnectClient {
       handler,
     );
   }
+
   setAvailabilityState(
     agentStateARN: string,
   ): Promise<SetAvailabilityStateResult> {
@@ -92,7 +93,7 @@ export class AgentClient extends ConnectClient {
   }
 
   setOffline(): Promise<SetAvailabilityStateResult> {
-    return this.context.proxy.request(AgentRoutes.setOffline);
+    return this.context.proxy.request(AgentRoutes.setOffline, {});
   }
 
   listAvailabilityStates(): Promise<AgentState[]> {
