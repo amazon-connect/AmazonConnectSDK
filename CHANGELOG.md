@@ -3,7 +3,7 @@
 ## 1.0.6
 ### Updated
   - `@amazon-connect/contact`
-    - `AgentClient`: Fixed `setOffline` to support empty parameters 
+    - `AgentClient`: Fixed issue that may cause errors when invoking `setOffline`
 
 ## 1.0.5
 ### Added
