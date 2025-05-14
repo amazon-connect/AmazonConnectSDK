@@ -1,3 +1,4 @@
+export { deepClone } from "./deep-clone";
 export * from "./emitter";
 export { generateStringId, generateUUID } from "./id-generator";
 export { getOriginAndPath } from "./location-helpers";

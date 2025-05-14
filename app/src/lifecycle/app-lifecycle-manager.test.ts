@@ -1,22 +1,25 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { ConnectLogger } from "@amazon-connect/core";
+import { ConnectLogger, LogLevel } from "@amazon-connect/core";
 import {
   AppConfig,
+  AppParameters,
   ContactScope,
+  LaunchSource,
   LifecycleMessage,
 } from "@amazon-connect/workspace-types";
 import { MockedClass, MockedObject } from "jest-mock";
+import { mock } from "jest-mock-extended";
 
 import { AmazonConnectApp } from "../amazon-connect-app";
-import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
+import { AmazonConnectAppConfig } from "../config";
 import { AppProxy } from "../proxy";
+import { AppLifecycleManager } from "./app-lifecycle-manager";
 import {
   AppCreateEvent,
   AppDestroyEvent,
   AppStartEvent,
 } from "./lifecycle-change";
-import { LifecycleManager } from "./lifecycle-manager";
 
 jest.mock("@amazon-connect/core/lib/logging/connect-logger");
 jest.mock("@amazon-connect/core/lib/utility/id-generator");
@@ -28,37 +31,59 @@ const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 const appInstanceId = "abc123";
 const appConfig: AppConfig = { _type: "iframe" } as AppConfig;
 const contactScope: ContactScope = { type: "contact", contactId: "123" };
+const parameters = mock<AppParameters>();
+const launchSource = mock<LaunchSource>();
 
 const createMsg: LifecycleMessage = {
   type: "appLifecycle",
   stage: "create",
   appInstanceId,
+  instanceId: appInstanceId,
   appConfig,
+  config: appConfig,
   contactScope: contactScope,
+  scope: contactScope,
+  parameters,
+  launchedBy: launchSource,
 };
 
 const startMsg: LifecycleMessage = {
   type: "appLifecycle",
   stage: "start",
   appInstanceId,
+  instanceId: appInstanceId,
   appConfig,
+  config: appConfig,
   contactScope: contactScope,
+  scope: contactScope,
+  parameters,
+  launchedBy: launchSource,
 };
 
 const stopMsg: LifecycleMessage = {
   type: "appLifecycle",
   stage: "stop",
   appInstanceId,
+  instanceId: appInstanceId,
   appConfig,
+  config: appConfig,
   contactScope: contactScope,
+  scope: contactScope,
+  parameters,
+  launchedBy: launchSource,
 };
 
 const destroyMsg: LifecycleMessage = {
   type: "appLifecycle",
   stage: "destroy",
   appInstanceId,
+  instanceId: appInstanceId,
   appConfig,
+  config: appConfig,
   contactScope: contactScope,
+  scope: contactScope,
+  parameters,
+  launchedBy: launchSource,
 };
 
 const getLifecycleManagerLogger = () => {
@@ -75,7 +100,23 @@ beforeEach(jest.resetAllMocks);
 
 let provider: AmazonConnectApp;
 let proxy: MockedObject<AppProxy>;
-let sut: LifecycleManager;
+let sut: AppLifecycleManager;
+
+describe("constructor", () => {
+  test("should configure logger mixin", () => {
+    sut = new AppLifecycleManager(mock<AmazonConnectApp>());
+
+    const loggerConfig = LoggerMock.mock.calls[0][0];
+    if (typeof loggerConfig === "string") throw Error("ts needs this");
+    const mixin = loggerConfig.mixin!;
+
+    const result = mixin({}, LogLevel.info);
+
+    expect(result.state).toEqual(sut.appState);
+    expect(result.isCreated).toEqual(sut["isCreated"]);
+    expect(result.isDestroyed).toEqual(sut["isDestroyed"]);
+  });
+});
 
 describe("when triggering the Create lifecycle event", () => {
   let createHandler: jest.Mock<Promise<void>, [AppCreateEvent]>;
@@ -86,7 +127,7 @@ describe("when triggering the Create lifecycle event", () => {
       onCreate: createHandler,
     });
     proxy = provider.getProxy() as MockedObject<AppProxy>;
-    sut = AppProxyMock.mock.calls[0][1];
+    sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
   });
 
   describe("when the create handler executes successfully", () => {
@@ -99,6 +140,12 @@ describe("when triggering the Create lifecycle event", () => {
     test("should send the LifecycleHandlerCompleted after handler is completed", async () => {
       proxy.sendLifecycleHandlerCompleted.mockImplementation(() => {
         expect(createHandler).toHaveBeenCalled();
+        const createHandlerContext = createHandler.mock.calls[0][0].context;
+        expect(createHandlerContext.config).toEqual(appConfig);
+        expect(createHandlerContext.scope).toEqual(contactScope);
+        expect(createHandlerContext.contactScope).toEqual(contactScope);
+        expect(createHandlerContext.parameters).toEqual(parameters);
+        expect(createHandlerContext.launchedBy).toEqual(launchSource);
       });
 
       await sut.handleLifecycleChangeMessage(createMsg);
@@ -107,7 +154,7 @@ describe("when triggering the Create lifecycle event", () => {
         appInstanceId,
         "create",
       );
-      expect.assertions(2);
+      expect.assertions(7);
     });
 
     test("should not call fatal error when task is successful", async () => {
@@ -139,7 +186,7 @@ describe("when triggering the Create lifecycle event", () => {
 
       expect(logger.error).toHaveBeenCalled();
       const data = logger.error.mock.calls[0][1];
-      expect(data?.appInstanceId).toEqual(appInstanceId);
+      expect(data?.instanceId).toEqual(appInstanceId);
       expect(data?.error).toEqual(error);
     });
 
@@ -168,7 +215,7 @@ describe("when triggering the Create lifecycle event", () => {
       jest.resetAllMocks();
       provider = new AmazonConnectApp({} as AmazonConnectAppConfig);
       proxy = provider.getProxy() as MockedObject<AppProxy>;
-      sut = AppProxyMock.mock.calls[0][1];
+      sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
     });
 
     test("should log error", async () => {
@@ -178,7 +225,7 @@ describe("when triggering the Create lifecycle event", () => {
 
       expect(logger.error).toHaveBeenCalled();
       const data = logger.error.mock.calls[0][1];
-      expect(data?.appInstanceId).toEqual(appInstanceId);
+      expect(data?.instanceId).toEqual(appInstanceId);
     });
 
     test("should invoke sendFatalError", async () => {
@@ -209,7 +256,7 @@ describe("when triggering the Create lifecycle event", () => {
 
       expect(logger.error).toHaveBeenCalled();
       const data = logger.error.mock.calls[0][1];
-      expect(data?.appInstanceId).toEqual(appInstanceId);
+      expect(data?.instanceId).toEqual(appInstanceId);
     });
 
     test("not invoke handler a second time", async () => {
@@ -252,7 +299,7 @@ describe("when triggering the Create lifecycle event", () => {
 
       expect(logger.error).toHaveBeenCalled();
       const data = logger.error.mock.calls[0][1];
-      expect(data?.appInstanceId).toEqual(appInstanceId);
+      expect(data?.instanceId).toEqual(appInstanceId);
     });
 
     test("not invoke handler", async () => {
@@ -293,7 +340,7 @@ describe("when triggering the Start lifecycle event", () => {
       onCreate: () => Promise.resolve(),
     });
     proxy = provider.getProxy() as MockedObject<AppProxy>;
-    sut = AppProxyMock.mock.calls[0][1];
+    sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
   });
 
   describe("when Create has been invoked prior to Start", () => {
@@ -398,7 +445,7 @@ describe("when triggering the Start lifecycle event", () => {
 
         expect(logger.error).toHaveBeenCalled();
         const data = logger.error.mock.calls[0][1];
-        expect(data?.appInstanceId).toEqual(appInstanceId);
+        expect(data?.instanceId).toEqual(appInstanceId);
         expect(data?.error).toEqual(error);
       });
 
@@ -480,7 +527,7 @@ describe("when triggering the Stop lifecycle event", () => {
       onCreate: () => Promise.resolve(),
     });
     proxy = provider.getProxy() as MockedObject<AppProxy>;
-    sut = AppProxyMock.mock.calls[0][1];
+    sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
   });
 
   describe("when Create has been invoked prior to Stop", () => {
@@ -586,7 +633,7 @@ describe("when triggering the Stop lifecycle event", () => {
 
         expect(logger.error).toHaveBeenCalled();
         const data = logger.error.mock.calls[0][1];
-        expect(data?.appInstanceId).toEqual(appInstanceId);
+        expect(data?.instanceId).toEqual(appInstanceId);
         expect(data?.error).toEqual(error);
       });
 
@@ -666,7 +713,7 @@ describe("when triggering the Destroy lifecycle event", () => {
           onDestroy: destroyHandler,
         });
         proxy = provider.getProxy() as MockedObject<AppProxy>;
-        sut = AppProxyMock.mock.calls[0][1];
+        sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
         await sut.handleLifecycleChangeMessage(createMsg);
       });
 
@@ -679,6 +726,12 @@ describe("when triggering the Destroy lifecycle event", () => {
       test("should send the LifecycleHandlerCompleted after handler is completed", async () => {
         proxy.sendLifecycleHandlerCompleted.mockImplementation(() => {
           expect(destroyHandler).toHaveBeenCalled();
+          const destroyHandlerContext = destroyHandler.mock.calls[0][0].context;
+          expect(destroyHandlerContext.config).toEqual(appConfig);
+          expect(destroyHandlerContext.scope).toEqual(contactScope);
+          expect(destroyHandlerContext.contactScope).toEqual(contactScope);
+          expect(destroyHandlerContext.parameters).toEqual(parameters);
+          expect(destroyHandlerContext.launchedBy).toEqual(launchSource);
         });
 
         await sut.handleLifecycleChangeMessage(destroyMsg);
@@ -687,7 +740,7 @@ describe("when triggering the Destroy lifecycle event", () => {
           appInstanceId,
           "destroy",
         );
-        expect.assertions(2);
+        expect.assertions(7);
       });
 
       test("should not call fatal error when task is successful", async () => {
@@ -719,7 +772,7 @@ describe("when triggering the Destroy lifecycle event", () => {
           onDestroy: destroyHandler,
         });
         proxy = provider.getProxy() as MockedObject<AppProxy>;
-        sut = AppProxyMock.mock.calls[0][1];
+        sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
         error = new Error("error in handler");
         destroyHandler.mockRejectedValue(error);
         await sut.handleLifecycleChangeMessage(createMsg);
@@ -733,7 +786,7 @@ describe("when triggering the Destroy lifecycle event", () => {
 
         expect(logger.error).toHaveBeenCalled();
         const data = logger.error.mock.calls[0][1];
-        expect(data?.appInstanceId).toEqual(appInstanceId);
+        expect(data?.instanceId).toEqual(appInstanceId);
         expect(data?.error).toEqual(error);
       });
 
@@ -756,7 +809,7 @@ describe("when triggering the Destroy lifecycle event", () => {
       beforeEach(async () => {
         provider = new AmazonConnectApp({ onCreate: jest.fn() });
         proxy = provider.getProxy() as MockedObject<AppProxy>;
-        sut = AppProxyMock.mock.calls[0][1];
+        sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
         await sut.handleLifecycleChangeMessage(createMsg);
         proxy.sendLifecycleHandlerCompleted.mockReset();
       });
@@ -788,7 +841,7 @@ describe("when triggering the Destroy lifecycle event", () => {
         onDestroy: destroyHandler,
       });
       proxy = provider.getProxy() as MockedObject<AppProxy>;
-      sut = AppProxyMock.mock.calls[0][1];
+      sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
     });
 
     test("should not invoke handler", async () => {
@@ -816,7 +869,7 @@ describe("when triggering the Destroy lifecycle event", () => {
         onDestroy: destroyHandler,
       });
       proxy = provider.getProxy() as MockedObject<AppProxy>;
-      sut = AppProxyMock.mock.calls[0][1];
+      sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
       await sut.handleLifecycleChangeMessage(createMsg);
       await sut.handleLifecycleChangeMessage(destroyMsg);
       destroyHandler.mockReset();
@@ -846,7 +899,7 @@ describe("when calling onStart with invokeIfRunning", () => {
       onCreate: () => Promise.resolve(),
     });
     proxy = provider.getProxy() as MockedObject<AppProxy>;
-    sut = AppProxyMock.mock.calls[0][1];
+    sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
   });
 
   test("should not invoke handler if no events are set", () => {
@@ -877,8 +930,8 @@ describe("when calling onStart with invokeIfRunning", () => {
         .fn<Promise<void>, [AppStartEvent]>()
         .mockImplementation((evt) => {
           expect(evt.stage).toEqual("start");
-          expect(evt.context.appInstanceId).toEqual(appInstanceId);
-          expect(evt.context.appConfig).toEqual(appConfig);
+          expect(evt.context.instanceId).toEqual(appInstanceId);
+          expect(evt.context.config).toEqual(appConfig);
           expect(evt.context.contactScope).toEqual(contactScope);
 
           done();
@@ -906,7 +959,7 @@ describe("when calling onStart with invokeIfRunning", () => {
         await new Promise((r) => setTimeout(r, 1));
       expect(logger.error).toHaveBeenCalled();
       const data = logger.error.mock.calls[0][1];
-      expect(data?.appInstanceId).toEqual(appInstanceId);
+      expect(data?.instanceId).toEqual(appInstanceId);
       expect(data?.error).toEqual(error);
     });
   });
@@ -939,11 +992,13 @@ test("should have not running state before any lifecycle events occur", () => {
     onCreate: () => Promise.resolve(),
   });
   proxy = provider.getProxy() as MockedObject<AppProxy>;
-  sut = AppProxyMock.mock.calls[0][1];
+  sut = AppProxyMock.mock.calls[0][1] as AppLifecycleManager;
 
   const state = sut.appState;
 
   expect(state.isRunning).toBeFalsy();
+  expect(state.instanceId).toBeUndefined();
+  expect(state.config).toBeUndefined();
   expect(state.appInstanceId).toBeUndefined();
   expect(state.appConfig).toBeUndefined();
   expect(state.contactScope).toBeUndefined();

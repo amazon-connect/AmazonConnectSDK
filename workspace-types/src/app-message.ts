@@ -7,8 +7,10 @@ import {
   UpstreamMessageOrigin,
 } from "@amazon-connect/core";
 
-import { AppConfig } from "./app-config";
+import { AppParameters } from "./app-parameters";
 import { AppScope, ContactScope } from "./app-scope";
+import { AppConfig, ConfigBase } from "./config";
+import { LaunchSource } from "./launch-source";
 import { LifecycleStage } from "./lifecycle-stage";
 
 export type LifecycleHandlerCompletedMessage = {
@@ -31,19 +33,36 @@ export type CloseAppMessage = {
   data?: Record<string, unknown> | Error;
 };
 
+export type ServiceErrorMessage = {
+  type: "serviceError";
+  message?: string;
+  data?: Record<string, unknown> | Error;
+};
+
 export type AppUpstreamMessage =
   | ChildConnectionEnabledUpstreamMessage
   | ChildUpstreamMessage
   | AppPublishMessage
   | LifecycleHandlerCompletedMessage
-  | CloseAppMessage;
+  | CloseAppMessage
+  | ServiceErrorMessage;
 
 export type LifecycleMessage = {
   type: "appLifecycle";
   stage: LifecycleStage;
+  /**
+   * @deprecated This property is deprecated. Use `instanceId` instead.
+   */
   appInstanceId: string;
+  instanceId: string;
+  /**
+   * @deprecated This property is deprecated. Use `config` instead.
+   */
   appConfig: AppConfig;
+  config: ConfigBase;
   scope?: AppScope;
+  parameters?: AppParameters;
+  launchedBy?: LaunchSource;
 
   /**
    * @deprecated Use `scope` instead.

@@ -2,28 +2,29 @@ import {
   AmazonConnectProviderBase,
   ConnectLogData,
   ConnectLogger,
+  deepClone,
   getGlobalProvider,
   SubscriptionHandler,
   SubscriptionHandlerData,
   SubscriptionTopic,
 } from "@amazon-connect/core";
 
-import { AmazonConnectAppConfig } from "./amazon-connect-app-config";
+import { AmazonConnectAppConfig } from "./config";
 import {
   AppStartHandler,
   AppStopHandler,
-  LifecycleManager,
   StartSubscriptionOptions,
 } from "./lifecycle";
+import { AppLifecycleManager } from "./lifecycle/app-lifecycle-manager";
 import { AppProxy } from "./proxy";
 
 export class AmazonConnectApp extends AmazonConnectProviderBase<AmazonConnectAppConfig> {
-  private readonly lifecycleManager: LifecycleManager;
+  private readonly lifecycleManager: AppLifecycleManager;
   private readonly logger: ConnectLogger;
 
   constructor(config: AmazonConnectAppConfig) {
     super({ config, proxyFactory: () => this.createProxy() });
-    this.lifecycleManager = new LifecycleManager(this);
+    this.lifecycleManager = new AppLifecycleManager(this);
     this.logger = new ConnectLogger({ provider: this, source: "app.provider" });
   }
 
@@ -75,7 +76,11 @@ export class AmazonConnectApp extends AmazonConnectProviderBase<AmazonConnectApp
     message: string,
     data?: Record<string, unknown> | Error,
   ): void {
-    (this.getProxy() as AppProxy).tryCloseApp(message, true, data);
+    (this.getProxy() as AppProxy).tryCloseApp(
+      message,
+      true,
+      data ? deepClone(data) : undefined,
+    );
   }
 
   subscribe<THandlerData extends SubscriptionHandlerData>(
@@ -96,6 +101,6 @@ export class AmazonConnectApp extends AmazonConnectProviderBase<AmazonConnectApp
     topic: SubscriptionTopic,
     data: THandlerData,
   ): void {
-    (this.getProxy() as AppProxy).publish(topic, data);
+    (this.getProxy() as AppProxy).publish(topic, deepClone(data));
   }
 }

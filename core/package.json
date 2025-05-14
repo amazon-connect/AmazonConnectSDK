@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/core",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Core functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
@@ -11,6 +11,8 @@
     "build": "npm run build:esm && npm run build:cjs",
     "check-types": "tsc --noEmit",
     "clean": "rm -rf ./lib ./lib-esm ./build",
+    "format": "npm run lint -- --fix",
+    "lint": "eslint --cache --config ../.eslintrc.cjs --ignore-path ../.eslintignore .",
     "prepack": "npm run build",
     "test": "jest --coverage"
   },
@@ -24,6 +26,7 @@
   "types": "lib/index.d.ts",
   "files": [
     "lib/**/*",
-    "lib-esm/**/*"
+    "lib-esm/**/*",
+    "!**/*.tsbuildinfo"
   ]
 }

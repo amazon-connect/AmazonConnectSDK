@@ -108,6 +108,7 @@ export class ContactClient extends ConnectClient {
       handler,
     );
   }
+
   onMissed(handler: ContactMissedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopicKey.Missed, parameter: contactId },

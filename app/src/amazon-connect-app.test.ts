@@ -1,156 +1,254 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import {
   ConnectLogger,
+  generateUUID,
   SubscriptionHandler,
   SubscriptionTopic,
 } from "@amazon-connect/core";
-import { MockedClass } from "jest-mock";
+import {
+  getGlobalProvider,
+  setGlobalProvider,
+} from "@amazon-connect/core/lib/provider";
+import { mocked, MockedClass } from "jest-mock";
+import { mock } from "jest-mock-extended";
 
 import { AmazonConnectApp } from "./amazon-connect-app";
-import { AmazonConnectAppConfig } from "./amazon-connect-app-config";
-import { AppStartHandler, AppStopHandler, LifecycleManager } from "./lifecycle";
+import { AmazonConnectAppConfig } from "./config";
+import {
+  AppLifecycleManager,
+  AppStartHandler,
+  AppStopHandler,
+} from "./lifecycle";
 import { AppProxy } from "./proxy";
 
 jest.mock("@amazon-connect/core/lib/logging/connect-logger");
+jest.mock("@amazon-connect/core/lib/provider/global-provider");
 jest.mock("@amazon-connect/core/lib/utility/id-generator");
-jest.mock("./lifecycle/lifecycle-manager");
+jest.mock("./lifecycle/app-lifecycle-manager");
 jest.mock("./proxy/app-proxy");
 
+const config = mock<AmazonConnectAppConfig>();
+const testProviderId = "testProviderId";
+
 let sut: AmazonConnectApp;
-const LifecycleManagerMock = LifecycleManager as MockedClass<
-  typeof LifecycleManager
+const LifecycleManagerMock = AppLifecycleManager as MockedClass<
+  typeof AppLifecycleManager
 >;
 const ProxyMock = AppProxy as MockedClass<typeof AppProxy>;
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 
-beforeEach(() => {
-  jest.resetAllMocks();
-  const config = {} as AmazonConnectAppConfig;
-  sut = new AmazonConnectApp(config);
+beforeEach(jest.resetAllMocks);
+
+afterEach(() => {
+  AmazonConnectApp["isInitialized"] = false;
 });
 
-describe("onStart", () => {
-  test("should call onStart", () => {
-    const startHandler = {} as AppStartHandler;
+describe("init", () => {
+  let result: {
+    provider: AmazonConnectApp;
+  };
 
-    sut.onStart(startHandler);
+  beforeEach(() => {
+    mocked(generateUUID).mockReturnValueOnce(testProviderId);
+    mocked(setGlobalProvider).mockImplementation(() => {});
+  });
 
-    const lifecycleManager = LifecycleManagerMock.mock.instances[0];
-    expect(lifecycleManager.onStart).toHaveBeenCalled();
+  beforeEach(() => {
+    result = AmazonConnectApp.init(config);
+  });
+
+  test("should return AmazonConnectApp as provider", () => {
+    expect(result.provider).toBeInstanceOf(AmazonConnectApp);
+  });
+
+  test("should set the configuration", () => {
+    const resultConfig = result.provider.config;
+
+    expect(resultConfig).toEqual({ ...config });
+  });
+
+  test("should set random provider id", () => {
+    expect(result.provider.id).toEqual(testProviderId);
+  });
+
+  test("should set as global provider", () => {
+    expect(setGlobalProvider).toHaveBeenCalledWith(result.provider);
+  });
+
+  test("should create a AppProxy", () => {
+    expect(AppLifecycleManager).toHaveBeenCalledTimes(1);
+    expect(AppProxy).toHaveBeenCalledTimes(1);
+    const proxyMock = mocked(AppProxy).mock.instances[0];
+    const managerMock = mocked(AppLifecycleManager).mock.instances[0];
+
+    expect(AppProxy).toHaveBeenCalledWith(result.provider, managerMock);
+    expect(proxyMock.init).toHaveBeenCalled();
+    expect(result.provider.getProxy()).toBe(proxyMock);
+  });
+
+  test("should be initialized", () => {
+    expect(AmazonConnectApp["isInitialized"]).toBeTruthy();
   });
 });
 
-describe("onStop", () => {
-  test("should call onStop", () => {
-    const stopHandler = {} as AppStopHandler;
+describe("default", () => {
+  test("should return value from global provider", () => {
+    const { provider } = AmazonConnectApp.init(config);
+    mocked(getGlobalProvider).mockReturnValue(provider);
 
-    sut.onStop(stopHandler);
+    const result = AmazonConnectApp.default;
 
-    const lifecycleManager = LifecycleManagerMock.mock.instances[0];
-    expect(lifecycleManager.onStop).toHaveBeenCalled();
+    expect(result).toEqual(provider);
   });
 });
 
-describe("offStart", () => {
-  test("should call offStart", () => {
-    const startHandler = {} as AppStartHandler;
-
-    sut.offStart(startHandler);
-
-    const lifecycleManager = LifecycleManagerMock.mock.instances[0];
-    expect(lifecycleManager.offStart).toHaveBeenCalled();
+describe("when active", () => {
+  beforeEach(() => {
+    sut = new AmazonConnectApp(config);
   });
-});
 
-describe("offStop", () => {
-  test("should call offStop", () => {
-    const stopHandler = {} as AppStopHandler;
+  describe("onStart", () => {
+    test("should call onStart", () => {
+      const startHandler = {} as AppStartHandler;
 
-    sut.offStop(stopHandler);
+      sut.onStart(startHandler);
 
-    const lifecycleManager = LifecycleManagerMock.mock.instances[0];
-    expect(lifecycleManager.offStop).toHaveBeenCalled();
+      const lifecycleManager = LifecycleManagerMock.mock.instances[0];
+      expect(lifecycleManager.onStart).toHaveBeenCalled();
+    });
   });
-});
 
-describe("sendCloseAppRequest", () => {
-  test("should sendCloseAppRequest", () => {
-    const message = "hello";
+  describe("onStop", () => {
+    test("should call onStop", () => {
+      const stopHandler = {} as AppStopHandler;
 
-    sut.sendCloseAppRequest(message);
+      sut.onStop(stopHandler);
 
-    const proxy = ProxyMock.mock.instances[0];
-    expect(proxy.tryCloseApp).toHaveBeenCalledWith(message, false);
+      const lifecycleManager = LifecycleManagerMock.mock.instances[0];
+      expect(lifecycleManager.onStop).toHaveBeenCalled();
+    });
   });
-});
 
-describe("sendError", () => {
-  test("should sendError", () => {
-    const message = "hello";
-    const data = { foo: 1 };
+  describe("offStart", () => {
+    test("should call offStart", () => {
+      const startHandler = {} as AppStartHandler;
 
-    sut.sendError(message, data);
+      sut.offStart(startHandler);
 
-    const logger = LoggerMock.mock.instances[0];
-    expect(logger.error).toHaveBeenCalledWith(message, data);
+      const lifecycleManager = LifecycleManagerMock.mock.instances[0];
+      expect(lifecycleManager.offStart).toHaveBeenCalled();
+    });
   });
-});
 
-describe("sendFatalError", () => {
-  test("should sendFatalError with object data", () => {
-    const message = "hello";
-    const data = { foo: 1 };
+  describe("offStop", () => {
+    test("should call offStop", () => {
+      const stopHandler = {} as AppStopHandler;
 
-    sut.sendFatalError(message, data);
+      sut.offStop(stopHandler);
 
-    const proxy = ProxyMock.mock.instances[0];
-    expect(proxy.tryCloseApp).toHaveBeenCalledWith(message, true, data);
+      const lifecycleManager = LifecycleManagerMock.mock.instances[0];
+      expect(lifecycleManager.offStop).toHaveBeenCalled();
+    });
   });
-  test("should sendFatalError with error data", () => {
-    const message = "hello";
-    const data = new Error("error");
 
-    sut.sendFatalError(message, data);
+  describe("sendCloseAppRequest", () => {
+    test("should sendCloseAppRequest", () => {
+      const message = "hello";
 
-    const proxy = ProxyMock.mock.instances[0];
-    expect(proxy.tryCloseApp).toHaveBeenCalledWith(message, true, data);
+      sut.sendCloseAppRequest(message);
+
+      const proxy = ProxyMock.mock.instances[0];
+      expect(proxy.tryCloseApp).toHaveBeenCalledWith(message, false);
+    });
   });
-});
 
-const topic: SubscriptionTopic = {
-  namespace: "test-topic",
-  key: "key1",
-};
+  describe("sendError", () => {
+    test("should sendError", () => {
+      const message = "hello";
+      const data = { foo: 1 };
 
-describe("subscribe", () => {
-  test("should call subscribe in proxy", () => {
-    const handler: SubscriptionHandler = () => Promise.resolve();
+      sut.sendError(message, data);
 
-    sut.subscribe(topic, handler);
-
-    const proxy = ProxyMock.mock.instances[0];
-    expect(proxy.subscribe).toHaveBeenCalledWith(topic, handler);
+      const logger = LoggerMock.mock.instances[0];
+      expect(logger.error).toHaveBeenCalledWith(message, data);
+    });
   });
-});
 
-describe("unsubscribe", () => {
-  test("should call unsubscribe in proxy", () => {
-    const handler: SubscriptionHandler = () => Promise.resolve();
+  describe("sendFatalError", () => {
+    test("should sendFatalError with no details", () => {
+      const message = "hello";
 
-    sut.unsubscribe(topic, handler);
+      sut.sendFatalError(message);
 
-    const proxy = ProxyMock.mock.instances[0];
-    expect(proxy.unsubscribe).toHaveBeenCalledWith(topic, handler);
+      const proxy = ProxyMock.mock.instances[0];
+      expect(proxy.tryCloseApp).toHaveBeenCalledWith(message, true, undefined);
+    });
+
+    test("should sendFatalError with copy of object data", () => {
+      const message = "hello";
+      const data = { foo: 1 };
+
+      sut.sendFatalError(message, data);
+
+      const proxy = ProxyMock.mock.instances[0];
+      expect(proxy.tryCloseApp).toHaveBeenCalledWith(message, true, data);
+      const sentData = proxy.tryCloseApp.mock.calls[0][2];
+      expect(sentData).toEqual(data);
+      expect(sentData).not.toBe(data);
+    });
+
+    test("should sendFatalError with copy of error data", () => {
+      const message = "hello";
+      const data = new Error("error");
+
+      sut.sendFatalError(message, data);
+
+      const proxy = ProxyMock.mock.instances[0];
+      expect(proxy.tryCloseApp).toHaveBeenCalledWith(message, true, data);
+      const sentData = proxy.tryCloseApp.mock.calls[0][2];
+      expect(sentData).toEqual(data);
+      expect(sentData).not.toBe(data);
+    });
   });
-});
 
-describe("publish", () => {
-  test("should call publish in proxy", () => {
-    const data = { foo: "bar" };
+  const topic: SubscriptionTopic = {
+    namespace: "test-topic",
+    key: "key1",
+  };
 
-    sut.publish(topic, data);
+  describe("subscribe", () => {
+    test("should call subscribe in proxy", () => {
+      const handler: SubscriptionHandler = () => Promise.resolve();
 
-    const proxy = ProxyMock.mock.instances[0];
-    expect(proxy.publish).toHaveBeenCalledWith(topic, data);
+      sut.subscribe(topic, handler);
+
+      const proxy = ProxyMock.mock.instances[0];
+      expect(proxy.subscribe).toHaveBeenCalledWith(topic, handler);
+    });
+  });
+
+  describe("unsubscribe", () => {
+    test("should call unsubscribe in proxy", () => {
+      const handler: SubscriptionHandler = () => Promise.resolve();
+
+      sut.unsubscribe(topic, handler);
+
+      const proxy = ProxyMock.mock.instances[0];
+      expect(proxy.unsubscribe).toHaveBeenCalledWith(topic, handler);
+    });
+  });
+
+  describe("publish", () => {
+    test("should call publish in proxy with copy", () => {
+      const data = { foo: "bar" };
+
+      sut.publish(topic, data);
+
+      const proxy = ProxyMock.mock.instances[0];
+      expect(proxy.publish).toHaveBeenCalledWith(topic, data);
+      const publishedData = proxy.publish.mock.calls[0][1];
+      expect(publishedData).toEqual(data);
+      expect(publishedData).not.toBe(data);
+    });
   });
 });

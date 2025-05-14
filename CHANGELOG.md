@@ -1,5 +1,9 @@
 # CHANGELOG.md
 
+## 1.0.7
+### Added
+  - New APIs to `AppControllerClient`
+  
 ## 1.0.6
 ### Updated
   - `@amazon-connect/contact`

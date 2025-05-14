@@ -19,12 +19,13 @@ import {
   CloseAppMessage,
   LifecycleHandlerCompletedMessage,
   LifecycleMessage,
+  ServiceErrorMessage,
 } from "@amazon-connect/workspace-types";
 import { mocked, MockedClass } from "jest-mock";
 
 import { AmazonConnectApp } from "../amazon-connect-app";
-import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
-import { LifecycleManager } from "../lifecycle";
+import { AmazonConnectAppConfig } from "../config";
+import { AppLifecycleManager } from "../lifecycle/app-lifecycle-manager";
 import { AppProxy } from "./app-proxy";
 import * as connectionTimeout from "./connection-timeout";
 
@@ -40,11 +41,11 @@ jest.mock("@amazon-connect/core/lib/proxy/error/error-service");
 jest.mock("@amazon-connect/core/lib/proxy/channel-manager");
 jest.mock("@amazon-connect/core/lib/proxy/health-check/health-check-manager");
 
-jest.mock("../lifecycle/lifecycle-manager");
+jest.mock("../lifecycle/app-lifecycle-manager");
 jest.mock("./connection-timeout");
 
-const LifecycleManagerMock = LifecycleManager as MockedClass<
-  typeof LifecycleManager
+const LifecycleManagerMock = AppLifecycleManager as MockedClass<
+  typeof AppLifecycleManager
 >;
 const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 const TimeoutTrackerMock = TimeoutTracker as MockedClass<typeof TimeoutTracker>;
@@ -320,6 +321,19 @@ describe("when appProxy is ready", () => {
     });
   });
 
+  describe("sendServiceError", () => {
+    test("should send close request", async () => {
+      const message = "test message";
+
+      sut.sendServiceError(message);
+      await waitForMessageChannel(() => upstreamMessages.length === 0);
+
+      const result = upstreamMessages[0] as ServiceErrorMessage;
+      expect(result.type).toEqual("serviceError");
+      expect(result.message).toEqual(message);
+    });
+  });
+
   describe("publish", () => {
     test("should send app publish", async () => {
       const topic: SubscriptionTopic = { namespace: "foo", key: "bar" };
@@ -376,9 +390,16 @@ describe("when appProxy is ready", () => {
       const msg: LifecycleMessage = {
         type: "appLifecycle",
         appInstanceId: "abc123",
+        instanceId: "abc123",
         stage: "create",
         appConfig: {} as AppConfig,
+        config: {} as AppConfig,
         contactScope: { type: "contact", contactId: "123" },
+        launchedBy: {
+          type: "external",
+          connectionId: "abc",
+          name: "test",
+        },
       };
       const lifecycleMock = LifecycleManagerMock.mock.instances[0];
       lifecycleMock.handleLifecycleChangeMessage.mockResolvedValue();

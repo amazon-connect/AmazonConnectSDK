@@ -1,3 +1,4 @@
-export * from "./lifecycle-change";
-export { LifecycleManager } from "./lifecycle-manager";
+export { AppLifecycleManager } from "./app-lifecycle-manager";
+export type * from "./lifecycle-change";
+export { ServiceLifecycleManager } from "./service-lifecycle-manager";
 export type { StartSubscriptionOptions } from "./start-subscription-options";

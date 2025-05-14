@@ -50,6 +50,7 @@ import {
 import { Proxy } from "./proxy";
 import {
   ProxyConnectionChangedHandler,
+  ProxyConnectionEvent,
   ProxyConnectionStatus,
   ProxyConnectionStatusManager,
 } from "./proxy-connection";
@@ -1234,6 +1235,145 @@ describe("updateChildChannelPort", () => {
     sut.updateChildChannelPort(params);
 
     expect(channelManagerMock.updateChannelPort).toHaveBeenCalledWith(params);
+  });
+});
+
+describe("getConnectionId", () => {
+  describe("when the connectionId is set", () => {
+    test("should return the set connectionId", async () => {
+      const sut = TestProxy.getReadyTestProxy();
+      const [logger] = LoggerMock.mock.instances;
+      const [proxyConnectionStatusManager] =
+        ProxyConnectionStatusManagerMock.mock.instances;
+      sut.getProviderForTesting();
+
+      expect(sut["connectionId"]).toEqual(testConnectionId);
+
+      const result = await sut.getConnectionId();
+
+      expect(result).toEqual(testConnectionId);
+      expect(logger.error).not.toHaveBeenCalled();
+      expect(proxyConnectionStatusManager.onChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when the connectionId is not set", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.clearAllTimers();
+    });
+    afterEach(jest.useRealTimers);
+
+    describe("when the connection is returned before the timeout", () => {
+      describe("when no other connection status events are triggered", () => {
+        test("should get the connectionId from the connection updated event", async () => {
+          const sut = new TestProxy();
+          const [logger] = LoggerMock.mock.instances;
+          const [proxyConnectionStatusManager] =
+            ProxyConnectionStatusManagerMock.mock.instances;
+
+          const action = sut.getConnectionId();
+          const [handler] = proxyConnectionStatusManager.onChange.mock.calls[0];
+          sut.init();
+          sut.mockPushAcknowledgeMessage();
+          handler({ status: "ready", connectionId: testConnectionId });
+          const result = await action;
+
+          expect(result).toEqual(testConnectionId);
+          expect(logger.error).not.toHaveBeenCalled();
+          expect(proxyConnectionStatusManager.offChange).toHaveBeenCalledWith(
+            handler,
+          );
+        });
+      });
+
+      describe("when other connection status events are triggered", () => {
+        test("should get the connectionId from ready ignoring other events", async () => {
+          const sut = new TestProxy();
+          const [logger] = LoggerMock.mock.instances;
+          const [proxyConnectionStatusManager] =
+            ProxyConnectionStatusManagerMock.mock.instances;
+
+          const action = sut.getConnectionId();
+          const [handler] = proxyConnectionStatusManager.onChange.mock.calls[0];
+          sut.init();
+          handler(mock<ProxyConnectionEvent>({ status: "connecting" }));
+          handler(mock<ProxyConnectionEvent>({ status: "initializing" }));
+          sut.mockPushAcknowledgeMessage();
+          handler({ status: "ready", connectionId: testConnectionId });
+          const result = await action;
+
+          expect(result).toEqual(testConnectionId);
+          expect(logger.error).not.toHaveBeenCalled();
+          expect(proxyConnectionStatusManager.offChange).toHaveBeenCalledWith(
+            handler,
+          );
+        });
+      });
+    });
+
+    describe("when the connection is not returned before the timeout", () => {
+      describe("when no connection status events are triggered", () => {
+        test("should timeout", async () => {
+          const sut = new TestProxy();
+          const [logger] = LoggerMock.mock.instances;
+          const [proxyConnectionStatusManager] =
+            ProxyConnectionStatusManagerMock.mock.instances;
+          const action = sut.getConnectionId();
+          const [handler] = proxyConnectionStatusManager.onChange.mock.calls[0];
+          sut.init();
+          sut.mockPushAcknowledgeMessage();
+          jest.runAllTimers();
+
+          try {
+            await action;
+          } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+            expect(proxyConnectionStatusManager.onChange).toHaveBeenCalledWith(
+              handler,
+            );
+            expect(proxyConnectionStatusManager.offChange).toHaveBeenCalledWith(
+              handler,
+            );
+            expect(logger.error).toHaveBeenCalled();
+          }
+
+          expect.hasAssertions();
+        });
+      });
+
+      describe("when no non connection events status events are triggered", () => {
+        test("should timeout", async () => {
+          const sut = new TestProxy();
+          const [logger] = LoggerMock.mock.instances;
+          const [proxyConnectionStatusManager] =
+            ProxyConnectionStatusManagerMock.mock.instances;
+          const action = sut.getConnectionId();
+          const [handler] = proxyConnectionStatusManager.onChange.mock.calls[0];
+
+          sut.init();
+          handler(mock<ProxyConnectionEvent>({ status: "connecting" }));
+          handler(mock<ProxyConnectionEvent>({ status: "initializing" }));
+          handler(mock<ProxyConnectionEvent>({ status: "error" }));
+          jest.runAllTimers();
+
+          try {
+            await action;
+          } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+            expect(proxyConnectionStatusManager.onChange).toHaveBeenCalledWith(
+              handler,
+            );
+            expect(proxyConnectionStatusManager.offChange).toHaveBeenCalledWith(
+              handler,
+            );
+            expect(logger.error).toHaveBeenCalled();
+          }
+
+          expect.hasAssertions();
+        });
+      });
+    });
   });
 });
 

@@ -11,3 +11,4 @@ lib-esm/*
 build
 *.iml
 .DS_Store
+.eslintcache

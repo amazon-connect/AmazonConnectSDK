@@ -11,5 +11,6 @@
     "target": "es6",
     "allowJs": true,
     "allowSyntheticDefaultImports" : true,
+    "incremental":true,
   }
 }

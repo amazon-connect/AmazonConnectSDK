@@ -16,24 +16,31 @@ import {
   AppUpstreamMessage,
   CloseAppMessage,
   LifecycleHandlerCompletedMessage,
+  ServiceErrorMessage,
 } from "@amazon-connect/workspace-types";
 
-import { AmazonConnectApp } from "../amazon-connect-app";
-import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
-import { LifecycleManager } from "../lifecycle";
+import { BaseProvider } from "../base-provider";
+import { AmazonConnectAppConfig, AmazonConnectServiceConfig } from "../config";
+import { AppLifecycleManager } from "../lifecycle/app-lifecycle-manager";
+import { ServiceLifecycleManager } from "../lifecycle/service-lifecycle-manager";
 import { getConnectionTimeout } from "./connection-timeout";
 
 export class AppProxy extends Proxy<
-  AmazonConnectAppConfig,
+  AmazonConnectAppConfig | AmazonConnectServiceConfig,
   AppUpstreamMessage,
   AppDownstreamMessage
 > {
   private readonly channel: MessageChannel;
-  private readonly lifecycleManager: LifecycleManager;
+  private readonly lifecycleManager:
+    | AppLifecycleManager
+    | ServiceLifecycleManager;
   private readonly appLogger: ConnectLogger;
   private connectionTimer: TimeoutTracker | undefined;
 
-  constructor(provider: AmazonConnectApp, lifecycleManager: LifecycleManager) {
+  constructor(
+    provider: BaseProvider,
+    lifecycleManager: AppLifecycleManager | ServiceLifecycleManager,
+  ) {
     super(provider);
 
     this.channel = new MessageChannel();
@@ -69,6 +76,19 @@ export class AppProxy extends Proxy<
     const msg: CloseAppMessage = {
       type: "closeApp",
       isFatalError: isFatalError ?? false,
+      message,
+      data,
+    };
+
+    this.sendOrQueueMessageToSubject(msg);
+  }
+
+  sendServiceError(
+    message: string | undefined,
+    data?: Record<string, unknown> | Error,
+  ) {
+    const msg: ServiceErrorMessage = {
+      type: "serviceError",
       message,
       data,
     };
