@@ -3,7 +3,7 @@
 ## 1.0.7
 ### Added
   - Initial release of `@amazon-connect/app-controller`, providing the ability to control applications in the workspace
-  - Initial release of `@amazon-connect/ccp-ui`, providing the ability to customize Contact Control Panel
+  - Initial release of `@amazon-connect/ccp-ui`, providing the ability to customize Contact Control Panel(CCP)
   
 ## 1.0.6
 ### Updated
