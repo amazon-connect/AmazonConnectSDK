@@ -40,6 +40,7 @@
     "app",
     "site",
     "site-streams",
+    "app-controller",
     "contact",
     "voice",
     "file",
