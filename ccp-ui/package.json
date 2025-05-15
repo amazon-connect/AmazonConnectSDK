@@ -1,7 +1,7 @@
 {
-  "name": "@amazon-connect/app-controller",
+  "name": "@amazon-connect/ccp-ui",
   "version": "1.0.7",
-  "description": "This module contains APIs for managing Amazon Connect Workspace operations",
+  "description": "CCP UI functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
   },
@@ -30,7 +30,6 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
-    "@amazon-connect/core": "1.0.7",
-    "@amazon-connect/workspace-types": "1.0.7"
+    "@amazon-connect/core": "1.0.7"
   }
 }
