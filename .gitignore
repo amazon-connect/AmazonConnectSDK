@@ -4,9 +4,7 @@ node_modules/
 coverage/
 lib/*
 lib-esm/*
-lib-esm/*
 **/lib/*
-**/lib-esm/*
 **/lib-esm/*
 *.log
 .git
