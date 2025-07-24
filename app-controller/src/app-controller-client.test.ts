@@ -78,40 +78,40 @@ describe("getAppConfig", () => {
 
 describe("launchApp", () => {
   test("should launch app with default options", async () => {
-    const name = "test-app";
+    const arnOrName = "test-app";
     const appInfo = mock<AppInfo>();
     moduleProxyMock.request.mockResolvedValueOnce(appInfo);
 
-    const result = await sut.launchApp(name);
+    const result = await sut.launchApp(arnOrName);
 
     expect(result).toEqual(appInfo);
     expect(moduleProxyMock.request).toHaveBeenCalledWith(
       AppControllerRoutes.launchApp,
-      { name, options: {} },
+      { arnOrName, options: {} },
     );
     expect(deepClone).not.toHaveBeenCalled();
   });
 
   test("should launch app with provided options without parameters", async () => {
-    const name = "test-app";
+    const arnOrName = "test-app";
     const options: AppLaunchOptions = {
       launchKey: "my-key",
     };
     const appInfo = mock<AppInfo>();
     moduleProxyMock.request.mockResolvedValueOnce(appInfo);
 
-    const result = await sut.launchApp(name, options);
+    const result = await sut.launchApp(arnOrName, options);
 
     expect(result).toEqual(appInfo);
     expect(moduleProxyMock.request).toHaveBeenCalledWith(
       AppControllerRoutes.launchApp,
-      { name, options },
+      { arnOrName, options },
     );
     expect(deepClone).not.toHaveBeenCalled();
   });
 
   test("should deep clone parameters when provided in options", async () => {
-    const name = "test-app";
+    const arnOrName = "test-app";
     const parameters = { key: "value", nested: { data: "test" } };
     const options = mock<AppLaunchOptions>({
       parameters,
@@ -121,14 +121,14 @@ describe("launchApp", () => {
     mocked(deepClone).mockReturnValueOnce(clonedParameters);
     moduleProxyMock.request.mockResolvedValueOnce(appInfo);
 
-    const result = await sut.launchApp(name, options);
+    const result = await sut.launchApp(arnOrName, options);
 
     expect(result).toEqual(appInfo);
     expect(deepClone).toHaveBeenCalledWith(parameters);
     expect(moduleProxyMock.request).toHaveBeenCalledWith(
       AppControllerRoutes.launchApp,
       {
-        name,
+        arnOrName,
         options: {
           ...options,
           parameters: clonedParameters,

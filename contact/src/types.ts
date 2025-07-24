@@ -173,3 +173,23 @@ export type AddParticipantResult = {
 
 export type ContactCleared = BaseContactLifecycleEvent;
 export type ContactClearedHandler = SubscriptionHandler<ContactCleared>;
+
+export type EnabledChannelListChangedHandler =
+  SubscriptionHandler<EnabledChannelListChanged>;
+
+type AgentRoutingProfileChannelTypes = "voice" | "chat" | "task" | "email";
+export interface EnabledChannelListChanged {
+  enabledChannels: AgentRoutingProfileChannelTypes[];
+  previous?: {
+    enabledChannels: AgentRoutingProfileChannelTypes[];
+  };
+}
+
+export type RoutingProfileChangedHandler =
+  SubscriptionHandler<AgentRoutingProfileChanged>;
+export interface AgentRoutingProfileChanged {
+  routingProfile: AgentRoutingProfile;
+  previous?: {
+    routingProfile: AgentRoutingProfile;
+  };
+}

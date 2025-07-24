@@ -250,4 +250,44 @@ describe("AgentClient", () => {
     );
     expect(actualResult).toEqual([quickConnects]);
   });
+
+  describe("Agent Event Handlers", () => {
+    it("should subscribe to enabled channel list changes", () => {
+      const mockHandler = jest.fn();
+      sut.onEnabledChannelListChanged(mockHandler);
+      expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.EnabledChannelListChanged },
+        mockHandler,
+      );
+    });
+
+    it("should unsubscribe to enabled channel list changes", () => {
+      const mockHandler = jest.fn();
+      sut.offEnabledChannelListChanged(mockHandler);
+      expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.EnabledChannelListChanged },
+        mockHandler,
+      );
+    });
+
+    it("should subscribe to routing profile changes", () => {
+      const mockHandler = jest.fn();
+      sut.onRoutingProfileChanged(mockHandler);
+
+      expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.RoutingProfileChanged },
+        mockHandler,
+      );
+    });
+
+    it("should unsubscribe to routing profile changes", () => {
+      const mockHandler = jest.fn();
+      sut.offRoutingProfileChanged(mockHandler);
+
+      expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.RoutingProfileChanged },
+        mockHandler,
+      );
+    });
+  });
 });

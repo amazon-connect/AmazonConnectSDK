@@ -84,6 +84,7 @@ describe("sanitizedData", () => {
 
   test("returns return empty object via JSON stringify/parse when not cloneable", () => {
     const input = {
+      /* eslint-disable-next-line no-console */
       func: () => console.log("test"),
       symbol: Symbol("test"),
     };

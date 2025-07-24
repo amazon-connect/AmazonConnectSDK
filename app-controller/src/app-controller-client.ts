@@ -24,23 +24,23 @@ export class AppControllerClient extends ConnectClient {
     return applications;
   }
 
-  getAppConfig(appArn: string): Promise<AppConfig> {
+  getAppConfig(arnOrName: string): Promise<AppConfig> {
     return this.context.proxy.request<AppConfig>(
       AppControllerRoutes.getConfig,
       {
-        key: appArn,
+        key: arnOrName,
       },
     );
   }
 
-  launchApp(name: string, options?: AppLaunchOptions): Promise<AppInfo> {
+  launchApp(arnOrName: string, options?: AppLaunchOptions): Promise<AppInfo> {
     const optionsCopy = { ...(options ?? {}) };
     if (optionsCopy.parameters) {
       optionsCopy.parameters = deepClone(optionsCopy.parameters);
     }
 
     const requestData: LaunchAppRequest = {
-      name,
+      arnOrName,
       options: optionsCopy,
     };
 

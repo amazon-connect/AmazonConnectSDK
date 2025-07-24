@@ -4,7 +4,9 @@ node_modules/
 coverage/
 lib/*
 lib-esm/*
+lib-esm/*
 **/lib/*
+**/lib-esm/*
 **/lib-esm/*
 *.log
 .git
@@ -12,3 +14,4 @@ build
 *.iml
 .DS_Store
 .eslintcache
+**/.idea

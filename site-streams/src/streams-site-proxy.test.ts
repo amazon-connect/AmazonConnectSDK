@@ -75,6 +75,15 @@ describe("setCCPIFrame", () => {
 
       expect(sut.connectionStatus).toEqual("connecting");
     });
+
+    test("should reset unexpectedIframeWarningCount to 0", () => {
+      // Set counter to non-zero value first
+      sut["unexpectedIframeWarningCount"] = 3;
+
+      sut.setCCPIframe(iframe);
+
+      expect(sut["unexpectedIframeWarningCount"]).toEqual(0);
+    });
   });
 
   describe("when a different iframe is already set", () => {
@@ -106,6 +115,15 @@ describe("setCCPIFrame", () => {
       sut.setCCPIframe(replacementIFrame);
 
       expect(sut.connectionStatus).toEqual("connecting");
+    });
+
+    test("should reset unexpectedIframeWarningCount to 0", () => {
+      // Set counter to non-zero value first
+      sut["unexpectedIframeWarningCount"] = 7;
+
+      sut.setCCPIframe(replacementIFrame);
+
+      expect(sut["unexpectedIframeWarningCount"]).toEqual(0);
     });
   });
 });
@@ -208,6 +226,7 @@ describe("verifyEventSource", () => {
     expect(result).toBeFalsy();
     expect(loggerMock.warn).toHaveBeenCalledWith(expect.any(String), {
       origin: testOrigin,
+      unexpectedIframeWarningCount: 1,
     });
   });
 
@@ -225,6 +244,95 @@ describe("verifyEventSource", () => {
     expect(result).toBeFalsy();
     expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
       origin: testOrigin,
+    });
+  });
+
+  describe("unexpected iframe warning suppression", () => {
+    test("should initialize unexpectedIframeWarningCount to 0", () => {
+      expect(sut["unexpectedIframeWarningCount"]).toEqual(0);
+    });
+
+    test("should increment counter and log warning for first 4 invalid events", () => {
+      const iframeWindow = { name: "parentWindow" } as Window;
+      const eventSource = { name: "other" } as Window;
+      const iframe = {
+        contentWindow: iframeWindow,
+      } as HTMLIFrameElement;
+      sut.setCCPIframe(iframe);
+      const testOrigin = "http://test.com";
+      const testEvent = {
+        data: { type: "cross-domain-adapter-init" },
+        source: eventSource,
+        origin: testOrigin,
+      } as MessageEvent<{ type?: string }>;
+
+      // First 4 calls should log warnings
+      for (let i = 1; i <= 4; i++) {
+        loggerMock.warn.mockClear();
+
+        const result = sut["verifyEventSource"](testEvent);
+
+        expect(result).toBeFalsy();
+        expect(sut["unexpectedIframeWarningCount"]).toEqual(i);
+        expect(loggerMock.warn).toHaveBeenCalledWith(expect.any(String), {
+          origin: testOrigin,
+          unexpectedIframeWarningCount: i,
+        });
+      }
+    });
+
+    test("should suppress warnings after 5th invalid event", () => {
+      const iframeWindow = { name: "parentWindow" } as Window;
+      const eventSource = { name: "other" } as Window;
+      const iframe = {
+        contentWindow: iframeWindow,
+      } as HTMLIFrameElement;
+      sut.setCCPIframe(iframe);
+      const testOrigin = "http://test.com";
+      const testEvent = {
+        data: { type: "cross-domain-adapter-init" },
+        source: eventSource,
+        origin: testOrigin,
+      } as MessageEvent<{ type?: string }>;
+
+      // Trigger first 4 warnings
+      for (let i = 1; i <= 4; i++) {
+        sut["verifyEventSource"](testEvent);
+      }
+
+      loggerMock.warn.mockClear();
+
+      // 5th and subsequent calls should not log warnings
+      for (let i = 5; i <= 10; i++) {
+        const result = sut["verifyEventSource"](testEvent);
+
+        expect(result).toBeFalsy();
+        expect(sut["unexpectedIframeWarningCount"]).toEqual(i);
+        expect(loggerMock.warn).not.toHaveBeenCalled();
+      }
+    });
+
+    test("should continue incrementing counter even after suppression", () => {
+      const iframeWindow = { name: "parentWindow" } as Window;
+      const eventSource = { name: "other" } as Window;
+      const iframe = {
+        contentWindow: iframeWindow,
+      } as HTMLIFrameElement;
+      sut.setCCPIframe(iframe);
+      const testEvent = {
+        data: { type: "cross-domain-adapter-init" },
+        source: eventSource,
+        origin: "http://test.com",
+      } as MessageEvent<{ type?: string }>;
+
+      // Set counter to high value to test continued incrementing
+      sut["unexpectedIframeWarningCount"] = 10;
+
+      const result = sut["verifyEventSource"](testEvent);
+
+      expect(result).toBeFalsy();
+      expect(sut["unexpectedIframeWarningCount"]).toEqual(11);
+      expect(loggerMock.warn).not.toHaveBeenCalled();
     });
   });
 });

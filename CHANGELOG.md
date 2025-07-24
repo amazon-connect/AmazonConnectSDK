@@ -9,7 +9,7 @@
 ### Updated
   - `@amazon-connect/contact`
     - `AgentClient`: Fixed issue that may cause errors when invoking `setOffline`
-
+  
 ## 1.0.5
 ### Added
   - New APIs to `ContactClient`, `AgentClient` and `VoiceClient`

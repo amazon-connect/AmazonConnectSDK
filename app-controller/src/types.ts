@@ -1,7 +1,7 @@
 import { AppLaunchOptions } from "./launch";
 
 export interface LaunchAppRequest {
-  name: string;
+  arnOrName: string;
   options: AppLaunchOptions;
 }
 

@@ -12,3 +12,15 @@ export type DialableCountry = {
   callingCode: string;
   label: string;
 };
+
+export type VoiceEnhancementMode =
+  | "VOICE_ISOLATION"
+  | "NOISE_SUPPRESSION"
+  | "NONE";
+
+export interface VoiceEnhancementPaths {
+  processors: string;
+  workers: string;
+  wasm: string;
+  models: string;
+}
