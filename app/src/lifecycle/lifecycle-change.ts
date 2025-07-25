@@ -1,6 +1,7 @@
 import { LifecycleStage } from "@amazon-connect/workspace-types";
 
 import { AppContext } from "../app-context";
+import { ServiceContext } from "../service";
 
 type BaseLifecycleStageChangeEvent<TStage extends LifecycleStage> = {
   stage: TStage;
@@ -26,3 +27,10 @@ export type AppCreateHandler = LifecycleStageChangeHandler<AppCreateEvent>;
 export type AppStartHandler = LifecycleStageChangeHandler<AppStartEvent>;
 export type AppStopHandler = LifecycleStageChangeHandler<AppStopEvent>;
 export type AppDestroyHandler = LifecycleStageChangeHandler<AppDestroyEvent>;
+
+export type ServiceCreatedEvent = {
+  stage: "create";
+  context: ServiceContext;
+};
+
+export type ServiceCreatedHandler = (evt: ServiceCreatedEvent) => Promise<void>;

@@ -1,10 +1,14 @@
 # CHANGELOG.md
 
+## 1.0.7
+### Added
+  - Initial release of `@amazon-connect/app-controller`, providing the ability to control applications in the workspace
+  
 ## 1.0.6
 ### Updated
   - `@amazon-connect/contact`
     - `AgentClient`: Fixed issue that may cause errors when invoking `setOffline`
-
+  
 ## 1.0.5
 ### Added
   - New APIs to `ContactClient`, `AgentClient` and `VoiceClient`

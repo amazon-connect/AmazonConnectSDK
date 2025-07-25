@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { LogLevel } from "./log-level";
 import { ConnectLogData } from "./logger-types";
 

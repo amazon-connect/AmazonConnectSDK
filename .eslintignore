@@ -2,7 +2,10 @@ build/
 node_modules/
 */lib/
 */lib-esm/
+/lib
+/lib-esm
 jest.config.js
 coverage/
 */babel.config.js
 .eslintrc.cjs
+babel.config.js

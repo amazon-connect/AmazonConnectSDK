@@ -1,0 +1,36 @@
+{
+  "name": "@amazon-connect/app-controller",
+  "version": "1.0.7",
+  "description": "This module contains APIs for managing Amazon Connect Workspace operations",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build": "npm run build:esm && npm run build:cjs",
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf ./lib ./lib-esm ./build",
+    "format": "npm run lint -- --fix",
+    "lint": "eslint --cache --config ../.eslintrc.cjs --ignore-path ../.eslintignore .",
+    "prepack": "npm run build",
+    "test": "jest --coverage"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git.amazon.com/pkg/AmazonConnectSDK"
+  },
+  "main": "lib/index.js",
+  "module": "lib-esm/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "lib-esm/**/*",
+    "!**/*.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@amazon-connect/core": "1.0.7",
+    "@amazon-connect/workspace-types": "1.0.7"
+  }
+}

@@ -71,7 +71,7 @@ export abstract class Proxy<
   protected readonly status: ProxyConnectionStatusManager;
   private readonly subscriptions: SubscriptionManager;
   private readonly errorService: ErrorService;
-  private readonly logger: ConnectLogger;
+  protected readonly logger: ConnectLogger;
   private readonly channelManager: ChannelManager;
   private readonly healthCheck: HealthCheckManager;
 
@@ -428,6 +428,30 @@ export abstract class Proxy<
 
   updateChildChannelPort(params: UpdateChannelPortParams): void {
     this.channelManager.updateChannelPort(params);
+  }
+
+  getConnectionId(): Promise<string> {
+    if (this.connectionId) return Promise.resolve(this.connectionId);
+
+    return new Promise((resolve, reject) => {
+      let timeout: NodeJS.Timeout | undefined = undefined;
+
+      const handler: ProxyConnectionChangedHandler = (evt) => {
+        if (evt.status === "ready") {
+          this.offConnectionStatusChange(handler);
+          clearInterval(timeout);
+          resolve(evt.connectionId);
+        }
+      };
+
+      timeout = setTimeout(() => {
+        this.logger.error("Timeout getting connection id");
+        this.offConnectionStatusChange(handler);
+        reject(new Error("Timeout getting connectionId"));
+      }, 10 * 1000);
+
+      this.onConnectionStatusChange(handler);
+    });
   }
 
   protected resetConnection(reason: string): void {

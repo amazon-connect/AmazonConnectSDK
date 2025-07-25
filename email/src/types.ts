@@ -44,6 +44,12 @@ export type EmailContact = {
    */
   bodyLocation?: EmailArtifactLocation;
   attachmentLocations: EmailArtifactLocation[];
+
+  /**
+   * The timestamp when the email message was delivered to Amazon Connect.
+   * Setting this as optional to ensure backward comaptibality.
+   */
+  initiationTimestamp?: Date;
 };
 
 export type EmailContactId = {

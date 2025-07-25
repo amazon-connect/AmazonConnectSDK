@@ -1,4 +1,4 @@
-import { AmazonConnectAppConfig } from "../amazon-connect-app-config";
+import { AmazonConnectAppConfig } from "../config";
 import {
   defaultValue,
   getConnectionTimeout,

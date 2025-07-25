@@ -1,79 +1,50 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import { mocked } from "jest-mock";
 import { mock } from "jest-mock-extended";
 
-import { ConnectLogger } from "../logging";
-import { ConnectMetricRecorder } from "../metric";
 import { AmazonConnectProvider, getGlobalProvider } from "../provider";
 import { Context } from "./";
 import { ModuleContext } from "./module-context";
 
-jest.mock("../logging");
-jest.mock("../metric");
-jest.mock("../provider");
+jest.mock("../provider/global-provider");
 jest.mock("./module-context");
 
 beforeEach(() => {
   jest.resetAllMocks();
 });
 
-describe("getProxy", () => {
-  test("should call getProvider().getProxy()", () => {
-    const testProvider = mock<AmazonConnectProvider>();
-    const testContext = new Context(testProvider);
-    jest.spyOn(testProvider, "getProxy");
-    jest.spyOn(testContext, "getProvider");
-
-    testContext.getProxy();
-
-    expect(testContext.getProvider).toHaveBeenCalled();
-    expect(testProvider.getProxy).toHaveBeenCalled();
-  });
-});
-
 describe("getProvider", () => {
+  test("should return local provider", () => {
+    const provider = mock<AmazonConnectProvider>();
+    const sut = new Context(provider);
+
+    const result = sut.getProvider();
+
+    expect(result).toEqual(provider);
+    expect(getGlobalProvider).not.toHaveBeenCalled();
+  });
+
   test("should call getGlobalProvider without this.provider defined", () => {
-    const testContext = new Context();
-    jest.spyOn(testContext, "getProvider");
+    const provider = mock<AmazonConnectProvider>();
+    const sut = new Context();
+    mocked(getGlobalProvider).mockReturnValueOnce(provider);
 
-    testContext.getProvider();
+    const result = sut.getProvider();
 
+    expect(result).toEqual(provider);
     expect(getGlobalProvider).toHaveBeenCalled();
   });
 });
 
 describe("getModuleContext", () => {
-  test("should initialize ModuleContext object", () => {
-    const testContext = new Context();
+  test("should initialize ModuleContext", () => {
+    const testNamespace = "testNamespace";
+    const sut = new Context();
 
-    testContext.getModuleContext("test");
+    const result = sut.getModuleContext(testNamespace);
 
-    expect(ModuleContext).toHaveBeenCalled();
-  });
-});
-
-describe("createLogger", () => {
-  test("should initialize ConnectLogger object", () => {
-    const testContext = new Context();
-
-    testContext.createLogger("test");
-
-    expect(ConnectLogger).toHaveBeenCalled();
-  });
-});
-
-describe("createMetricRecorder", () => {
-  test("should initialize ConnectMetricRecorder object if param is an object", () => {
-    const testContext = new Context();
-
-    testContext.createMetricRecorder({ namespace: "test" });
-
-    expect(ConnectMetricRecorder).toHaveBeenCalled();
-  });
-  test("should initialize ConnectMetricRecorder object if param is a string", () => {
-    const testContext = new Context();
-
-    testContext.createMetricRecorder("test");
-
-    expect(ConnectMetricRecorder).toHaveBeenCalled();
+    expect(result).toEqual(mocked(ModuleContext).mock.instances[0]);
+    expect(ModuleContext).toHaveBeenCalledTimes(1);
+    expect(ModuleContext).toHaveBeenCalledWith(sut, testNamespace);
   });
 });

@@ -1,4 +1,9 @@
 export { AmazonConnectApp } from "./amazon-connect-app";
-export type { AmazonConnectAppConfig } from "./amazon-connect-app-config";
+export { AppContext } from "./app-context";
+export type {
+  AmazonConnectAppConfig,
+  AmazonConnectServiceConfig,
+} from "./config";
 export { AppContactScope } from "./contact-scope";
-export * from "./lifecycle";
+export type * from "./lifecycle";
+export { AmazonConnectService, ServiceContext } from "./service";
