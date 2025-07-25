@@ -8,4 +8,6 @@ export enum ContactLifecycleTopicKey {
 
 export enum AgentTopicKey {
   StateChanged = "agent/stateChange",
+  RoutingProfileChanged = "agent/routingProfileChanged",
+  EnabledChannelListChanged = "agent/enabledChannelListChanged",
 }
