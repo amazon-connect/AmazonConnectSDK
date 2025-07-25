@@ -48,7 +48,6 @@
     "theme",
     "user",
     "message-template",
-    "quick-responses",
-    "ccp-ui"
+    "quick-responses"
   ]
 }
