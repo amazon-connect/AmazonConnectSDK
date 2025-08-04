@@ -4,6 +4,7 @@ export enum ContactLifecycleTopicKey {
   Destroyed = "contact/destroy",
   Missed = "contact/missed",
   Cleared = "contact/cleared",
+  Incoming = "contact/incoming",
 }
 
 export enum AgentTopicKey {
