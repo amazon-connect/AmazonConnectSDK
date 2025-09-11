@@ -1,6 +1,8 @@
 import {
-  ConnectClient,
   ConnectClientConfig,
+  ConnectClientConfigDeprecated,
+  ConnectClientConfigOptional,
+  ConnectClientWithOptionalConfig,
   SubscriptionHandler,
 } from "@amazon-connect/core";
 
@@ -16,8 +18,32 @@ import {
   GetEmailThreadParams,
 } from "./types";
 
-export class EmailClient extends ConnectClient {
-  constructor(config?: ConnectClientConfig) {
+export class EmailClient extends ConnectClientWithOptionalConfig {
+  /**
+   * Creates a new EmailClient instance with the specified configuration.
+   *
+   * @param config - The configuration for the client. Can be provided as:
+   *   - An AmazonConnectProvider instance directly: `new EmailClient(provider)`
+   *   - An object with provider: `new EmailClient({ provider })`
+   *
+   * @example
+   * ```typescript
+   * // Recommended: Pass provider directly
+   * const client = new EmailClient(provider);
+   *
+   * // Alternative: Pass as object
+   * const client = new EmailClient({ provider });
+   * ```
+   */
+  constructor(config: ConnectClientConfig);
+
+  /**
+   * @deprecated Calling EmailClient without AmazonConnectProvider is deprecated and will be removed in a future version.
+   * Please provide an AmazonConnectProvider instance: `new EmailClient(provider)`
+   */
+  constructor(config?: ConnectClientConfigDeprecated);
+
+  constructor(config: ConnectClientConfigOptional) {
     super(emailNamespace, config);
   }
 

@@ -1,5 +1,5 @@
 import { AmazonConnectConfig } from "@amazon-connect/core";
 
-export type AmazonConnectStreamsSiteConfig = AmazonConnectConfig & {
+export interface AmazonConnectStreamsSiteConfig extends AmazonConnectConfig {
   instanceUrl: string;
-};
+}

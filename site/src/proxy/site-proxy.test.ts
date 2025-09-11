@@ -30,6 +30,7 @@ const testLoggerContext = { foo: "bar" };
 const windowMock = mock<Window & typeof globalThis>();
 
 type TestProxyConfig = AmazonConnectConfig & { instanceUrl: string };
+type TestProxyConfigBase = AmazonConnectConfig;
 type MessageEventWithType = MessageEvent<{ type?: string }>;
 
 const verifyEventSourceMock = jest.fn<
@@ -85,7 +86,7 @@ class TestProxy extends SiteProxy<TestProxyConfig> {
     return "testProxy";
   }
 
-  resetConnection(reason: string): void {
+  public resetConnection(reason: string): void {
     super.resetConnection(reason);
   }
 
@@ -101,8 +102,37 @@ class TestProxy extends SiteProxy<TestProxyConfig> {
     ) => void;
     verifyEventSourceMock.mockReturnValue(true);
     handler(testEvent);
-    sut.mockPushAcknowledgeMessage();
+    this.mockPushAcknowledgeMessage();
     messagePortMock.postMessage.mockReset();
+  }
+}
+
+class TestProxyWithSeparateInstanceUrl extends SiteProxy<TestProxyConfigBase> {
+  constructor(params?: { instanceUrlOverride?: string }) {
+    super(
+      mock<AmazonConnectProvider<TestProxyConfigBase>>({
+        config: {} as TestProxyConfigBase,
+        getProxy: () => this,
+      }),
+      params?.instanceUrlOverride ?? testInstanceUrl,
+    );
+  }
+
+  protected verifyEventSource(evt: MessageEventWithType): boolean {
+    return verifyEventSourceMock(evt);
+  }
+  protected invalidInitMessageHandler(data: unknown): void {
+    invalidInitMessageHandlerMock(data);
+  }
+  protected getUpstreamMessageOrigin(): UpstreamMessageOrigin {
+    return {
+      _type: "test",
+      providerId: this.provider.id,
+    };
+  }
+
+  get proxyType(): string {
+    return "testProxy";
   }
 }
 
@@ -126,6 +156,49 @@ describe("constructor", () => {
     expect(LoggerMock.mock.calls[3][0]).toEqual({
       source: "siteProxy",
       provider: sut["provider"],
+    });
+  });
+
+  describe("first overload - config with instanceUrl", () => {
+    test("should use instanceUrl from provider config", () => {
+      const customInstanceUrl = "https://custom.example.com/connect";
+      const proxy = new TestProxy({ instanceUrlOverride: customInstanceUrl });
+
+      expect(proxy["instanceUrl"]).toBe(customInstanceUrl);
+    });
+
+    test("should use default instanceUrl when not overridden", () => {
+      const proxy = new TestProxy();
+
+      expect(proxy["instanceUrl"]).toBe(testInstanceUrl);
+    });
+  });
+
+  describe("second overload - separate instanceUrl parameter", () => {
+    test("should use instanceUrl from separate parameter", () => {
+      const customInstanceUrl = "https://separate.example.com/connect";
+      const proxy = new TestProxyWithSeparateInstanceUrl({
+        instanceUrlOverride: customInstanceUrl,
+      });
+
+      expect(proxy["instanceUrl"]).toBe(customInstanceUrl);
+    });
+
+    test("should use default instanceUrl when not overridden", () => {
+      const proxy = new TestProxyWithSeparateInstanceUrl();
+
+      expect(proxy["instanceUrl"]).toBe(testInstanceUrl);
+    });
+
+    test("should work with empty provider config", () => {
+      // Test that the instanceUrl parameter is used when provider config is empty
+      const customInstanceUrl = "https://empty-config.example.com/connect";
+      const proxy = new TestProxyWithSeparateInstanceUrl({
+        instanceUrlOverride: customInstanceUrl,
+      });
+
+      // The key test: instanceUrl should come from the parameter, not the config
+      expect(proxy["instanceUrl"]).toBe(customInstanceUrl);
     });
   });
 });
@@ -199,7 +272,7 @@ describe("listenForInitialMessage", () => {
         {
           error: expect.anything() as Error,
           eventOrigin,
-          configInstanceUrl: invalidUrl,
+          instanceUrl: invalidUrl,
         },
         { duplicateMessageToConsole: true },
       );

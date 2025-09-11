@@ -1,2 +1,9 @@
-export { ConnectClient } from "./connect-client";
-export { ConnectClientConfig } from "./connect-client-config";
+export {
+  ConnectClient,
+  ConnectClientWithOptionalConfig,
+} from "./connect-client";
+export {
+  ConnectClientConfig,
+  ConnectClientConfigDeprecated,
+  ConnectClientConfigOptional,
+} from "./connect-client-config";

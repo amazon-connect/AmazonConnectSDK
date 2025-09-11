@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/app-controller",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "This module contains APIs for managing Amazon Connect Workspace operations",
   "publishConfig": {
     "access": "public"
@@ -30,7 +30,7 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
-    "@amazon-connect/core": "1.0.7",
-    "@amazon-connect/workspace-types": "1.0.7"
+    "@amazon-connect/core": "1.0.8",
+    "@amazon-connect/workspace-types": "1.0.8"
   }
 }

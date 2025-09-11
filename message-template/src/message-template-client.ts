@@ -1,4 +1,9 @@
-import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
+import {
+  ConnectClientConfig,
+  ConnectClientConfigDeprecated,
+  ConnectClientConfigOptional,
+  ConnectClientWithOptionalConfig,
+} from "@amazon-connect/core";
 
 import { messageTemplateNamespace } from "./message-template-namespace";
 import { MessageTemplateRoute } from "./routes";
@@ -9,8 +14,32 @@ import {
   SearchMessageTemplatesResponse,
 } from "./types";
 
-export class MessageTemplateClient extends ConnectClient {
-  constructor(config?: ConnectClientConfig) {
+export class MessageTemplateClient extends ConnectClientWithOptionalConfig {
+  /**
+   * Creates a new MessageTemplateClient instance with the specified configuration.
+   *
+   * @param config - The configuration for the client. Can be provided as:
+   *   - An AmazonConnectProvider instance directly: `new MessageTemplateClient(provider)`
+   *   - An object with provider: `new MessageTemplateClient({ provider })`
+   *
+   * @example
+   * ```typescript
+   * // Recommended: Pass provider directly
+   * const client = new MessageTemplateClient(provider);
+   *
+   * // Alternative: Pass as object
+   * const client = new MessageTemplateClient({ provider });
+   * ```
+   */
+  constructor(config: ConnectClientConfig);
+
+  /**
+   * @deprecated Calling MessageTemplateClient without AmazonConnectProvider is deprecated and will be removed in a future version.
+   * Please provide an AmazonConnectProvider instance: `new MessageTemplateClient(provider)`
+   */
+  constructor(config?: ConnectClientConfigDeprecated);
+
+  constructor(config: ConnectClientConfigOptional) {
     super(messageTemplateNamespace, config);
   }
 

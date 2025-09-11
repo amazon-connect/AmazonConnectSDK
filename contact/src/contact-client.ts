@@ -1,4 +1,9 @@
-import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
+import {
+  ConnectClientConfig,
+  ConnectClientConfigDeprecated,
+  ConnectClientConfigOptional,
+  ConnectClientWithOptionalConfig,
+} from "@amazon-connect/core";
 
 import { contactNamespace } from "./namespace";
 import { ContactRoutes } from "./routes";
@@ -20,8 +25,32 @@ import {
   QuickConnect,
 } from "./types";
 
-export class ContactClient extends ConnectClient {
-  constructor(config?: ConnectClientConfig) {
+export class ContactClient extends ConnectClientWithOptionalConfig {
+  /**
+   * Creates a new ContactClient instance with the specified configuration.
+   *
+   * @param config - The configuration for the client. Can be provided as:
+   *   - An AmazonConnectProvider instance directly: `new ContactClient(provider)`
+   *   - An object with provider: `new ContactClient({ provider })`
+   *
+   * @example
+   * ```typescript
+   * // Recommended: Pass provider directly
+   * const client = new ContactClient(provider);
+   *
+   * // Alternative: Pass as object
+   * const client = new ContactClient({ provider });
+   * ```
+   */
+  constructor(config: ConnectClientConfig);
+
+  /**
+   * @deprecated Calling ContactClient without AmazonConnectProvider is deprecated and will be removed in a future version.
+   * Please provide an AmazonConnectProvider instance: `new ContactClient(provider)`
+   */
+  constructor(config?: ConnectClientConfigDeprecated);
+
+  constructor(config: ConnectClientConfigOptional) {
     super(contactNamespace, config);
   }
 

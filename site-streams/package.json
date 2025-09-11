@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/site-streams",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Used for building sites integrated with StreamsJS",
   "publishConfig": {
     "access": "public"
@@ -30,6 +30,6 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
-    "@amazon-connect/site": "1.0.7"
+    "@amazon-connect/site": "1.0.8"
   }
 }

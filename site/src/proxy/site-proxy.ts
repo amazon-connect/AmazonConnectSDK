@@ -7,7 +7,7 @@ import {
 } from "@amazon-connect/core";
 
 export abstract class SiteProxy<
-  T extends AmazonConnectConfig & { instanceUrl: string },
+  T extends AmazonConnectConfig,
 > extends Proxy<T> {
   protected readonly proxyLogger: ConnectLogger;
   protected messagePort: MessagePort | undefined;
@@ -15,8 +15,50 @@ export abstract class SiteProxy<
     evt: MessageEvent<{ type?: string }>,
   ) => void;
 
-  constructor(provider: AmazonConnectProvider<T>) {
+  public readonly instanceUrl: string;
+
+  /**
+   * Creates a new SiteProxy instance.
+   *
+   * @overload
+   * @param provider - Provider with config containing instanceUrl
+   *
+   * @overload
+   * @param provider - Provider with base config
+   * @param instanceUrl - The Amazon Connect instance URL
+   *
+   * @example
+   * ```typescript
+   * // First overload: instanceUrl in config
+   * const provider1 = new AmazonConnectProvider({
+   *   instanceUrl: "https://myinstance.awsapps.com/connect"
+   * });
+   * const proxy1 = new SiteProxy(provider1);
+   *
+   * // Second overload: instanceUrl as separate parameter
+   * const provider2 = new AmazonConnectProvider({});
+   * const proxy2 = new SiteProxy(provider2, "https://myinstance.awsapps.com/connect");
+   * ```
+   */
+  constructor(provider: AmazonConnectProvider<T & { instanceUrl: string }>);
+  constructor(provider: AmazonConnectProvider<T>, instanceUrl: string);
+  constructor(
+    provider:
+      | AmazonConnectProvider<T>
+      | AmazonConnectProvider<T & { instanceUrl: string }>,
+    instanceUrl?: string,
+  ) {
     super(provider);
+
+    if (instanceUrl !== undefined) {
+      // Two-parameter constructor: use the explicit instanceUrl parameter
+      this.instanceUrl = instanceUrl;
+    } else {
+      // Single-parameter constructor: get instanceUrl from config
+      this.instanceUrl = (
+        provider as AmazonConnectProvider<T & { instanceUrl: string }>
+      ).config.instanceUrl;
+    }
 
     this.postMessageHandler = this.listenForInitialMessage.bind(this);
 
@@ -113,14 +155,14 @@ export abstract class SiteProxy<
     let expectedOrigin: string;
 
     try {
-      expectedOrigin = new URL(this.provider.config.instanceUrl).origin;
+      expectedOrigin = new URL(this.instanceUrl).origin;
     } catch (error) {
       this.proxyLogger.error(
-        "Unable to parse expected origin from config. Cannot match",
+        "Unable to parse expected origin from instanceUrl. Cannot match",
         {
           error,
           eventOrigin,
-          configInstanceUrl: this.provider.config.instanceUrl,
+          instanceUrl: this.instanceUrl,
         },
         { duplicateMessageToConsole: true },
       );
