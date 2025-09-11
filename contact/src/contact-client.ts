@@ -11,7 +11,6 @@ import {
   ContactClearedHandler,
   ContactConnectedHandler,
   ContactDestroyedHandler,
-  ContactIncomingHandler,
   ContactMissedHandler,
   ContactStartingAcwHandler,
   ContactType,
@@ -193,19 +192,5 @@ export class ContactClient extends ConnectClient {
     return this.context.proxy.request(ContactRoutes.clear, {
       contactId,
     });
-  }
-
-  onIncoming(handler: ContactIncomingHandler, contactId?: string): void {
-    this.context.proxy.subscribe(
-      { key: ContactLifecycleTopicKey.Incoming, parameter: contactId },
-      handler,
-    );
-  }
-
-  offIncoming(handler: ContactIncomingHandler, contactId?: string): void {
-    this.context.proxy.unsubscribe(
-      { key: ContactLifecycleTopicKey.Incoming, parameter: contactId },
-      handler,
-    );
   }
 }

@@ -173,5 +173,3 @@ export type AddParticipantResult = {
 
 export type ContactCleared = BaseContactLifecycleEvent;
 export type ContactClearedHandler = SubscriptionHandler<ContactCleared>;
-export type ContactIncoming = BaseContactLifecycleEvent;
-export type ContactIncomingHandler = SubscriptionHandler<ContactIncoming>;

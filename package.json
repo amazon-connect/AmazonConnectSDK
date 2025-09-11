@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/sdk",
-  "version": "1.0.8-beta",
+  "version": "1.0.7",
   "description": "",
   "scripts": {
     "build": "npm run --ws build",

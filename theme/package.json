@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/theme",
-  "version": "1.0.8-beta",
+  "version": "1.0.7",
   "description": "Theme for apps functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
