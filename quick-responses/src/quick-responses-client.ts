@@ -1,4 +1,9 @@
-import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
+import {
+  ConnectClientConfig,
+  ConnectClientConfigDeprecated,
+  ConnectClientConfigOptional,
+  ConnectClientWithOptionalConfig,
+} from "@amazon-connect/core";
 
 import { quickResponsesNamespace } from "./quick-responses-namespace";
 import { QuickResponsesRoute } from "./routes";
@@ -8,8 +13,32 @@ import {
   SearchQuickResponsesResult,
 } from "./types";
 
-export class QuickResponsesClient extends ConnectClient {
-  constructor(config?: ConnectClientConfig) {
+export class QuickResponsesClient extends ConnectClientWithOptionalConfig {
+  /**
+   * Creates a new QuickResponsesClient instance with the specified configuration.
+   *
+   * @param config - The configuration for the client. Can be provided as:
+   *   - An AmazonConnectProvider instance directly: `new QuickResponsesClient(provider)`
+   *   - An object with provider: `new QuickResponsesClient({ provider })`
+   *
+   * @example
+   * ```typescript
+   * // Recommended: Pass provider directly
+   * const client = new QuickResponsesClient(provider);
+   *
+   * // Alternative: Pass as object
+   * const client = new QuickResponsesClient({ provider });
+   * ```
+   */
+  constructor(config: ConnectClientConfig);
+
+  /**
+   * @deprecated Calling QuickResponsesClient without AmazonConnectProvider is deprecated and will be removed in a future version.
+   * Please provide an AmazonConnectProvider instance: `new QuickResponsesClient(provider)`
+   */
+  constructor(config?: ConnectClientConfigDeprecated);
+
+  constructor(config: ConnectClientConfigOptional) {
     super(quickResponsesNamespace, config);
   }
 

@@ -1,4 +1,8 @@
 export type {
+  ComponentChannelDownstreamSender,
+  ComponentChannelUpstreamHandlerSetter,
+} from "./component-channel-types";
+export type {
   HealthCheckStatus,
   HealthCheckStatusChanged,
   HealthCheckStatusChangedHandler,
@@ -17,3 +21,7 @@ export type {
 } from "./proxy-connection";
 export type { ProxyFactory } from "./proxy-factory";
 export type { ProxySubjectStatus } from "./proxy-subject-status";
+export type {
+  AddChildChannelDirectParams,
+  AddChildChannelPortParams,
+} from "./proxy-types";

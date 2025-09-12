@@ -1,6 +1,8 @@
 import {
-  ConnectClient,
   ConnectClientConfig,
+  ConnectClientConfigDeprecated,
+  ConnectClientConfigOptional,
+  ConnectClientWithOptionalConfig,
   deepClone,
 } from "@amazon-connect/core";
 import { AppConfig } from "@amazon-connect/workspace-types";
@@ -11,8 +13,32 @@ import { AppControllerRoutes } from "./routes";
 import { AppFocusResult, LaunchAppRequest } from "./types";
 import { workspaceNamespace } from "./workspace-namespace";
 
-export class AppControllerClient extends ConnectClient {
-  constructor(config?: ConnectClientConfig) {
+export class AppControllerClient extends ConnectClientWithOptionalConfig {
+  /**
+   * Creates a new AppControllerClient instance with the specified configuration.
+   *
+   * @param config - The configuration for the client. Can be provided as:
+   *   - An AmazonConnectProvider instance directly: `new AppControllerClient(provider)`
+   *   - An object with provider: `new AppControllerClient({ provider })`
+   *
+   * @example
+   * ```typescript
+   * // Recommended: Pass provider directly
+   * const client = new AppControllerClient(provider);
+   *
+   * // Alternative: Pass as object
+   * const client = new AppControllerClient({ provider });
+   * ```
+   */
+  constructor(config: ConnectClientConfig);
+
+  /**
+   * @deprecated Calling AppControllerClient without AmazonConnectProvider is deprecated and will be removed in a future version.
+   * Please provide an AmazonConnectProvider instance: `new AppControllerClient(provider)`
+   */
+  constructor(config?: ConnectClientConfigDeprecated);
+
+  constructor(config: ConnectClientConfigOptional) {
     super(workspaceNamespace, config);
   }
 

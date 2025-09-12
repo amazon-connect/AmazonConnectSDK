@@ -1,5 +1,9 @@
 # CHANGELOG.md
 
+## 1.0.8
+### Updated
+- Updated `@amazon-connect/site-streams` to support ACGR functionality for `AmazonConnectStreams`
+
 ## 1.0.7
 ### Added
   - Initial release of `@amazon-connect/app-controller`, providing the ability to control applications in the workspace

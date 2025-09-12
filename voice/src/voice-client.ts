@@ -1,4 +1,9 @@
-import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
+import {
+  ConnectClientConfig,
+  ConnectClientConfigDeprecated,
+  ConnectClientConfigOptional,
+  ConnectClientWithOptionalConfig,
+} from "@amazon-connect/core";
 
 import { voiceNamespace } from "./namespace";
 import { VoiceRoutes } from "./routes";
@@ -8,8 +13,32 @@ import {
   DialableCountry,
 } from "./types";
 
-export class VoiceClient extends ConnectClient {
-  constructor(config?: ConnectClientConfig) {
+export class VoiceClient extends ConnectClientWithOptionalConfig {
+  /**
+   * Creates a new VoiceClient instance with the specified configuration.
+   *
+   * @param config - The configuration for the client. Can be provided as:
+   *   - An AmazonConnectProvider instance directly: `new VoiceClient(provider)`
+   *   - An object with provider: `new VoiceClient({ provider })`
+   *
+   * @example
+   * ```typescript
+   * // Recommended: Pass provider directly
+   * const client = new VoiceClient(provider);
+   *
+   * // Alternative: Pass as object
+   * const client = new VoiceClient({ provider });
+   * ```
+   */
+  constructor(config: ConnectClientConfig);
+
+  /**
+   * @deprecated Calling VoiceClient without AmazonConnectProvider is deprecated and will be removed in a future version.
+   * Please provide an AmazonConnectProvider instance: `new VoiceClient(provider)`
+   */
+  constructor(config?: ConnectClientConfigDeprecated);
+
+  constructor(config: ConnectClientConfigOptional) {
     super(voiceNamespace, config);
   }
   /**

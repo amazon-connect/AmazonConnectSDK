@@ -1,4 +1,9 @@
-import { ConnectClient, ConnectClientConfig } from "@amazon-connect/core";
+import {
+  ConnectClientConfig,
+  ConnectClientConfigDeprecated,
+  ConnectClientConfigOptional,
+  ConnectClientWithOptionalConfig,
+} from "@amazon-connect/core";
 
 import { contactNamespace } from "./namespace";
 import { AgentRoutes } from "./routes";
@@ -14,8 +19,32 @@ import {
   SetAvailabilityStateResult,
 } from "./types";
 
-export class AgentClient extends ConnectClient {
-  constructor(config?: ConnectClientConfig) {
+export class AgentClient extends ConnectClientWithOptionalConfig {
+  /**
+   * Creates a new AgentClient instance with the specified configuration.
+   *
+   * @param config - The configuration for the client. Can be provided as:
+   *   - An AmazonConnectProvider instance directly: `new AgentClient(provider)`
+   *   - An object with provider: `new AgentClient({ provider })`
+   *
+   * @example
+   * ```typescript
+   * // Recommended: Pass provider directly
+   * const client = new AgentClient(provider);
+   *
+   * // Alternative: Pass as object
+   * const client = new AgentClient({ provider });
+   * ```
+   */
+  constructor(config: ConnectClientConfig);
+
+  /**
+   * @deprecated Calling AgentClient without AmazonConnectProvider is deprecated and will be removed in a future version.
+   * Please provide an AmazonConnectProvider instance: `new AgentClient(provider)`
+   */
+  constructor(config?: ConnectClientConfigDeprecated);
+
+  constructor(config: ConnectClientConfigOptional) {
     super(contactNamespace, config);
   }
 

@@ -33,83 +33,190 @@ beforeEach(() => {
 });
 
 describe("addChannel", () => {
-  test("should setup message port with started handler", () => {
-    mockMessagePort.addEventListener.mockImplementationOnce(() => {
-      expect(mockMessagePort.start).not.toBeCalled();
-    });
-    const testUpstreamMessage = mock<ChildConnectionEnabledUpstreamMessage>();
+  describe("iframe type", () => {
+    test("should setup message port with started handler", () => {
+      mockMessagePort.addEventListener.mockImplementationOnce(() => {
+        expect(mockMessagePort.start).not.toBeCalled();
+      });
+      const testUpstreamMessage = mock<ChildConnectionEnabledUpstreamMessage>();
 
-    sut.addChannel({
-      connectionId: testConnectionId,
-      port: mockMessagePort,
-      providerId: testProviderId,
+      sut.addChannel({
+        type: "iframe",
+        connectionId: testConnectionId,
+        port: mockMessagePort,
+        providerId: testProviderId,
+      });
+
+      expect(mockMessagePort.addEventListener).toBeCalledWith(
+        "message",
+        expect.any(Function),
+      );
+      expect(mockMessagePort.start).toBeCalled();
+      relayChildUpstreamMessageMock.mockReset();
+      const messageHandler = mockMessagePort.addEventListener.mock
+        .calls[0][1] as (message: MessageEvent<unknown>) => void;
+      messageHandler({ data: testUpstreamMessage } as MessageEvent<unknown>);
+      expect(relayChildUpstreamMessageMock).toBeCalledWith({
+        type: "childUpstream",
+        sourceProviderId: testProviderId,
+        parentProviderId: testSourceProviderId,
+        connectionId: testConnectionId,
+        message: testUpstreamMessage,
+      });
     });
 
-    expect(mockMessagePort.addEventListener).toBeCalledWith(
-      "message",
-      expect.any(Function),
-    );
-    expect(mockMessagePort.start).toBeCalled();
-    relayChildUpstreamMessageMock.mockReset();
-    const messageHandler = mockMessagePort.addEventListener.mock
-      .calls[0][1] as (message: MessageEvent<unknown>) => void;
-    messageHandler({ data: testUpstreamMessage } as MessageEvent<unknown>);
-    expect(relayChildUpstreamMessageMock).toBeCalledWith({
-      type: "childUpstream",
-      sourceProviderId: testProviderId,
-      parentProviderId: testSourceProviderId,
-      connectionId: testConnectionId,
-      message: testUpstreamMessage,
+    test("should set the connection on the map", () => {
+      sut.addChannel({
+        type: "iframe",
+        connectionId: testConnectionId,
+        port: mockMessagePort,
+        providerId: testProviderId,
+      });
+
+      const mapItem = sut["channels"].get(testConnectionId)!;
+
+      expect(mapItem).toBeDefined();
+      expect(mapItem.type).toEqual("iframe");
+      expect(mapItem.providerId).toEqual(testProviderId);
+      if (mapItem.type === "iframe") {
+        expect(mapItem.port).toEqual(mockMessagePort);
+        expect(mapItem.handler).toEqual(
+          mockMessagePort.addEventListener.mock.calls[0][1],
+        );
+      }
+    });
+
+    test("should send connection ready message after message is setup", () => {
+      mockMessagePort.addEventListener.mockImplementationOnce(() => {
+        expect(relayChildUpstreamMessageMock).not.toBeCalled();
+      });
+
+      sut.addChannel({
+        type: "iframe",
+        connectionId: testConnectionId,
+        port: mockMessagePort,
+        providerId: testProviderId,
+      });
+
+      expect(mockMessagePort.addEventListener).toBeCalled();
+      expect(relayChildUpstreamMessageMock).toBeCalledWith({
+        type: "childUpstream",
+        sourceProviderId: testProviderId,
+        parentProviderId: testSourceProviderId,
+        connectionId: testConnectionId,
+        message: {
+          type: "childConnectionReady",
+        },
+      });
+      expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
+        connectionId: testConnectionId,
+        type: "iframe",
+      });
+      expect(loggerMock.error).not.toBeCalled();
     });
   });
 
-  test("should set the connection on the map", () => {
-    sut.addChannel({
-      connectionId: testConnectionId,
-      port: mockMessagePort,
-      providerId: testProviderId,
+  describe("component type", () => {
+    const mockSendDownstreamMessage = jest.fn();
+    const mockSetUpstreamMessageHandler = jest.fn();
+
+    beforeEach(() => {
+      mockSendDownstreamMessage.mockReset();
+      mockSetUpstreamMessageHandler.mockReset();
     });
 
-    const mapItem = sut["messagePorts"].get(testConnectionId)!;
+    test("should setup component channel with upstream handler", () => {
+      const testUpstreamMessage = mock<ChildConnectionEnabledUpstreamMessage>();
 
-    expect(mapItem).toBeDefined();
-    expect(mapItem.port).toEqual(mockMessagePort);
-    expect(mapItem.providerId).toEqual(testProviderId);
-    expect(mapItem.handler).toEqual(
-      mockMessagePort.addEventListener.mock.calls[0][1],
-    );
-  });
+      sut.addChannel({
+        type: "component",
+        connectionId: testConnectionId,
+        providerId: testProviderId,
+        sendDownstreamMessage: mockSendDownstreamMessage,
+        setUpstreamMessageHandler: mockSetUpstreamMessageHandler,
+      });
 
-  test("should send connection ready message after message is setup", () => {
-    mockMessagePort.addEventListener.mockImplementationOnce(() => {
-      expect(relayChildUpstreamMessageMock).not.toBeCalled();
+      expect(mockSetUpstreamMessageHandler).toBeCalledWith(
+        expect.any(Function),
+      );
+
+      relayChildUpstreamMessageMock.mockReset();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const upstreamHandler =
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        mockSetUpstreamMessageHandler.mock.calls[0]?.[0] as (
+          message: ChildConnectionEnabledUpstreamMessage,
+        ) => void;
+      upstreamHandler(testUpstreamMessage);
+
+      expect(relayChildUpstreamMessageMock).toBeCalledWith({
+        type: "childUpstream",
+        sourceProviderId: testProviderId,
+        parentProviderId: testSourceProviderId,
+        connectionId: testConnectionId,
+        message: testUpstreamMessage,
+      });
     });
 
-    sut.addChannel({
-      connectionId: testConnectionId,
-      port: mockMessagePort,
-      providerId: testProviderId,
+    test("should set the connection on the map", () => {
+      sut.addChannel({
+        type: "component",
+        connectionId: testConnectionId,
+        providerId: testProviderId,
+        sendDownstreamMessage: mockSendDownstreamMessage,
+        setUpstreamMessageHandler: mockSetUpstreamMessageHandler,
+      });
+
+      const mapItem = sut["channels"].get(testConnectionId)!;
+
+      expect(mapItem).toBeDefined();
+      expect(mapItem.type).toEqual("component");
+      expect(mapItem.providerId).toEqual(testProviderId);
+      if (mapItem.type === "component") {
+        expect(mapItem.sendDownstreamMessage).toEqual(
+          mockSendDownstreamMessage,
+        );
+        expect(mapItem.setUpstreamMessageHandler).toEqual(
+          mockSetUpstreamMessageHandler,
+        );
+      }
     });
 
-    expect(mockMessagePort.addEventListener).toBeCalled();
-    expect(relayChildUpstreamMessageMock).toBeCalledWith({
-      type: "childUpstream",
-      sourceProviderId: testProviderId,
-      parentProviderId: testSourceProviderId,
-      connectionId: testConnectionId,
-      message: {
-        type: "childConnectionReady",
-      },
+    test("should send connection ready message after setup", () => {
+      mockSetUpstreamMessageHandler.mockImplementationOnce(() => {
+        expect(relayChildUpstreamMessageMock).not.toBeCalled();
+      });
+
+      sut.addChannel({
+        type: "component",
+        connectionId: testConnectionId,
+        providerId: testProviderId,
+        sendDownstreamMessage: mockSendDownstreamMessage,
+        setUpstreamMessageHandler: mockSetUpstreamMessageHandler,
+      });
+
+      expect(mockSetUpstreamMessageHandler).toBeCalled();
+      expect(relayChildUpstreamMessageMock).toBeCalledWith({
+        type: "childUpstream",
+        sourceProviderId: testProviderId,
+        parentProviderId: testSourceProviderId,
+        connectionId: testConnectionId,
+        message: {
+          type: "childConnectionReady",
+        },
+      });
+      expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
+        connectionId: testConnectionId,
+        type: "component",
+      });
+      expect(loggerMock.error).not.toBeCalled();
     });
-    expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
-      connectionId: testConnectionId,
-    });
-    expect(loggerMock.error).not.toBeCalled();
   });
 
   describe("when the port is already added", () => {
     beforeEach(() => {
       sut.addChannel({
+        type: "iframe",
         connectionId: testConnectionId,
         port: mockMessagePort,
         providerId: testProviderId,
@@ -120,6 +227,7 @@ describe("addChannel", () => {
       beforeEach(() => {
         relayChildUpstreamMessageMock.mockReset();
         sut.addChannel({
+          type: "iframe",
           connectionId: testConnectionId,
           port: mock<MessagePort>(),
           providerId: "other-provider-id",
@@ -137,12 +245,12 @@ describe("addChannel", () => {
       });
 
       test("should not change existing message port", () => {
-        expect(sut["messagePorts"].get(testConnectionId)?.port).toEqual(
-          mockMessagePort,
-        );
-        expect(sut["messagePorts"].get(testConnectionId)?.providerId).toEqual(
-          testProviderId,
-        );
+        const channelData = sut["channels"].get(testConnectionId);
+        expect(channelData).toBeDefined();
+        if (channelData && channelData.type === "iframe") {
+          expect(channelData.port).toEqual(mockMessagePort);
+          expect(channelData.providerId).toEqual(testProviderId);
+        }
       });
     });
   });
@@ -154,6 +262,7 @@ describe("updateChannelPort", () => {
 
     beforeEach(() => {
       sut.addChannel({
+        type: "iframe",
         connectionId: testConnectionId,
         port: originalMessagePort,
         providerId: "original-provider-id",
@@ -209,14 +318,17 @@ describe("updateChannelPort", () => {
         providerId: testProviderId,
       });
 
-      const mapItem = sut["messagePorts"].get(testConnectionId)!;
+      const mapItem = sut["channels"].get(testConnectionId)!;
 
       expect(mapItem).toBeDefined();
-      expect(mapItem.port).toEqual(mockMessagePort);
+      expect(mapItem.type).toEqual("iframe");
       expect(mapItem.providerId).toEqual(testProviderId);
-      expect(mapItem.handler).toEqual(
-        mockMessagePort.addEventListener.mock.calls[0][1],
-      );
+      if (mapItem.type === "iframe") {
+        expect(mapItem.port).toEqual(mockMessagePort);
+        expect(mapItem.handler).toEqual(
+          mockMessagePort.addEventListener.mock.calls[0][1],
+        );
+      }
     });
 
     test("should send connection ready message after message is setup", () => {
@@ -242,8 +354,39 @@ describe("updateChannelPort", () => {
       });
       expect(loggerMock.debug).toHaveBeenCalledWith(expect.any(String), {
         connectionId: testConnectionId,
+        type: "iframe",
       });
+
       expect(loggerMock.error).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when attempting to update a component channel connection", () => {
+    const mockSendDownstreamMessage = jest.fn();
+    const mockSetUpstreamMessageHandler = jest.fn();
+
+    beforeEach(() => {
+      sut.addChannel({
+        type: "component",
+        connectionId: testConnectionId,
+        providerId: "original-provider-id",
+        sendDownstreamMessage: mockSendDownstreamMessage,
+        setUpstreamMessageHandler: mockSetUpstreamMessageHandler,
+      });
+      relayChildUpstreamMessageMock.mockReset();
+    });
+
+    test("should log error and not update", () => {
+      sut.updateChannelPort({
+        connectionId: testConnectionId,
+        port: mockMessagePort,
+        providerId: testProviderId,
+      });
+
+      expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
+        connectionId: testConnectionId,
+      });
+      expect(relayChildUpstreamMessageMock).not.toHaveBeenCalled();
     });
   });
 
@@ -273,7 +416,7 @@ describe("updateChannelPort", () => {
     });
 
     test("should not set message port", () => {
-      expect(sut["messagePorts"].get(testConnectionId)).toBeUndefined();
+      expect(sut["channels"].get(testConnectionId)).toBeUndefined();
     });
   });
 });
@@ -304,9 +447,10 @@ describe("handleDownstreamMessage", () => {
   });
 
   describe("when the connectionId does exist", () => {
-    describe("when the providerId is defined", () => {
+    describe("iframe channel", () => {
       beforeEach(() => {
         sut.addChannel({
+          type: "iframe",
           connectionId: testConnectionId,
           port: mockMessagePort,
           providerId: testProviderId,
@@ -361,15 +505,49 @@ describe("handleDownstreamMessage", () => {
           expect(mockMessagePort.postMessage).toBeCalledWith(innerMessage);
         });
       });
+
+      describe("when the providerId is not defined (older version of SDK)", () => {
+        test("should post the message", () => {
+          sut.addChannel({
+            type: "iframe",
+            connectionId: "test-2",
+            port: mockMessagePort,
+            providerId: undefined as unknown as string,
+          });
+          const innerMessage = mock<ChildConnectionEnabledDownstreamMessage>();
+          const message = {
+            connectionId: "test-2",
+            message: innerMessage,
+            targetProviderId: testProviderId,
+            type: "childDownstreamMessage",
+          } as ChildDownstreamMessage;
+
+          sut.handleDownstreamMessage(message);
+
+          expect(loggerMock.warn).not.toBeCalled();
+          expect(loggerMock.error).not.toBeCalled();
+          expect(sanitizeDownstreamMessage).not.toBeCalled();
+          expect(mockMessagePort.postMessage).toBeCalledWith(innerMessage);
+        });
+      });
     });
 
-    describe("when the providerId is not defined (older version of SDK)", () => {
-      test("should post the message", () => {
+    describe("component channel", () => {
+      const mockSendDownstreamMessage = jest.fn();
+      const mockSetUpstreamMessageHandler = jest.fn();
+
+      beforeEach(() => {
+        mockSendDownstreamMessage.mockReset();
         sut.addChannel({
+          type: "component",
           connectionId: testConnectionId,
-          port: mockMessagePort,
-          providerId: undefined as unknown as string,
+          providerId: testProviderId,
+          sendDownstreamMessage: mockSendDownstreamMessage,
+          setUpstreamMessageHandler: mockSetUpstreamMessageHandler,
         });
+      });
+
+      test("should send message via component function", () => {
         const innerMessage = mock<ChildConnectionEnabledDownstreamMessage>();
         const message = {
           connectionId: testConnectionId,
@@ -383,58 +561,94 @@ describe("handleDownstreamMessage", () => {
         expect(loggerMock.warn).not.toBeCalled();
         expect(loggerMock.error).not.toBeCalled();
         expect(sanitizeDownstreamMessage).not.toBeCalled();
-        expect(mockMessagePort.postMessage).toBeCalledWith(innerMessage);
+        expect(mockSendDownstreamMessage).toBeCalledWith(innerMessage);
+        expect(mockMessagePort.postMessage).not.toBeCalled();
       });
     });
   });
 });
 
 describe("handleCloseMessage", () => {
-  beforeEach(() => {
-    sut.addChannel({
-      connectionId: testConnectionId,
-      port: mockMessagePort,
-      providerId: testProviderId,
+  describe("iframe channel", () => {
+    beforeEach(() => {
+      sut.addChannel({
+        type: "iframe",
+        connectionId: testConnectionId,
+        port: mockMessagePort,
+        providerId: testProviderId,
+      });
+      loggerMock.debug.mockReset();
     });
-    loggerMock.debug.mockReset();
+
+    test("should warn and take no action when connectionId is not found", () => {
+      const unknownConnectionId = "unknown-1";
+      const closeMessage = mock<ChildConnectionCloseMessage>({
+        connectionId: unknownConnectionId,
+      });
+
+      sut.handleCloseMessage(closeMessage);
+
+      expect(loggerMock.warn).toBeCalledWith(expect.any(String), {
+        connectionId: unknownConnectionId,
+      });
+      expect(sut["channels"].size).toEqual(1);
+      expect(loggerMock.debug).not.toBeCalled();
+    });
+
+    test("should message and close port", () => {
+      const closeMessage = mock<ChildConnectionCloseMessage>({
+        connectionId: testConnectionId,
+      });
+      mockMessagePort.removeEventListener.mockImplementation(() => {
+        expect(mockMessagePort.close).not.toBeCalled();
+      });
+      const messageHandler = mockMessagePort.addEventListener.mock
+        .calls[0][1] as (message: MessageEvent<unknown>) => void;
+
+      sut.handleCloseMessage(closeMessage);
+
+      expect(mockMessagePort.removeEventListener).toBeCalledWith(
+        "message",
+        messageHandler,
+      );
+      expect(mockMessagePort.close).toBeCalled();
+      expect(sut["channels"].size).toEqual(0);
+      expect(loggerMock.warn).not.toBeCalled();
+      expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
+        connectionId: testConnectionId,
+        type: "iframe",
+      });
+    });
   });
 
-  test("should warn and take no action when connectionId is not found", () => {
-    const unknownConnectionId = "unknown-1";
-    const closeMessage = mock<ChildConnectionCloseMessage>({
-      connectionId: unknownConnectionId,
+  describe("component channel", () => {
+    const mockSendDownstreamMessage = jest.fn();
+    const mockSetUpstreamMessageHandler = jest.fn();
+
+    beforeEach(() => {
+      sut.addChannel({
+        type: "component",
+        connectionId: testConnectionId,
+        providerId: testProviderId,
+        sendDownstreamMessage: mockSendDownstreamMessage,
+        setUpstreamMessageHandler: mockSetUpstreamMessageHandler,
+      });
+      loggerMock.debug.mockReset();
     });
 
-    sut.handleCloseMessage(closeMessage);
+    test("should remove channel without port cleanup", () => {
+      const closeMessage = mock<ChildConnectionCloseMessage>({
+        connectionId: testConnectionId,
+      });
 
-    expect(loggerMock.warn).toBeCalledWith(expect.any(String), {
-      connectionId: unknownConnectionId,
-    });
-    expect(sut["messagePorts"].size).toEqual(1);
-    expect(loggerMock.debug).not.toBeCalled();
-  });
+      sut.handleCloseMessage(closeMessage);
 
-  test("should message and close port", () => {
-    const closeMessage = mock<ChildConnectionCloseMessage>({
-      connectionId: testConnectionId,
-    });
-    mockMessagePort.removeEventListener.mockImplementation(() => {
-      expect(mockMessagePort.close).not.toBeCalled();
-    });
-    const messageHandler = mockMessagePort.addEventListener.mock
-      .calls[0][1] as (message: MessageEvent<unknown>) => void;
-
-    sut.handleCloseMessage(closeMessage);
-
-    expect(mockMessagePort.removeEventListener).toBeCalledWith(
-      "message",
-      messageHandler,
-    );
-    expect(mockMessagePort.close).toBeCalled();
-    expect(sut["messagePorts"].size).toEqual(0);
-    expect(loggerMock.warn).not.toBeCalled();
-    expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
-      connectionId: testConnectionId,
+      expect(sut["channels"].size).toEqual(0);
+      expect(loggerMock.warn).not.toBeCalled();
+      expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
+        connectionId: testConnectionId,
+        type: "component",
+      });
     });
   });
 });

@@ -37,11 +37,7 @@ import {
 import { ProxyMetricData, Unit } from "../metric";
 import { AmazonConnectProvider } from "../provider";
 import { createRequestMessage, RequestManager } from "../request";
-import {
-  AddChannelParams,
-  ChannelManager,
-  UpdateChannelPortParams,
-} from "./channel-manager";
+import { ChannelManager, UpdateChannelPortParams } from "./channel-manager";
 import { ErrorService } from "./error";
 import {
   HealthCheckManager,
@@ -54,6 +50,7 @@ import {
   ProxyConnectionStatus,
   ProxyConnectionStatusManager,
 } from "./proxy-connection";
+import type { AddChildChannelPortParams } from "./proxy-types";
 
 jest.mock("../utility/id-generator");
 jest.mock("../logging/connect-logger");
@@ -161,6 +158,10 @@ class TestProxy extends Proxy {
 
   resetConnection(reason: string): void {
     super.resetConnection(reason);
+  }
+
+  unsubscribeAllHandlers(): void {
+    super.unsubscribeAllHandlers();
   }
 }
 
@@ -1215,19 +1216,79 @@ describe("when handling a downstream message", () => {
 });
 
 describe("addChildChannel", () => {
-  test("should add channel to channel manager", () => {
+  test("should add channel to channel manager (deprecated method)", () => {
     const sut = new TestProxy();
     const channelManagerMock = mocked(ChannelManager).mock.instances[0];
-    const params = mock<AddChannelParams>();
+    const params: AddChildChannelPortParams = {
+      connectionId: "test-connection",
+      port: mock<MessagePort>(),
+      providerId: "test-provider",
+    };
 
     sut.addChildChannel(params);
 
-    expect(channelManagerMock.addChannel).toBeCalledWith(params);
+    expect(channelManagerMock.addChannel).toBeCalledWith({
+      ...params,
+      type: "iframe",
+    });
+  });
+});
+
+describe("addChildIframeChannel", () => {
+  test("should add iframe channel to channel manager", () => {
+    const sut = new TestProxy();
+    const channelManagerMock = mocked(ChannelManager).mock.instances[0];
+    const params = {
+      connectionId: "test-connection",
+      port: mock<MessagePort>(),
+      providerId: "test-provider",
+    };
+
+    sut.addChildIframeChannel(params);
+
+    expect(channelManagerMock.addChannel).toBeCalledWith({
+      ...params,
+      type: "iframe",
+    });
+  });
+});
+
+describe("addChildComponentChannel", () => {
+  test("should add component channel to channel manager", () => {
+    const sut = new TestProxy();
+    const channelManagerMock = mocked(ChannelManager).mock.instances[0];
+    const mockSendDownstream = jest.fn();
+    const mockSetUpstreamHandler = jest.fn();
+    const params = {
+      connectionId: "test-connection",
+      providerId: "test-provider",
+      sendDownstreamMessage: mockSendDownstream,
+      setUpstreamMessageHandler: mockSetUpstreamHandler,
+    };
+
+    sut.addChildComponentChannel(params);
+
+    expect(channelManagerMock.addChannel).toBeCalledWith({
+      ...params,
+      type: "component",
+    });
+  });
+});
+
+describe("updateChildIframeChannelPort", () => {
+  test("should update iframe channel port on channel manager", () => {
+    const sut = new TestProxy();
+    const channelManagerMock = mocked(ChannelManager).mock.instances[0];
+    const params = mock<UpdateChannelPortParams>();
+
+    sut.updateChildIframeChannelPort(params);
+
+    expect(channelManagerMock.updateChannelPort).toHaveBeenCalledWith(params);
   });
 });
 
 describe("updateChildChannelPort", () => {
-  test("should update channel port on channel manager", () => {
+  test("should update channel port on channel manager (deprecated method)", () => {
     const sut = new TestProxy();
     const channelManagerMock = mocked(ChannelManager).mock.instances[0];
     const params = mock<UpdateChannelPortParams>();
@@ -1451,5 +1512,62 @@ describe("resetConnection", () => {
       ...topicHandler2,
       messageOrigin: testOrigin,
     });
+  });
+});
+
+describe("unsubscribeAllHandlers", () => {
+  let sut: TestProxy;
+  let mockSubscriptionMgr: MockedObject<SubscriptionManager>;
+  const topicHandler1: SubscriptionTopicHandlerIdItem = {
+    topic: mock<SubscriptionTopic>(),
+    handlerId: "handler-1",
+  };
+  const topicHandler2: SubscriptionTopicHandlerIdItem = {
+    topic: mock<SubscriptionTopic>(),
+    handlerId: "handler-2",
+  };
+
+  beforeEach(() => {
+    sut = TestProxy.getReadyTestProxy();
+    mockSubscriptionMgr = SubscriptionManagerMock.mock.instances[0];
+  });
+  test("should send unsubscribe to all handlers", () => {
+    mockSubscriptionMgr.getAllSubscriptionHandlerIds.mockReturnValueOnce([
+      topicHandler1,
+      topicHandler2,
+    ]);
+
+    sut.unsubscribeAllHandlers();
+    sut.mockPushAcknowledgeMessage();
+
+    expect(sut.upstreamMessagesSent).toHaveLength(2);
+    expect(sut.upstreamMessagesSent).toContainEqual({
+      type: "unsubscribe",
+      topic: topicHandler1.topic,
+      messageOrigin: testOrigin,
+    });
+    expect(sut.upstreamMessagesSent).toContainEqual({
+      type: "unsubscribe",
+      topic: topicHandler2.topic,
+      messageOrigin: testOrigin,
+    });
+  });
+
+  test("should handle case when no subscription handler ids exist", () => {
+    mockSubscriptionMgr.getAllSubscriptionHandlerIds.mockReturnValueOnce(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      undefined as any,
+    );
+    const [logger] = LoggerMock.mock.instances;
+
+    sut.unsubscribeAllHandlers();
+
+    expect(sut.upstreamMessagesSent).toHaveLength(0);
+    expect(logger.info).toHaveBeenCalledWith(
+      "Unsubscribing all handlers from proxy",
+      {
+        subscriptionHandlerCount: -1,
+      },
+    );
   });
 });

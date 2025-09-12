@@ -4,7 +4,12 @@ export type {
   AmazonConnectErrorHandler,
 } from "./amazon-connect-error";
 export type { AmazonConnectNamespace } from "./amazon-connect-namespace";
-export { ConnectClient, ConnectClientConfig } from "./client";
+export type {
+  ConnectClientConfig,
+  ConnectClientConfigDeprecated,
+  ConnectClientConfigOptional,
+} from "./client";
+export { ConnectClient, ConnectClientWithOptionalConfig } from "./client";
 export { Context, ModuleContext } from "./context";
 export { ConnectError, isConnectError } from "./error";
 export * from "./logging";
@@ -47,9 +52,14 @@ export {
   AmazonConnectProvider,
   AmazonConnectProviderBase,
   getGlobalProvider,
+  isAmazonConnectProvider,
   resetGlobalProvider,
 } from "./provider";
 export type {
+  AddChildChannelDirectParams,
+  AddChildChannelPortParams,
+  ComponentChannelDownstreamSender,
+  ComponentChannelUpstreamHandlerSetter,
   HealthCheckStatus,
   HealthCheckStatusChanged,
   HealthCheckStatusChangedHandler,
