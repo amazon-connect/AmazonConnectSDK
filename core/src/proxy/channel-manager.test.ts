@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { mocked, MockedObject } from "jest-mock";
 import { mock } from "jest-mock-extended";
 
@@ -36,7 +35,7 @@ describe("addChannel", () => {
   describe("iframe type", () => {
     test("should setup message port with started handler", () => {
       mockMessagePort.addEventListener.mockImplementationOnce(() => {
-        expect(mockMessagePort.start).not.toBeCalled();
+        expect(mockMessagePort.start).not.toHaveBeenCalled();
       });
       const testUpstreamMessage = mock<ChildConnectionEnabledUpstreamMessage>();
 
@@ -47,16 +46,16 @@ describe("addChannel", () => {
         providerId: testProviderId,
       });
 
-      expect(mockMessagePort.addEventListener).toBeCalledWith(
+      expect(mockMessagePort.addEventListener).toHaveBeenCalledWith(
         "message",
         expect.any(Function),
       );
-      expect(mockMessagePort.start).toBeCalled();
+      expect(mockMessagePort.start).toHaveBeenCalled();
       relayChildUpstreamMessageMock.mockReset();
       const messageHandler = mockMessagePort.addEventListener.mock
         .calls[0][1] as (message: MessageEvent<unknown>) => void;
       messageHandler({ data: testUpstreamMessage } as MessageEvent<unknown>);
-      expect(relayChildUpstreamMessageMock).toBeCalledWith({
+      expect(relayChildUpstreamMessageMock).toHaveBeenCalledWith({
         type: "childUpstream",
         sourceProviderId: testProviderId,
         parentProviderId: testSourceProviderId,
@@ -88,7 +87,7 @@ describe("addChannel", () => {
 
     test("should send connection ready message after message is setup", () => {
       mockMessagePort.addEventListener.mockImplementationOnce(() => {
-        expect(relayChildUpstreamMessageMock).not.toBeCalled();
+        expect(relayChildUpstreamMessageMock).not.toHaveBeenCalled();
       });
 
       sut.addChannel({
@@ -98,8 +97,8 @@ describe("addChannel", () => {
         providerId: testProviderId,
       });
 
-      expect(mockMessagePort.addEventListener).toBeCalled();
-      expect(relayChildUpstreamMessageMock).toBeCalledWith({
+      expect(mockMessagePort.addEventListener).toHaveBeenCalled();
+      expect(relayChildUpstreamMessageMock).toHaveBeenCalledWith({
         type: "childUpstream",
         sourceProviderId: testProviderId,
         parentProviderId: testSourceProviderId,
@@ -108,11 +107,11 @@ describe("addChannel", () => {
           type: "childConnectionReady",
         },
       });
-      expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.debug).toHaveBeenCalledWith(expect.any(String), {
         connectionId: testConnectionId,
         type: "iframe",
       });
-      expect(loggerMock.error).not.toBeCalled();
+      expect(loggerMock.error).not.toHaveBeenCalled();
     });
   });
 
@@ -136,12 +135,12 @@ describe("addChannel", () => {
         setUpstreamMessageHandler: mockSetUpstreamMessageHandler,
       });
 
-      expect(mockSetUpstreamMessageHandler).toBeCalledWith(
+      expect(mockSetUpstreamMessageHandler).toHaveBeenCalledWith(
         expect.any(Function),
       );
 
       relayChildUpstreamMessageMock.mockReset();
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+       
       const upstreamHandler =
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         mockSetUpstreamMessageHandler.mock.calls[0]?.[0] as (
@@ -149,7 +148,7 @@ describe("addChannel", () => {
         ) => void;
       upstreamHandler(testUpstreamMessage);
 
-      expect(relayChildUpstreamMessageMock).toBeCalledWith({
+      expect(relayChildUpstreamMessageMock).toHaveBeenCalledWith({
         type: "childUpstream",
         sourceProviderId: testProviderId,
         parentProviderId: testSourceProviderId,
@@ -184,7 +183,7 @@ describe("addChannel", () => {
 
     test("should send connection ready message after setup", () => {
       mockSetUpstreamMessageHandler.mockImplementationOnce(() => {
-        expect(relayChildUpstreamMessageMock).not.toBeCalled();
+        expect(relayChildUpstreamMessageMock).not.toHaveBeenCalled();
       });
 
       sut.addChannel({
@@ -195,8 +194,8 @@ describe("addChannel", () => {
         setUpstreamMessageHandler: mockSetUpstreamMessageHandler,
       });
 
-      expect(mockSetUpstreamMessageHandler).toBeCalled();
-      expect(relayChildUpstreamMessageMock).toBeCalledWith({
+      expect(mockSetUpstreamMessageHandler).toHaveBeenCalled();
+      expect(relayChildUpstreamMessageMock).toHaveBeenCalledWith({
         type: "childUpstream",
         sourceProviderId: testProviderId,
         parentProviderId: testSourceProviderId,
@@ -205,11 +204,11 @@ describe("addChannel", () => {
           type: "childConnectionReady",
         },
       });
-      expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.debug).toHaveBeenCalledWith(expect.any(String), {
         connectionId: testConnectionId,
         type: "component",
       });
-      expect(loggerMock.error).not.toBeCalled();
+      expect(loggerMock.error).not.toHaveBeenCalled();
     });
   });
 
@@ -235,13 +234,13 @@ describe("addChannel", () => {
       });
 
       test("should log error", () => {
-        expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+        expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
           connectionId: testConnectionId,
         });
       });
 
       test("should not send child connection ready message", () => {
-        expect(relayChildUpstreamMessageMock).not.toBeCalled();
+        expect(relayChildUpstreamMessageMock).not.toHaveBeenCalled();
       });
 
       test("should not change existing message port", () => {
@@ -436,13 +435,13 @@ describe("handleDownstreamMessage", () => {
 
       sut.handleDownstreamMessage(message);
 
-      expect(loggerMock.warn).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.warn).toHaveBeenCalledWith(expect.any(String), {
         connectionId: testConnectionId,
         message: sanitizedMessage,
       });
-      expect(loggerMock.error).not.toBeCalled();
-      expect(sanitizeDownstreamMessage).toBeCalledWith(innerMessage);
-      expect(mockMessagePort.postMessage).not.toBeCalled();
+      expect(loggerMock.error).not.toHaveBeenCalled();
+      expect(sanitizeDownstreamMessage).toHaveBeenCalledWith(innerMessage);
+      expect(mockMessagePort.postMessage).not.toHaveBeenCalled();
     });
   });
 
@@ -475,15 +474,15 @@ describe("handleDownstreamMessage", () => {
 
           sut.handleDownstreamMessage(message);
 
-          expect(loggerMock.warn).not.toBeCalled();
-          expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+          expect(loggerMock.warn).not.toHaveBeenCalled();
+          expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
             connectionId: testConnectionId,
             message: sanitizedMessage,
             targetProviderId: mismatchProviderId,
             actualProviderId: testProviderId,
           });
-          expect(sanitizeDownstreamMessage).toBeCalledWith(innerMessage);
-          expect(mockMessagePort.postMessage).not.toBeCalled();
+          expect(sanitizeDownstreamMessage).toHaveBeenCalledWith(innerMessage);
+          expect(mockMessagePort.postMessage).not.toHaveBeenCalled();
         });
       });
 
@@ -499,10 +498,12 @@ describe("handleDownstreamMessage", () => {
 
           sut.handleDownstreamMessage(message);
 
-          expect(loggerMock.warn).not.toBeCalled();
-          expect(loggerMock.error).not.toBeCalled();
-          expect(sanitizeDownstreamMessage).not.toBeCalled();
-          expect(mockMessagePort.postMessage).toBeCalledWith(innerMessage);
+          expect(loggerMock.warn).not.toHaveBeenCalled();
+          expect(loggerMock.error).not.toHaveBeenCalled();
+          expect(sanitizeDownstreamMessage).not.toHaveBeenCalled();
+          expect(mockMessagePort.postMessage).toHaveBeenCalledWith(
+            innerMessage,
+          );
         });
       });
 
@@ -524,10 +525,12 @@ describe("handleDownstreamMessage", () => {
 
           sut.handleDownstreamMessage(message);
 
-          expect(loggerMock.warn).not.toBeCalled();
-          expect(loggerMock.error).not.toBeCalled();
-          expect(sanitizeDownstreamMessage).not.toBeCalled();
-          expect(mockMessagePort.postMessage).toBeCalledWith(innerMessage);
+          expect(loggerMock.warn).not.toHaveBeenCalled();
+          expect(loggerMock.error).not.toHaveBeenCalled();
+          expect(sanitizeDownstreamMessage).not.toHaveBeenCalled();
+          expect(mockMessagePort.postMessage).toHaveBeenCalledWith(
+            innerMessage,
+          );
         });
       });
     });
@@ -558,11 +561,11 @@ describe("handleDownstreamMessage", () => {
 
         sut.handleDownstreamMessage(message);
 
-        expect(loggerMock.warn).not.toBeCalled();
-        expect(loggerMock.error).not.toBeCalled();
-        expect(sanitizeDownstreamMessage).not.toBeCalled();
-        expect(mockSendDownstreamMessage).toBeCalledWith(innerMessage);
-        expect(mockMessagePort.postMessage).not.toBeCalled();
+        expect(loggerMock.warn).not.toHaveBeenCalled();
+        expect(loggerMock.error).not.toHaveBeenCalled();
+        expect(sanitizeDownstreamMessage).not.toHaveBeenCalled();
+        expect(mockSendDownstreamMessage).toHaveBeenCalledWith(innerMessage);
+        expect(mockMessagePort.postMessage).not.toHaveBeenCalled();
       });
     });
   });
@@ -588,11 +591,11 @@ describe("handleCloseMessage", () => {
 
       sut.handleCloseMessage(closeMessage);
 
-      expect(loggerMock.warn).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.warn).toHaveBeenCalledWith(expect.any(String), {
         connectionId: unknownConnectionId,
       });
       expect(sut["channels"].size).toEqual(1);
-      expect(loggerMock.debug).not.toBeCalled();
+      expect(loggerMock.debug).not.toHaveBeenCalled();
     });
 
     test("should message and close port", () => {
@@ -600,21 +603,21 @@ describe("handleCloseMessage", () => {
         connectionId: testConnectionId,
       });
       mockMessagePort.removeEventListener.mockImplementation(() => {
-        expect(mockMessagePort.close).not.toBeCalled();
+        expect(mockMessagePort.close).not.toHaveBeenCalled();
       });
       const messageHandler = mockMessagePort.addEventListener.mock
         .calls[0][1] as (message: MessageEvent<unknown>) => void;
 
       sut.handleCloseMessage(closeMessage);
 
-      expect(mockMessagePort.removeEventListener).toBeCalledWith(
+      expect(mockMessagePort.removeEventListener).toHaveBeenCalledWith(
         "message",
         messageHandler,
       );
-      expect(mockMessagePort.close).toBeCalled();
+      expect(mockMessagePort.close).toHaveBeenCalled();
       expect(sut["channels"].size).toEqual(0);
-      expect(loggerMock.warn).not.toBeCalled();
-      expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.warn).not.toHaveBeenCalled();
+      expect(loggerMock.debug).toHaveBeenCalledWith(expect.any(String), {
         connectionId: testConnectionId,
         type: "iframe",
       });
@@ -644,8 +647,8 @@ describe("handleCloseMessage", () => {
       sut.handleCloseMessage(closeMessage);
 
       expect(sut["channels"].size).toEqual(0);
-      expect(loggerMock.warn).not.toBeCalled();
-      expect(loggerMock.debug).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.warn).not.toHaveBeenCalled();
+      expect(loggerMock.debug).toHaveBeenCalledWith(expect.any(String), {
         connectionId: testConnectionId,
         type: "component",
       });

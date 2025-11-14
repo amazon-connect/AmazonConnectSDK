@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { mocked } from "jest-mock";
 
 import { ConnectError } from "../error";

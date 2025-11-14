@@ -27,4 +27,7 @@ export enum ContactRoutes {
   transfer = "contact/transfer",
   accept = "contact/accept",
   clear = "contact/clear",
+  isPreviewMode = "contact/isPreviewMode",
+  getPreviewConfiguration = "contact/getPreviewConfiguration",
+  engagePreviewContact = "contact/engagePreviewContact",
 }

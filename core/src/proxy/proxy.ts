@@ -310,6 +310,12 @@ export abstract class Proxy<
   protected handleConnectionAcknowledge(msg: AcknowledgeMessage): void {
     this.connectionId = msg.connectionId;
 
+    this.logger.debug("Connection acknowledged by subject", {
+      connectionId: msg.connectionId,
+      queuedMessageCount: this.upstreamMessageQueue.length,
+      status: msg.status,
+    });
+
     this.status.update({
       status: "ready",
       connectionId: msg.connectionId,
@@ -324,6 +330,10 @@ export abstract class Proxy<
     }
 
     this.healthCheck.start(msg);
+
+    this.logger.debug("Proxy connection ready", {
+      connectionId: this.connectionId,
+    });
   }
 
   private handleResponse(msg: ResponseMessage) {
@@ -356,7 +366,7 @@ export abstract class Proxy<
 
   private handleError(msg: ErrorMessage) {
     if (msg.isFatal) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const { message: reason, type: _, ...details } = msg;
       this.status.update({ status: "error", reason: reason, details });
     }
@@ -561,6 +571,11 @@ export abstract class Proxy<
   }
 
   protected resetConnection(reason: string): void {
+    this.logger.debug("Resetting connection", {
+      reason,
+      connectionId: this.connectionId,
+    });
+
     this.connectionEstablished = false;
 
     this.status.update({
@@ -572,6 +587,10 @@ export abstract class Proxy<
 
     this.logger.info("Resetting proxy", {
       reason,
+      subscriptionHandlerCount,
+    });
+
+    this.logger.debug("Connection reset complete, restoring handlers", {
       subscriptionHandlerCount,
     });
   }

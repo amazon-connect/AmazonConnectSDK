@@ -4,8 +4,13 @@ export enum ContactLifecycleTopicKey {
   Destroyed = "contact/destroy",
   Missed = "contact/missed",
   Cleared = "contact/cleared",
+  Incoming = "contact/incoming",
 }
 
 export enum AgentTopicKey {
   StateChanged = "agent/stateChange",
+  RoutingProfileChanged = "agent/routingProfileChanged",
+  EnabledChannelListChanged = "agent/enabledChannelListChanged",
 }
+
+export enum ContactTopicKey {}

@@ -3,3 +3,4 @@ export { UserRoutes } from "./routes";
 export { SettingsClient } from "./settings-client";
 export { UserTopicKey } from "./topic-keys";
 export * from "./types";
+export { UserClient } from "./user-client";

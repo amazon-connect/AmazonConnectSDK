@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { deepClone, ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { AppConfig } from "@amazon-connect/workspace-types";
 import { mocked } from "jest-mock";

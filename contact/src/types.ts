@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import { SubscriptionHandler } from "@amazon-connect/core";
 
 export interface AgentState {
@@ -30,11 +29,11 @@ export type AgentRoutingProfile = {
   routingProfileId: string;
 };
 
-export type Queue = {
+export interface Queue {
   name: string;
   queueARN: string;
   queueId: string;
-};
+}
 
 export type AgentStateChanged = {
   state: AgentStateName;
@@ -77,6 +76,9 @@ export type ContactMissedHandler = SubscriptionHandler<ContactMissed>;
 
 export type ContactConnected = BaseContactLifecycleEvent;
 export type ContactConnectedHandler = SubscriptionHandler<ContactConnected>;
+
+export type ContactIncoming = BaseContactLifecycleEvent;
+export type ContactIncomingHandler = SubscriptionHandler<ContactIncoming>;
 
 export type SetAvailabilityStateResult =
   | {
@@ -173,3 +175,28 @@ export type AddParticipantResult = {
 
 export type ContactCleared = BaseContactLifecycleEvent;
 export type ContactClearedHandler = SubscriptionHandler<ContactCleared>;
+
+export type EnabledChannelListChangedHandler =
+  SubscriptionHandler<EnabledChannelListChanged>;
+
+type AgentRoutingProfileChannelTypes = "voice" | "chat" | "task" | "email";
+export interface EnabledChannelListChanged {
+  enabledChannels: AgentRoutingProfileChannelTypes[];
+  previous?: {
+    enabledChannels: AgentRoutingProfileChannelTypes[];
+  };
+}
+
+export type RoutingProfileChangedHandler =
+  SubscriptionHandler<AgentRoutingProfileChanged>;
+export interface AgentRoutingProfileChanged {
+  routingProfile: AgentRoutingProfile;
+  previous?: {
+    routingProfile: AgentRoutingProfile;
+  };
+}
+
+ export type GetPreviewConfigurationResponse = {
+    autoDialTimeout: number;
+    canDiscardPreview: boolean;
+  };

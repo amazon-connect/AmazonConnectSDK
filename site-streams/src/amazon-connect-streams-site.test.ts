@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { generateUUID } from "@amazon-connect/core";
 import {
   getGlobalProvider,
@@ -53,13 +52,13 @@ describe("init", () => {
   });
 
   test("should set as global provider", () => {
-    expect(setGlobalProvider).toBeCalledWith(result.provider);
+    expect(setGlobalProvider).toHaveBeenCalledWith(result.provider);
   });
 
   test("should create a StreamsSiteProxy", () => {
-    expect(StreamsSiteProxy).toBeCalledTimes(1);
+    expect(StreamsSiteProxy).toHaveBeenCalledTimes(1);
     const [proxyInstance] = mocked(StreamsSiteProxy).mock.instances;
-    expect(StreamsSiteProxy).toBeCalledWith(result.provider);
+    expect(StreamsSiteProxy).toHaveBeenCalledWith(result.provider);
     expect(result.provider.getProxy()).toBe(proxyInstance);
   });
 
@@ -86,8 +85,8 @@ describe("setCCPIframe", () => {
 
     sut.setCCPIframe(iframe);
 
-    expect(StreamsSiteProxy).toBeCalledTimes(1);
+    expect(StreamsSiteProxy).toHaveBeenCalledTimes(1);
     const [proxy] = mocked(StreamsSiteProxy).mock.instances;
-    expect(proxy.setCCPIframe).toBeCalledWith(iframe);
+    expect(proxy.setCCPIframe).toHaveBeenCalledWith(iframe);
   });
 });

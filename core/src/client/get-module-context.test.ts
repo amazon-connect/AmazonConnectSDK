@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { mocked, MockedClass } from "jest-mock";
 import { mock } from "jest-mock-extended";
 

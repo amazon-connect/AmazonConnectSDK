@@ -7,3 +7,4 @@ export type * from "./config";
 export type { LaunchSource } from "./launch-source";
 export type { LifecycleStage } from "./lifecycle-stage";
 export type { AppMessageOrigin } from "./message-origin";
+export type * from "./workspace-theme";

@@ -13,9 +13,11 @@ import {
   AgentRoutingProfile,
   AgentState,
   AgentStateChangedHandler,
+  EnabledChannelListChangedHandler,
   ListQuickConnectsOptions,
   ListQuickConnectsResult,
   QueueARN,
+  RoutingProfileChangedHandler,
   SetAvailabilityStateResult,
 } from "./types";
 
@@ -137,5 +139,35 @@ export class AgentClient extends ConnectClientWithOptionalConfig {
       queueARNs,
       options,
     });
+  }
+
+  onEnabledChannelListChanged(handler: EnabledChannelListChangedHandler): void {
+    this.context.proxy.subscribe(
+      { key: AgentTopicKey.EnabledChannelListChanged },
+      handler,
+    );
+  }
+
+  offEnabledChannelListChanged(
+    handler: EnabledChannelListChangedHandler,
+  ): void {
+    this.context.proxy.unsubscribe(
+      { key: AgentTopicKey.EnabledChannelListChanged },
+      handler,
+    );
+  }
+
+  onRoutingProfileChanged(handler: RoutingProfileChangedHandler): void {
+    this.context.proxy.subscribe(
+      { key: AgentTopicKey.RoutingProfileChanged },
+      handler,
+    );
+  }
+
+  offRoutingProfileChanged(handler: RoutingProfileChangedHandler): void {
+    this.context.proxy.unsubscribe(
+      { key: AgentTopicKey.RoutingProfileChanged },
+      handler,
+    );
   }
 }

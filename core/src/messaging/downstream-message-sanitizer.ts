@@ -15,16 +15,16 @@ export function sanitizeDownstreamMessage(
           message: sanitizeDownstreamMessage(message.message),
         };
       case "publish": {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         
         const { data, ...other } = message;
         return { ...other };
       }
       case "response": {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         
         if (message.isError)
           return { ...message, details: { command: message.details.command } };
         else {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+           
           const { data, ...other } = message;
           return { ...other };
         }

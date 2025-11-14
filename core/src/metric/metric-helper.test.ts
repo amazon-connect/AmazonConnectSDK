@@ -26,7 +26,7 @@ describe("checkDimensionlength", () => {
     }
     expect(() => {
       checkDimensionLength(invalidDimension);
-    }).toThrowError("Cannot add more than 30 dimensions to a metric");
+    }).toThrow("Cannot add more than 30 dimensions to a metric");
   });
 
   test("should not throw error if the sum of dimensions and optional dimensions is under MAX_METRIC_DIMENSIONS", () => {
@@ -36,7 +36,7 @@ describe("checkDimensionlength", () => {
     }
     expect(() => {
       checkDimensionLength(validDimension);
-    }).not.toThrowError("Cannot add more than 30 dimensions to a metric");
+    }).not.toThrow("Cannot add more than 30 dimensions to a metric");
   });
 });
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
 
@@ -26,7 +25,7 @@ describe("SettingsClient", () => {
 
       sut.onLanguageChanged(handler);
 
-      expect(moduleProxyMock.subscribe).toBeCalledWith(
+      expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
         { key: UserTopicKey.LanguageChanged },
         handler,
       );
@@ -37,7 +36,7 @@ describe("SettingsClient", () => {
 
       sut.offLanguageChanged(handler);
 
-      expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+      expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
         { key: UserTopicKey.LanguageChanged },
         handler,
       );

@@ -33,7 +33,8 @@ export function isEmailBodySizeExceededError(e: unknown): boolean {
   return (
     isConnectError(e) &&
     e.namespace === emailNamespace &&
-    e.errorKey === "EmailBodySizeExceededException"
+    (e.errorKey === "EmailBodySizeExceededException" ||
+      e.errorKey === "EmailBodySizeExceedException")
   );
 }
 /**

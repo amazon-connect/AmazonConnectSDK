@@ -12,5 +12,8 @@
     "allowJs": true,
     "allowSyntheticDefaultImports" : true,
     "incremental":true,
-  }
+  },
+  "exclude": [
+    "test-report.js"
+  ]
 }

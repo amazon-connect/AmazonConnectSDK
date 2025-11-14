@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+ 
+ 
 import { mocked, MockedClass, MockedObject } from "jest-mock";
 import { mock } from "jest-mock-extended";
 
@@ -124,7 +123,7 @@ describe("when a request times out on the client", () => {
 
     void sut.processRequest(requestMsg);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     const [_requestSentToHandler, onStart, onTimeout] =
       mocked(createRequestHandler).mock.calls[0];
     onStart(handler);

@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/sdk",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "",
   "scripts": {
     "build": "npm run --ws build",
@@ -48,6 +48,7 @@
     "theme",
     "user",
     "message-template",
-    "quick-responses"
+    "quick-responses",
+    "activity"
   ]
 }

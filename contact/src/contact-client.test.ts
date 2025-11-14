@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { ModuleContext, ModuleProxy } from "@amazon-connect/core";
 import { mock } from "jest-mock-extended";
 
@@ -32,7 +31,7 @@ describe("ContactClient", () => {
 
         sut.onStartingAcw(handler, currentContact);
 
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
           {
             key: ContactLifecycleTopicKey.StartingACW,
             parameter: currentContact,
@@ -46,7 +45,7 @@ describe("ContactClient", () => {
 
         sut.offStartingAcw(handler, currentContact);
 
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
           {
             key: ContactLifecycleTopicKey.StartingACW,
             parameter: currentContact,
@@ -62,7 +61,7 @@ describe("ContactClient", () => {
 
         sut.onDestroyed(handler, currentContact);
 
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
           {
             key: ContactLifecycleTopicKey.Destroyed,
             parameter: currentContact,
@@ -76,7 +75,7 @@ describe("ContactClient", () => {
 
         sut.offDestroyed(handler, currentContact);
 
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
           {
             key: ContactLifecycleTopicKey.Destroyed,
             parameter: currentContact,
@@ -92,7 +91,7 @@ describe("ContactClient", () => {
 
         sut.onMissed(handler, currentContact);
 
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
           { key: ContactLifecycleTopicKey.Missed, parameter: currentContact },
           handler,
         );
@@ -103,7 +102,7 @@ describe("ContactClient", () => {
 
         sut.offMissed(handler, currentContact);
 
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
           { key: ContactLifecycleTopicKey.Missed, parameter: currentContact },
           handler,
         );
@@ -116,7 +115,7 @@ describe("ContactClient", () => {
 
         sut.onConnected(handler, currentContact);
 
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
           {
             key: ContactLifecycleTopicKey.Connected,
             parameter: currentContact,
@@ -130,7 +129,7 @@ describe("ContactClient", () => {
 
         sut.offConnected(handler, currentContact);
 
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
           {
             key: ContactLifecycleTopicKey.Connected,
             parameter: currentContact,
@@ -146,7 +145,7 @@ describe("ContactClient", () => {
 
         sut.onCleared(handler, currentContact);
 
-        expect(moduleProxyMock.subscribe).toBeCalledWith(
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
           {
             key: ContactLifecycleTopicKey.Cleared,
             parameter: currentContact,
@@ -160,9 +159,39 @@ describe("ContactClient", () => {
 
         sut.offCleared(handler, currentContact);
 
-        expect(moduleProxyMock.unsubscribe).toBeCalledWith(
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
           {
             key: ContactLifecycleTopicKey.Cleared,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+    });
+
+    describe("INCOMING", () => {
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
+
+        sut.onIncoming(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Incoming,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offIncoming(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Incoming,
             parameter: currentContact,
           },
           handler,
@@ -412,5 +441,57 @@ describe("ContactClient", () => {
         },
       );
     });
+
+    test("isPreviewMode returns boolean for given contactId", async () => {
+      const testContactId = "TEST_CONTACT_ID";
+      const expectedResult = { isPreviewMode: true };
+
+      moduleProxyMock.request.mockResolvedValue(expectedResult);
+
+      const result = await sut.isPreviewMode(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.isPreviewMode,
+        {
+          contactId: testContactId,
+        },
+      );
+      expect(result).toBe(true);
+    });
+
+    test("getPreviewConfiguration returns boolean for given contactId", async () => {
+      const testContactId = "TEST_CONTACT_ID";
+      const expectedResult = { autoDialTimeout: 25, canDiscardPreview: true };
+
+      moduleProxyMock.request.mockResolvedValue(expectedResult);
+
+      const result = await sut.getPreviewConfiguration(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getPreviewConfiguration,
+        {
+          contactId: testContactId,
+        },
+      );
+      expect(result).toBe(expectedResult);
+    });
+     test("engagePreviewContact sends request with contactId and options", async () => {
+    const testContactId = "CONTACT_ID";
+
+    const expectedResult = {
+      connectionId: "my-connection-id",
+    };
+    moduleProxyMock.request.mockResolvedValue(expectedResult);
+
+    const actualResult = await sut.engagePreviewContact(testContactId);
+
+    expect(moduleProxyMock.request).toHaveBeenCalledWith(
+      ContactRoutes.engagePreviewContact,
+      {
+        contactId: testContactId,
+      },
+    );
+    expect(actualResult).toBe(expectedResult);
+  });
   });
 });

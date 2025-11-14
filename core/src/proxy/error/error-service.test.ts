@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass, MockedObject } from "jest-mock";
 import { mock } from "jest-mock-extended";
 
@@ -97,7 +96,6 @@ describe("invoke", () => {
     expect(logDetails?.key).toEqual(testErr.key);
     expect(logOptions?.duplicateMessageToConsole).toBeTruthy();
     expect(logOptions?.remoteIgnore).toBeTruthy();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_m, errorData, handlerErrorLogOptions] = logger.error.mock.calls[1];
     expect(errorData?.handlerError).toBeInstanceOf(Error);
     expect((errorData?.handlerError as { message: string }).message).toEqual(

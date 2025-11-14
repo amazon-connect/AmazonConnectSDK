@@ -91,7 +91,6 @@ describe("when calling update", () => {
     sut.update(err);
 
     expect(mockHandler).toHaveBeenCalledWith(err);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.error).toHaveBeenCalled();
     const errorData = logger.error.mock.calls[0][1] as { error: Error };
     expect(errorData?.error).toBeInstanceOf(Error);

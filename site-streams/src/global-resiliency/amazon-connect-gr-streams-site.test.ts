@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { generateUUID } from "@amazon-connect/core";
 import {
   getGlobalProvider,

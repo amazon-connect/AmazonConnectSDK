@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass } from "jest-mock";
 import { mock } from "jest-mock-extended";
 
@@ -58,7 +57,7 @@ class TestSubscriptionHandlerRelay extends SubscriptionHandlerRelay<
 
     proxyMock.subscribe.mockImplementation(({ parameter }, evt) => {
       const event = evt as unknown as InternalEventHandler;
-      if (!this.handlers.get(parameter)?.add(evt))
+      if (!this.handlers.get(parameter)?.add(event))
         this.handlers.set(parameter, new Set([event]));
     });
     proxyMock.unsubscribe.mockImplementation(({ parameter }, evt) => {
@@ -116,8 +115,8 @@ describe("when a handler is added without a parameter", () => {
 
     await sut.invokeAllHandlers(internalEvent1);
 
-    expect(handler).toBeCalledTimes(1);
-    expect(handler).toBeCalledWith(externalEvent1);
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler).toHaveBeenCalledWith(externalEvent1);
   });
 
   describe("when a handler is removed", () => {
@@ -132,8 +131,8 @@ describe("when a handler is added without a parameter", () => {
 
       await sut.invokeAllHandlers(internalEvent1);
 
-      expect(handler1).toBeCalledTimes(0);
-      expect(handler2).toBeCalledTimes(1);
+      expect(handler1).toHaveBeenCalledTimes(0);
+      expect(handler2).toHaveBeenCalledTimes(1);
     });
 
     test("should remove subscription of the inner handler", () => {
@@ -148,12 +147,12 @@ describe("when a handler is added without a parameter", () => {
 
       sut.off(handler1);
 
-      expect(proxyMock.unsubscribe).toBeCalledTimes(1);
-      expect(proxyMock.unsubscribe).toBeCalledWith(
+      expect(proxyMock.unsubscribe).toHaveBeenCalledTimes(1);
+      expect(proxyMock.unsubscribe).toHaveBeenCalledWith(
         { namespace: testNamespace, key: testTopicKey, parameter: undefined },
         innerHandler1,
       );
-      expect(proxyMock.unsubscribe).not.toBeCalledWith(
+      expect(proxyMock.unsubscribe).not.toHaveBeenCalledWith(
         expect.any(Object),
         innerHandler2,
       );
@@ -171,8 +170,8 @@ describe("when a handler is added without a parameter", () => {
 
       await sut.invokeAllHandlers(internalEvent1);
 
-      expect(handler1).toBeCalledTimes(1);
-      expect(unknownHandler).toBeCalledTimes(0);
+      expect(handler1).toHaveBeenCalledTimes(1);
+      expect(unknownHandler).toHaveBeenCalledTimes(0);
     });
 
     test("should not trigger an unsubscribe on proxy", () => {
@@ -183,7 +182,7 @@ describe("when a handler is added without a parameter", () => {
       sut.on(handler1);
       sut.off(unknownHandler);
 
-      expect(proxyMock.unsubscribe).toBeCalledTimes(0);
+      expect(proxyMock.unsubscribe).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -197,9 +196,9 @@ describe("when a handler is added without a parameter", () => {
 
       await sut.invokeAllHandlers(internalEvent1);
 
-      expect(handler).toBeCalledTimes(1);
-      expect(handler).toBeCalledWith(externalEvent1);
-      expect(skipFn).toBeCalledWith(internalEvent1);
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledWith(externalEvent1);
+      expect(skipFn).toHaveBeenCalledWith(internalEvent1);
     });
 
     test("should not trigger the handler when it is to be skipped", async () => {
@@ -211,8 +210,8 @@ describe("when a handler is added without a parameter", () => {
 
       await sut.invokeAllHandlers(internalEvent1);
 
-      expect(handler).toBeCalledTimes(0);
-      expect(skipFn).toBeCalledWith(internalEvent1);
+      expect(handler).toHaveBeenCalledTimes(0);
+      expect(skipFn).toHaveBeenCalledWith(internalEvent1);
     });
   });
 });
@@ -224,7 +223,7 @@ describe("when the same handler is added more than one time", () => {
     sut.on(handler);
     sut.on(handler);
 
-    expect(proxyMock.subscribe).toBeCalledTimes(1);
+    expect(proxyMock.subscribe).toHaveBeenCalledTimes(1);
   });
 
   test("should only be invoked once", async () => {
@@ -238,8 +237,8 @@ describe("when the same handler is added more than one time", () => {
 
     await sut.invokeAllHandlers(internalEvent1);
 
-    expect(handler1).toBeCalledTimes(1);
-    expect(handler2).toBeCalledTimes(1);
+    expect(handler1).toHaveBeenCalledTimes(1);
+    expect(handler2).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -256,12 +255,12 @@ describe("when a relay is destroyed", () => {
 
     sut.destroy();
 
-    expect(proxyMock.unsubscribe).toBeCalledTimes(2);
-    expect(proxyMock.unsubscribe).toBeCalledWith(
+    expect(proxyMock.unsubscribe).toHaveBeenCalledTimes(2);
+    expect(proxyMock.unsubscribe).toHaveBeenCalledWith(
       { namespace: testNamespace, key: testTopicKey, parameter: undefined },
       innerHandler1,
     );
-    expect(proxyMock.unsubscribe).toBeCalledWith(
+    expect(proxyMock.unsubscribe).toHaveBeenCalledWith(
       { namespace: testNamespace, key: testTopicKey, parameter: undefined },
       innerHandler2,
     );
@@ -277,8 +276,8 @@ describe("when a relay is configured to not allow parameters", () => {
 
     await sut.invokeAllHandlers(internalEvent1);
 
-    expect(handler).toBeCalledTimes(1);
-    expect(handler).toBeCalledWith(externalEvent1);
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler).toHaveBeenCalledWith(externalEvent1);
   });
 
   test("should support removing handler without a parameter", async () => {
@@ -290,7 +289,7 @@ describe("when a relay is configured to not allow parameters", () => {
 
     await sut.invokeAllHandlers(internalEvent1);
 
-    expect(handler).toBeCalledTimes(0);
+    expect(handler).toHaveBeenCalledTimes(0);
   });
 
   test("should throw when attempting to add a handler with a parameter", () => {
@@ -332,8 +331,8 @@ describe("when a relay is configured to allow parameters", () => {
 
     await sut.invokeAllHandlers(internalEvent1, "a");
 
-    expect(handler1).toBeCalledTimes(1);
-    expect(handler2).toBeCalledTimes(0);
+    expect(handler1).toHaveBeenCalledTimes(1);
+    expect(handler2).toHaveBeenCalledTimes(0);
   });
 
   test("should not implicitly trigger the handler for a undefined parameter when called with parameter", async () => {
@@ -346,8 +345,8 @@ describe("when a relay is configured to allow parameters", () => {
 
     await sut.invokeAllHandlers(internalEvent1, "a");
 
-    expect(handler1).toBeCalledTimes(1);
-    expect(handler2).toBeCalledTimes(0);
+    expect(handler1).toHaveBeenCalledTimes(1);
+    expect(handler2).toHaveBeenCalledTimes(0);
   });
 
   test("should not implicitly trigger the handler for a parameter when called with undefined", async () => {
@@ -360,8 +359,8 @@ describe("when a relay is configured to allow parameters", () => {
 
     await sut.invokeAllHandlers(internalEvent1);
 
-    expect(handler1).toBeCalledTimes(1);
-    expect(handler2).toBeCalledTimes(0);
+    expect(handler1).toHaveBeenCalledTimes(1);
+    expect(handler2).toHaveBeenCalledTimes(0);
   });
 
   test("should only remove handler with parameter and not same handler for a different parameter", async () => {
@@ -375,7 +374,7 @@ describe("when a relay is configured to allow parameters", () => {
     await sut.invokeAllHandlers(internalEvent1, "a");
     await sut.invokeAllHandlers(internalEvent1, "b");
 
-    expect(handler1).toBeCalledTimes(1);
+    expect(handler1).toHaveBeenCalledTimes(1);
   });
 
   test("should only remove handler with no parameter and not a handler for a parameter", async () => {
@@ -389,7 +388,7 @@ describe("when a relay is configured to allow parameters", () => {
     await sut.invokeAllHandlers(internalEvent1, "a");
     await sut.invokeAllHandlers(internalEvent1);
 
-    expect(handler1).toBeCalledTimes(1);
+    expect(handler1).toHaveBeenCalledTimes(1);
   });
 
   test("should only remove handler with parameter and not handler with no parameter", async () => {
@@ -403,7 +402,7 @@ describe("when a relay is configured to allow parameters", () => {
     await sut.invokeAllHandlers(internalEvent1);
     await sut.invokeAllHandlers(internalEvent1, "a");
 
-    expect(handler1).toBeCalledTimes(1);
+    expect(handler1).toHaveBeenCalledTimes(1);
   });
 
   test("should be able to remove and readd handler", async () => {
@@ -420,7 +419,7 @@ describe("when a relay is configured to allow parameters", () => {
 
     await sut.invokeAllHandlers(internalEvent1, "a");
 
-    expect(handler1).toBeCalledTimes(1);
+    expect(handler1).toHaveBeenCalledTimes(1);
   });
 
   test("should not remove one handler for parameter when a different handler with parameter is removed", async () => {
@@ -434,8 +433,8 @@ describe("when a relay is configured to allow parameters", () => {
 
     await sut.invokeAllHandlers(internalEvent1, "a");
 
-    expect(handler1).toBeCalledTimes(1);
-    expect(handler2).toBeCalledTimes(0);
+    expect(handler1).toHaveBeenCalledTimes(1);
+    expect(handler2).toHaveBeenCalledTimes(0);
   });
 
   describe("when the translate errors", () => {
@@ -466,8 +465,8 @@ describe("when a relay is configured to allow parameters", () => {
       await sut.invokeAllHandlers(internalEvent1, "a");
 
       expect(invokeCount).toEqual(2);
-      expect(loggerMock.error).toBeCalledTimes(1);
-      expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.error).toHaveBeenCalledTimes(1);
+      expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
         error,
         parameter: "a",
       });
@@ -499,19 +498,19 @@ describe("when a relay is configured to allow parameters", () => {
 
     await sut.invokeAllHandlers(internalEvent1, "a");
 
-    expect(handler1).not.toBeCalled();
-    expect(handler2).not.toBeCalled();
-    expect(handler3).not.toBeCalled();
-    expect(loggerMock.error).toBeCalledTimes(3);
-    expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+    expect(handler1).not.toHaveBeenCalled();
+    expect(handler2).not.toHaveBeenCalled();
+    expect(handler3).not.toHaveBeenCalled();
+    expect(loggerMock.error).toHaveBeenCalledTimes(3);
+    expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
       error: error1,
       parameter: "a",
     });
-    expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+    expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
       error: error2,
       parameter: "a",
     });
-    expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+    expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
       error: error3,
       parameter: "a",
     });
@@ -531,14 +530,14 @@ describe("when a relay is configured to allow parameters", () => {
 
       await sut.invokeAllHandlers(internalEvent1, "a");
 
-      expect(loggerMock.error).toBeCalledTimes(1);
-      expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.error).toHaveBeenCalledTimes(1);
+      expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
         error: error,
         parameter: "a",
       });
-      expect(handler1).toBeCalledWith(externalEvent1);
-      expect(handler2).toBeCalledWith(externalEvent1);
-      expect(handler3).toBeCalledWith(externalEvent1);
+      expect(handler1).toHaveBeenCalledWith(externalEvent1);
+      expect(handler2).toHaveBeenCalledWith(externalEvent1);
+      expect(handler3).toHaveBeenCalledWith(externalEvent1);
     });
   });
 
@@ -558,14 +557,14 @@ describe("when a relay is configured to allow parameters", () => {
 
       await sut.invokeAllHandlers(internalEvent1, "a");
 
-      expect(loggerMock.error).toBeCalledTimes(1);
-      expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.error).toHaveBeenCalledTimes(1);
+      expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
         error: error,
         parameter: "a",
       });
-      expect(handler1).toBeCalledWith(externalEvent1);
-      expect(handler2).toBeCalledWith(externalEvent1);
-      expect(handler3).toBeCalledWith(externalEvent1);
+      expect(handler1).toHaveBeenCalledWith(externalEvent1);
+      expect(handler2).toHaveBeenCalledWith(externalEvent1);
+      expect(handler3).toHaveBeenCalledWith(externalEvent1);
     });
   });
 });

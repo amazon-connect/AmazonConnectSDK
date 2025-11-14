@@ -1,0 +1,39 @@
+{
+  "name": "@amazon-connect/activity",
+  "version": "1.0.9",
+  "description": "Activity functionality of the Amazon Connect SDK",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build": "npm run build:esm && npm run build:cjs",
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf ./lib ./lib-esm ./build",
+    "format": "npm run lint -- --fix",
+    "lint": "eslint --cache .",
+    "prepack": "npm run build",
+    "test": "jest --coverage"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amazon-connect/AmazonConnectSDK.git"
+  },
+  "main": "lib/index.js",
+  "module": "lib-esm/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "lib-esm/**/*",
+    "!**/*.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@amazon-connect/core": "1.0.9",
+    "lodash.debounce": "4.0.8"
+  },
+  "devDependencies": {
+    "@types/lodash.debounce": "4.0.8"
+  }
+}

@@ -16,10 +16,12 @@ import {
   ContactClearedHandler,
   ContactConnectedHandler,
   ContactDestroyedHandler,
+  ContactIncomingHandler,
   ContactMissedHandler,
   ContactStartingAcwHandler,
   ContactType,
   GetAttributesRequest,
+  GetPreviewConfigurationResponse,
   Queue,
   QueueQuickConnect,
   QuickConnect,
@@ -137,9 +139,17 @@ export class ContactClient extends ConnectClientWithOptionalConfig {
       handler,
     );
   }
+
   onMissed(handler: ContactMissedHandler, contactId?: string): void {
     this.context.proxy.subscribe(
       { key: ContactLifecycleTopicKey.Missed, parameter: contactId },
+      handler,
+    );
+  }
+
+  onIncoming(handler: ContactIncomingHandler, contactId?: string): void {
+    this.context.proxy.subscribe(
+      { key: ContactLifecycleTopicKey.Incoming, parameter: contactId },
       handler,
     );
   }
@@ -161,6 +171,13 @@ export class ContactClient extends ConnectClientWithOptionalConfig {
   offMissed(handler: ContactMissedHandler, contactId?: string): void {
     this.context.proxy.unsubscribe(
       { key: ContactLifecycleTopicKey.Missed, parameter: contactId },
+      handler,
+    );
+  }
+
+  offIncoming(handler: ContactIncomingHandler, contactId?: string): void {
+    this.context.proxy.unsubscribe(
+      { key: ContactLifecycleTopicKey.Incoming, parameter: contactId },
       handler,
     );
   }
@@ -219,6 +236,32 @@ export class ContactClient extends ConnectClientWithOptionalConfig {
 
   clear(contactId: string): Promise<void> {
     return this.context.proxy.request(ContactRoutes.clear, {
+      contactId,
+    });
+  }
+  
+  async isPreviewMode(contactId: string): Promise<boolean> {
+    const response: Record<string, boolean> = await this.context.proxy.request(
+      ContactRoutes.isPreviewMode,
+      { contactId },
+    );
+
+    return response.isPreviewMode;
+  }
+
+  async getPreviewConfiguration(
+    contactId: string,
+  ): Promise<GetPreviewConfigurationResponse> {
+    const response: GetPreviewConfigurationResponse =
+      await this.context.proxy.request(ContactRoutes.getPreviewConfiguration, {
+        contactId,
+      });
+
+    return response;
+  }
+
+  async engagePreviewContact(contactId: string): Promise<AddParticipantResult> {
+    return this.context.proxy.request(ContactRoutes.engagePreviewContact, {
       contactId,
     });
   }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass, MockedObject } from "jest-mock";
 import { mock } from "jest-mock-extended";
 
@@ -46,7 +45,7 @@ describe("Emitter", () => {
 
       sut.emit(p1);
 
-      expect(handler).toBeCalledTimes(1);
+      expect(handler).toHaveBeenCalledTimes(1);
     });
 
     test("should not invoke handler of different parameter", () => {
@@ -55,7 +54,7 @@ describe("Emitter", () => {
 
       sut.emit(p2);
 
-      expect(handler).toBeCalledTimes(0);
+      expect(handler).toHaveBeenCalledTimes(0);
     });
 
     test("should invoke for parameter", () => {
@@ -68,9 +67,9 @@ describe("Emitter", () => {
 
       sut.emit(p1);
 
-      expect(handler1).toBeCalledTimes(1);
-      expect(handler2).toBeCalledTimes(1);
-      expect(handler3).toBeCalledTimes(0);
+      expect(handler1).toHaveBeenCalledTimes(1);
+      expect(handler2).toHaveBeenCalledTimes(1);
+      expect(handler3).toHaveBeenCalledTimes(0);
     });
 
     test("should invoke a handler when the function is removed for a different parameter", () => {
@@ -80,7 +79,7 @@ describe("Emitter", () => {
 
       sut.emit(p1);
 
-      expect(handler).toBeCalledTimes(1);
+      expect(handler).toHaveBeenCalledTimes(1);
     });
 
     test("should invoke a handler when same handler removed with parameter", () => {
@@ -91,7 +90,7 @@ describe("Emitter", () => {
 
       sut.emit(p1);
 
-      expect(handler).toBeCalledTimes(1);
+      expect(handler).toHaveBeenCalledTimes(1);
     });
 
     test("should remove internal event map when no handler parameter exists", () => {
@@ -113,8 +112,8 @@ describe("Emitter", () => {
 
       sut.emit(p1);
 
-      expect(handler1).toBeCalledTimes(1);
-      expect(handler2).toBeCalledTimes(1);
+      expect(handler1).toHaveBeenCalledTimes(1);
+      expect(handler2).toHaveBeenCalledTimes(1);
     });
 
     test("should remove handler added multiple times", () => {
@@ -127,8 +126,8 @@ describe("Emitter", () => {
 
       sut.emit(p1);
 
-      expect(handler1).toBeCalledTimes(0);
-      expect(handler2).toBeCalledTimes(1);
+      expect(handler1).toHaveBeenCalledTimes(0);
+      expect(handler2).toHaveBeenCalledTimes(1);
     });
 
     test("should invoke additional handlers after one throws error", () => {
@@ -150,19 +149,19 @@ describe("Emitter", () => {
 
       sut.emit(p1);
 
-      expect(loggerMock.error).toBeCalledTimes(2);
-      expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.error).toHaveBeenCalledTimes(2);
+      expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
         error: handler2Error,
         parameter: p1,
       });
-      expect(loggerMock.error).toBeCalledWith(expect.any(String), {
+      expect(loggerMock.error).toHaveBeenCalledWith(expect.any(String), {
         error: handler4Error,
         parameter: p1,
       });
-      expect(handler1).toBeCalledTimes(1);
-      expect(handler2).toBeCalledTimes(1);
-      expect(handler3).toBeCalledTimes(1);
-      expect(handler4).toBeCalledTimes(1);
+      expect(handler1).toHaveBeenCalledTimes(1);
+      expect(handler2).toHaveBeenCalledTimes(1);
+      expect(handler3).toHaveBeenCalledTimes(1);
+      expect(handler4).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -50,7 +50,14 @@ export type EmailContact = {
    * Setting this as optional to ensure backward comaptibality.
    */
   initiationTimestamp?: Date;
+
+  /**
+   * The traffic type for a contact. This value could be undefined if this segment attribute is not set explicity during contact creation.
+   */
+  trafficType?: TrafficType;
 };
+
+export type TrafficType = "REPLY_TO_CLOSED";
 
 export type EmailContactId = {
   contactId: string;

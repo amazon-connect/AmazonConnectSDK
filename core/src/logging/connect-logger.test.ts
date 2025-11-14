@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass, MockedObject } from "jest-mock";
 import { mock } from "jest-mock-extended";
 
@@ -354,7 +353,7 @@ describe("when not using any provider level options", () => {
 
       sut.log(LogLevel.trace, testMessage, testData);
 
-      expect(proxyMock.log).not.toBeCalled();
+      expect(proxyMock.log).not.toHaveBeenCalled();
     });
 
     test("should ignore remote when set logger level even when log entry is false", () => {
@@ -372,7 +371,7 @@ describe("when not using any provider level options", () => {
         remoteIgnore: false,
       });
 
-      expect(proxyMock.log).not.toBeCalled();
+      expect(proxyMock.log).not.toHaveBeenCalled();
     });
 
     test("should ignore remote logger is set to false but entry is set to true", () => {
@@ -390,7 +389,7 @@ describe("when not using any provider level options", () => {
         remoteIgnore: true,
       });
 
-      expect(proxyMock.log).not.toBeCalled();
+      expect(proxyMock.log).not.toHaveBeenCalled();
     });
 
     describe("when the logger logToConsole level is set to info", () => {

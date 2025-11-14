@@ -81,7 +81,7 @@ export class AppLifecycleManager extends LifecycleManager<
     // subscription after the start event fires while app is running
     if (options?.invokeIfRunning) {
       if (this.state.isRunning) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+         
         this.handleLifecycleChange(
           { ...this.getAppLifecycleChangeParams(), stage: "start" },
           (e) => handler(e),

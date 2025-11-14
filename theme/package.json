@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/theme",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Theme for apps functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
@@ -12,7 +12,7 @@
     "check-types": "tsc --noEmit",
     "clean": "rm -rf ./lib ./lib-esm ./build",
     "format": "npm run lint -- --fix",
-    "lint": "eslint --cache --config ../.eslintrc.cjs --ignore-path ../.eslintignore .",
+    "lint": "eslint --cache .",
     "prepack": "npm run build",
     "test": "jest --coverage"
   },
@@ -33,7 +33,7 @@
     "@cloudscape-design/components": "^3.0.383"
   },
   "devDependencies": {
-    "jest-environment-jsdom": "^29.6.4",
-    "jsdom": "^22.1.0"
+    "jest-environment-jsdom": "^30.1.2",
+    "jsdom": "26.1.0"
   }
 }

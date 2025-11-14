@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { mocked, MockedClass, MockedObject } from "jest-mock";
 import { mock } from "jest-mock-extended";
@@ -97,7 +96,7 @@ class TestProxy extends Proxy {
   protected initProxy(): void {
     this.status.update({ status: "initializing" });
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   protected sendMessageToSubject(message: any): void {
     this.upstreamMessagesSent.push(message as UpstreamMessage);
   }
@@ -244,7 +243,7 @@ describe("init", () => {
     const sut = new TestProxy();
     sut.init();
 
-    expect(() => sut.init()).toThrowError("Proxy already initialized");
+    expect(() => sut.init()).toThrow("Proxy already initialized");
   });
 });
 
@@ -1153,7 +1152,7 @@ describe("when handling a downstream message", () => {
 
       sut.mockPushMessage(message);
 
-      expect(channelManagerMock.handleDownstreamMessage).toBeCalledWith(
+      expect(channelManagerMock.handleDownstreamMessage).toHaveBeenCalledWith(
         message,
       );
     });
@@ -1168,7 +1167,9 @@ describe("when handling a downstream message", () => {
 
       sut.mockPushMessage(message);
 
-      expect(channelManagerMock.handleCloseMessage).toBeCalledWith(message);
+      expect(channelManagerMock.handleCloseMessage).toHaveBeenCalledWith(
+        message,
+      );
     });
   });
 
@@ -1227,7 +1228,7 @@ describe("addChildChannel", () => {
 
     sut.addChildChannel(params);
 
-    expect(channelManagerMock.addChannel).toBeCalledWith({
+    expect(channelManagerMock.addChannel).toHaveBeenCalledWith({
       ...params,
       type: "iframe",
     });
@@ -1246,7 +1247,7 @@ describe("addChildIframeChannel", () => {
 
     sut.addChildIframeChannel(params);
 
-    expect(channelManagerMock.addChannel).toBeCalledWith({
+    expect(channelManagerMock.addChannel).toHaveBeenCalledWith({
       ...params,
       type: "iframe",
     });
@@ -1268,7 +1269,7 @@ describe("addChildComponentChannel", () => {
 
     sut.addChildComponentChannel(params);
 
-    expect(channelManagerMock.addChannel).toBeCalledWith({
+    expect(channelManagerMock.addChannel).toHaveBeenCalledWith({
       ...params,
       type: "component",
     });

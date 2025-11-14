@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { MockedClass } from "jest-mock";
 
 import { ConnectLogger, LogLevel } from "../logging";

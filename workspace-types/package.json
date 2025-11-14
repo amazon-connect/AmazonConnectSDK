@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/workspace-types",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Workspace types for the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
@@ -12,7 +12,7 @@
     "check-types": "tsc --noEmit",
     "clean": "rm -rf ./lib ./lib-esm ./build",
     "format": "npm run lint -- --fix",
-    "lint": "eslint --cache --config ../.eslintrc.cjs --ignore-path ../.eslintignore .",
+    "lint": "eslint --cache .",
     "prepack": "npm run build",
     "test": "echo 'no tests'"
   },
@@ -30,6 +30,6 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
-    "@amazon-connect/core": "1.0.8"
+    "@amazon-connect/core": "1.0.9"
   }
 }

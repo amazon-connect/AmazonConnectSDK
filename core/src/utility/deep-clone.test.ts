@@ -55,7 +55,7 @@ describe("deepClone", () => {
 
   describe("when structuredClone is not available", () => {
     beforeAll(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       delete (globalThis as any).structuredClone;
     });
 

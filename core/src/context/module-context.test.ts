@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-/* eslint-disable @typescript-eslint/unbound-method */
+ 
+ 
 import { mocked } from "jest-mock";
 import { mock } from "jest-mock-extended";
 

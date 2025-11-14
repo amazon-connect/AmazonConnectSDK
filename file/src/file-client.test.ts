@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { AmazonConnectProvider, Proxy } from "@amazon-connect/core";
 import { mock, MockProxy } from "jest-mock-extended";
 

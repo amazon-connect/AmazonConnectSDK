@@ -1,5 +1,12 @@
 # CHANGELOG.md
 
+## 1.0.9
+### Added
+- Initial release of `@amazon-connect/activity`, providing the ability to handle session inactivity warnings through the `SessionExpirationWarningClient`
+
+### Updated
+- Updated `@amazon-connect/contact` to support additional APIs
+
 ## 1.0.8
 ### Updated
 - Updated `@amazon-connect/site-streams` to support ACGR functionality for `AmazonConnectStreams`
