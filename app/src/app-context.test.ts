@@ -20,6 +20,7 @@ describe("AppContext", () => {
     const launchedBy = mock<LaunchSource>();
 
     const instanceId = "test-instance-id";
+    const testRegion = "us-east-1";
 
     const params = {
       provider: mockProvider,
@@ -29,6 +30,7 @@ describe("AppContext", () => {
       contactScope: mockContactScope,
       scope: mockScope,
       launchedBy,
+      region: testRegion,
     };
 
     const context = new AppContext(params);
@@ -47,6 +49,7 @@ describe("AppContext", () => {
     const mockProvider = mock<AmazonConnectApp>();
     const mockConfig = mock<AppConfig>();
     const instanceId = "test-instance-id";
+    const testRegion = "us-east-1";
 
     const params = {
       provider: mockProvider,
@@ -56,6 +59,7 @@ describe("AppContext", () => {
       contactScope: undefined,
       scope: undefined,
       launchSource: undefined,
+      region: testRegion,
     };
 
     const context = new AppContext(params);

@@ -24,6 +24,7 @@ const LoggerMock = ConnectLogger as MockedClass<typeof ConnectLogger>;
 const instanceId = "abc123";
 const appConfig: AppConfig = { _type: "iframe" } as AppConfig;
 const contactScope: ContactScope = { type: "contact", contactId: "123" };
+const testRegion = "us-east-1";
 
 const createMsg: LifecycleMessage = {
   type: "appLifecycle",
@@ -33,6 +34,7 @@ const createMsg: LifecycleMessage = {
   appConfig,
   config: appConfig,
   contactScope: contactScope,
+  region: testRegion,
 };
 
 const getLifecycleManagerLogger = () => {

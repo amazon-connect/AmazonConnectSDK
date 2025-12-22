@@ -5,6 +5,7 @@ import { MetricProvider } from "./metric-provider";
 import { MetricProxy } from "./metric-proxy";
 import {
   ConnectRecorderMetricParams,
+  GlobalDimensionProvider,
   MetricData,
   MetricOptions,
 } from "./metric-types";
@@ -17,6 +18,8 @@ export class ConnectMetricRecorder {
   private provider: MetricProvider | undefined;
   private readonly providerFactory: (() => MetricProvider) | undefined;
   private _proxy: MetricProxy | null;
+  private readonly globalDimensions: Record<string, string>;
+  private readonly globalDimensionProvider?: GlobalDimensionProvider;
 
   /**
    * Constructor for ConnectMetricRecorder
@@ -25,6 +28,8 @@ export class ConnectMetricRecorder {
   constructor(params: ConnectRecorderMetricParams) {
     this._proxy = null;
     this.namespace = params.namespace;
+    this.globalDimensions = params.globalDimensions ?? {};
+    this.globalDimensionProvider = params.globalDimensionProvider;
 
     if (params.provider && typeof params.provider === "function")
       this.providerFactory = params.provider;
@@ -123,8 +128,25 @@ export class ConnectMetricRecorder {
     dimensions,
     optionalDimensions,
   }: MetricData) {
+    // Resolve global dimensions at emission time (non-blocking)
+    const resolvedGlobalDimensions = this.globalDimensionProvider
+      ? this.globalDimensionProvider()
+      : this.globalDimensions;
+
+    // Merge global dimensions with provided dimensions
+    // User-provided dimensions take precedence over global dimensions
+    const hasGlobalDimensions = Object.keys(resolvedGlobalDimensions).length > 0;
+    const hasOptionalDimensions = optionalDimensions && Object.keys(optionalDimensions).length > 0;
+    
+    const mergedDimensions = hasGlobalDimensions || hasOptionalDimensions
+      ? {
+          ...resolvedGlobalDimensions,
+          ...optionalDimensions,
+        }
+      : undefined;
+
     if (dimensions) {
-      checkDimensionLength(dimensions, optionalDimensions);
+      checkDimensionLength(dimensions, mergedDimensions);
     }
 
     const metricData = {
@@ -132,7 +154,7 @@ export class ConnectMetricRecorder {
       unit,
       value,
       dimensions,
-      optionalDimensions,
+      optionalDimensions: mergedDimensions,
     };
 
     const time = new Date();

@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/theme",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Theme for apps functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
@@ -30,10 +30,11 @@
     "!**/*.tsbuildinfo"
   ],
   "peerDependencies": {
-    "@cloudscape-design/components": "^3.0.383"
+    "@cloudscape-design/components": "^3.0.383",
+    "@cloudscape-design/global-styles": "^1.0.0"
   },
   "devDependencies": {
-    "jest-environment-jsdom": "^30.1.2",
+    "jest-environment-jsdom": "30.1.2",
     "jsdom": "26.1.0"
   }
 }

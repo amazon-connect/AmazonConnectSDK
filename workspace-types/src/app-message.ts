@@ -63,6 +63,7 @@ export type LifecycleMessage = {
   scope?: AppScope;
   parameters?: AppParameters;
   launchedBy?: LaunchSource;
+  region: string;
 
   /**
    * @deprecated Use `scope` instead.

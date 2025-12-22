@@ -3,8 +3,8 @@ import { mock } from "jest-mock-extended";
 
 import { ContactClient } from "./contact-client";
 import { ContactRoutes } from "./routes";
-import { ContactLifecycleTopicKey } from "./topic-keys";
-import { AgentQuickConnect, Queue, QuickConnect } from "./types";
+import { ContactLifecycleTopicKey, ContactTopicKey } from "./topic-keys";
+import { AgentQuickConnect, ContactData, InstanceDetails, Queue, QuickConnect } from "./types";
 
 const currentContact = "CURRENT_CONTACT";
 
@@ -475,23 +475,272 @@ describe("ContactClient", () => {
       );
       expect(result).toBe(expectedResult);
     });
-     test("engagePreviewContact sends request with contactId and options", async () => {
-    const testContactId = "CONTACT_ID";
+    test("engagePreviewContact sends request with contactId and options", async () => {
+      const testContactId = "CONTACT_ID";
 
-    const expectedResult = {
-      connectionId: "my-connection-id",
-    };
-    moduleProxyMock.request.mockResolvedValue(expectedResult);
+      const expectedResult = {
+        connectionId: "my-connection-id",
+      };
+      moduleProxyMock.request.mockResolvedValue(expectedResult);
 
-    const actualResult = await sut.engagePreviewContact(testContactId);
+      const actualResult = await sut.engagePreviewContact(testContactId);
 
-    expect(moduleProxyMock.request).toHaveBeenCalledWith(
-      ContactRoutes.engagePreviewContact,
-      {
-        contactId: testContactId,
-      },
-    );
-    expect(actualResult).toBe(expectedResult);
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.engagePreviewContact,
+        {
+          contactId: testContactId,
+        },
+      );
+      expect(actualResult).toBe(expectedResult);
   });
+
+    test("getContactRegion returns region for given contactId", async () => {
+      const testContactId = "TEST_CONTACT_ID";
+      const expectedRegion = "region";
+      moduleProxyMock.request.mockReturnValue(
+        Promise.resolve({ region: expectedRegion }),
+      );
+
+      const result = await sut.getContactRegion(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getContactRegion,
+        {
+          contactId: testContactId,
+        },
+      );
+      expect(result).toBe(expectedRegion);
+    });
+
+    test("returns instance details for given contactId", async () => {
+      const testContactId = "TEST_CONTACT_ID";
+      const mockInstanceDetails = mock<InstanceDetails>();
+
+      moduleProxyMock.request.mockResolvedValue(mockInstanceDetails);
+
+      const result = await sut.getInstanceDetails(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.getInstanceDetails,
+        {
+          contactId: testContactId,
+        },
+      );
+      expect(result).toEqual(mockInstanceDetails);
+      });
+
+    test("should make proxy request with correct route and contactId", async () => {
+      const testContactId = "test-contact-id";
+      const mockParticipants = [
+        {
+          participantId: "participant-1",
+          contactId: testContactId,
+          type: { value: "agent" },
+          isInitial: true,
+        },
+        {
+          participantId: "participant-2",
+          contactId: testContactId,
+          type: { value: "inbound" },
+          isInitial: false,
+        },
+      ];
+      moduleProxyMock.request.mockResolvedValue(mockParticipants);
+
+      const result = await sut.listParticipants(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.listParticipants,
+        { contactId: testContactId },
+      );
+      expect(result).toBe(mockParticipants);
+    });
+
+    describe("getParticipant", () => {
+      test("should make proxy request with correct route and participantId", async () => {
+        const testParticipantId = "test-participant-id";
+        const mockParticipant = {
+          participantId: testParticipantId,
+          contactId: "contact-123",
+          type: { value: "agent" },
+          isInitial: true,
+        };
+        moduleProxyMock.request.mockResolvedValue(mockParticipant);
+
+        const result = await sut.getParticipant(testParticipantId);
+
+        expect(moduleProxyMock.request).toHaveBeenCalledWith(
+          ContactRoutes.getParticipant,
+          { participantId: testParticipantId },
+        );
+        expect(result).toBe(mockParticipant);
+      });
+    });
+
+    describe("getParticipantState", () => {
+      test("should make proxy request with correct route and participantId", async () => {
+        const testParticipantId = "test-participant-id";
+        const mockState = { value: "connected" };
+        moduleProxyMock.request.mockResolvedValue(mockState);
+
+        const result = await sut.getParticipantState(testParticipantId);
+
+        expect(moduleProxyMock.request).toHaveBeenCalledWith(
+          ContactRoutes.getParticipantState,
+          { participantId: testParticipantId },
+        );
+        expect(result).toBe(mockState);
+      });
+    });
+
+    describe("disconnectParticipant", () => {
+      test("should make proxy request with correct route and participantId", async () => {
+        const testParticipantId = "test-participant-id";
+        moduleProxyMock.request.mockResolvedValue(undefined);
+
+        await sut.disconnectParticipant(testParticipantId);
+
+        expect(moduleProxyMock.request).toHaveBeenCalledWith(
+          ContactRoutes.disconnectParticipant,
+          { participantId: testParticipantId },
+        );
+      });
+    });
+
+    describe("getContact", () => {
+      test("should make proxy request with correct route and contactId", async () => {
+        const testContactId = "test-contact-id";
+        const mockContact: ContactData = {
+          contactId: testContactId,
+          type: "voice",
+          subtype: "connect:Telephony",
+          queue: {
+            name: "Test Queue",
+            queueARN: "arn:aws:connect:us-east-1:123456789012:queue/test",
+            queueId: "test-queue-id",
+          },
+        };
+        moduleProxyMock.request.mockResolvedValue(mockContact);
+
+        const result = await sut.getContact(testContactId);
+
+        expect(moduleProxyMock.request).toHaveBeenCalledWith(
+          ContactRoutes.getContact,
+          { contactId: testContactId },
+        );
+        expect(result).toBe(mockContact);
+      });
+    });
+
+    test("listContacts returns result", async () => {
+      await sut.listContacts();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.listContacts,
+      );
+    });
+  });
+
+  describe("Participant Event Subscriptions", () => {
+    describe("onParticipantAdded / offParticipantAdded", () => {
+      test("should subscribe to participant added events without contactId", () => {
+        const handler = jest.fn();
+
+        sut.onParticipantAdded(handler);
+
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+          { key: ContactTopicKey.ParticipantAdded, parameter: undefined },
+          handler,
+        );
+      });
+
+      test("should subscribe to participant added events with contactId", () => {
+        const handler = jest.fn();
+        const testContactId = "test-contact-id";
+
+        sut.onParticipantAdded(handler, testContactId);
+
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+          { key: ContactTopicKey.ParticipantAdded, parameter: testContactId },
+          handler,
+        );
+      });
+
+      test("should unsubscribe from participant added events", () => {
+        const handler = jest.fn();
+        const testContactId = "test-contact-id";
+
+        sut.offParticipantAdded(handler, testContactId);
+
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+          { key: ContactTopicKey.ParticipantAdded, parameter: testContactId },
+          handler,
+        );
+      });
+    });
+
+    describe("onParticipantDisconnected / offParticipantDisconnected", () => {
+      test("should subscribe to participant disconnected events", () => {
+        const handler = jest.fn();
+        const testContactId = "test-contact-id";
+
+        sut.onParticipantDisconnected(handler, testContactId);
+
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+          {
+            key: ContactTopicKey.ParticipantDisconnected,
+            parameter: testContactId,
+          },
+          handler,
+        );
+      });
+
+      test("should unsubscribe from participant disconnected events", () => {
+        const handler = jest.fn();
+        const testContactId = "test-contact-id";
+
+        sut.offParticipantDisconnected(handler, testContactId);
+
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+          {
+            key: ContactTopicKey.ParticipantDisconnected,
+            parameter: testContactId,
+          },
+          handler,
+        );
+      });
+    });
+
+    describe("onParticipantStateChanged / offParticipantStateChanged", () => {
+      test("should subscribe to participant state changed events", () => {
+        const handler = jest.fn();
+        const testParticipant = "test-participant-id";
+
+        sut.onParticipantStateChanged(handler, testParticipant);
+
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+          {
+            key: ContactTopicKey.ParticipantStateChanged,
+            parameter: testParticipant,
+          },
+          handler,
+        );
+      });
+
+      test("should unsubscribe from participant state changed events", () => {
+        const handler = jest.fn();
+        const testParticipant = "test-participant-id";
+
+        sut.offParticipantStateChanged(handler, testParticipant);
+
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+          {
+            key: ContactTopicKey.ParticipantStateChanged,
+            parameter: testParticipant,
+          },
+          handler,
+        );
+      });
+    });
   });
 });

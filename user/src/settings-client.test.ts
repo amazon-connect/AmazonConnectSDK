@@ -55,5 +55,6 @@ describe("SettingsClient", () => {
       );
       expect(actualResult).toEqual(language);
     });
+
   });
 });

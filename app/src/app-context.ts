@@ -31,6 +31,7 @@ export class AppContext extends Context<AmazonConnectApp> {
   public readonly parameters?: Readonly<AppParameters>;
 
   public readonly launchedBy: LaunchSource;
+  public readonly region: string;
 
   constructor({
     provider,
@@ -40,6 +41,7 @@ export class AppContext extends Context<AmazonConnectApp> {
     contactScope,
     scope,
     launchedBy,
+    region,
   }: {
     provider: AmazonConnectApp;
     instanceId: string;
@@ -48,6 +50,7 @@ export class AppContext extends Context<AmazonConnectApp> {
     contactScope: ContactScope | undefined;
     scope: AppScope | undefined;
     launchedBy?: LaunchSource;
+    region: string;
   }) {
     super(provider);
     this.appInstanceId = instanceId;
@@ -64,5 +67,6 @@ export class AppContext extends Context<AmazonConnectApp> {
         // in practice for apps
         type: "unknown" as LaunchSource["type"],
       } as LaunchSource);
+    this.region = region;
   }
 }

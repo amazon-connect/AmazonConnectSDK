@@ -1,5 +1,12 @@
 # CHANGELOG.md
 
+## 1.0.10
+### Added
+- Initial release of `@amazon-connect/app-manager`, providing the ability to integrate AWS-managed applications with Amazon Connect Streams
+
+### Updated
+- Updated `@amazon-connect/contact` and `@amazon-connect/voice` to support additional APIs
+
 ## 1.0.9
 ### Added
 - Initial release of `@amazon-connect/activity`, providing the ability to handle session inactivity warnings through the `SessionExpirationWarningClient`

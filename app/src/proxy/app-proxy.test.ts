@@ -399,6 +399,7 @@ describe("when appProxy is ready", () => {
           connectionId: "abc",
           name: "test",
         },
+        region: "us-east-1",
       };
       const lifecycleMock = LifecycleManagerMock.mock.instances[0];
       lifecycleMock.handleLifecycleChangeMessage.mockResolvedValue();

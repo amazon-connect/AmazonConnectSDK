@@ -8,8 +8,12 @@ export type ConnectMetricRecorderFromContextParams =
   | string
   | BaseMetricRecorderParams;
 
+export type GlobalDimensionProvider = () => Record<string, string>;
+
 export type ConnectRecorderMetricParams = BaseMetricRecorderParams & {
   provider?: MetricProvider | (() => MetricProvider);
+  globalDimensions?: Record<string, string>;
+  globalDimensionProvider?: GlobalDimensionProvider;
 };
 
 export type MetricData = {

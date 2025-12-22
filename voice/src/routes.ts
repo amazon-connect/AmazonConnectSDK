@@ -4,4 +4,13 @@ export enum VoiceRoutes {
   listDialableCountries = "voice/listDialableCountries",
   createOutboundCall = "voice/createOutboundCall",
   getOutboundCallPermission = "voice/getOutboundCallPermission",
+  conferenceParticipants = "voice/conferenceParticipants",
+  holdParticipant = "voice/holdParticipant",
+  resumeParticipant = "voice/resumeParticipant",
+  holdSelf = "voice/holdSelf",
+  resumeSelf = "voice/resumeSelf",
+  isParticipantOnHold = "voice/isParticipantOnHold",
+  isSelfOnHold = "voice/isSelfOnHold",
+  canResumeSelf = "voice/canResumeSelf",
+  canResumeParticipant = "voice/canResumeParticipant",
 }

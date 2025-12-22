@@ -32,6 +32,7 @@ const appConfig: AppConfig = { _type: "iframe" } as AppConfig;
 const contactScope: ContactScope = { type: "contact", contactId: "123" };
 const parameters = mock<AppParameters>();
 const launchSource = mock<LaunchSource>();
+const testRegion = "us-east-1";
 
 const createMsg: LifecycleMessage = {
   type: "appLifecycle",
@@ -44,6 +45,7 @@ const createMsg: LifecycleMessage = {
   scope: contactScope,
   parameters,
   launchedBy: launchSource,
+  region: testRegion,
 };
 
 const startMsg: LifecycleMessage = {
@@ -57,6 +59,7 @@ const startMsg: LifecycleMessage = {
   scope: contactScope,
   parameters,
   launchedBy: launchSource,
+  region: testRegion,
 };
 
 const stopMsg: LifecycleMessage = {
@@ -70,6 +73,7 @@ const stopMsg: LifecycleMessage = {
   scope: contactScope,
   parameters,
   launchedBy: launchSource,
+  region: testRegion,
 };
 
 const destroyMsg: LifecycleMessage = {
@@ -83,6 +87,7 @@ const destroyMsg: LifecycleMessage = {
   scope: contactScope,
   parameters,
   launchedBy: launchSource,
+  region: testRegion,
 };
 
 const getLifecycleManagerLogger = () => {

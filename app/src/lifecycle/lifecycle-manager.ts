@@ -31,6 +31,7 @@ export type LifecycleState<TConfig extends ConfigBase = ConfigBase> =
        * @deprecated This property is deprecated. Use `config` instead.
        */
       appConfig: AppConfig;
+      region: string;
     }
   | {
       isRunning: false;
@@ -44,6 +45,7 @@ export type LifecycleState<TConfig extends ConfigBase = ConfigBase> =
        * @deprecated This property is deprecated. Use `config` instead.
        */
       appConfig?: AppConfig;
+      region: string;
     };
 
 type StageChangeEvent<TContext extends Context> = TContext extends AppContext

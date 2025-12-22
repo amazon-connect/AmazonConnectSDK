@@ -60,4 +60,5 @@ export class SettingsClient extends ConnectClientWithOptionalConfig {
       handler,
     );
   }
+
 }

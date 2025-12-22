@@ -1,5 +1,7 @@
 import { SubscriptionHandler } from "@amazon-connect/core";
 
+import { ParticipantState } from "./states";
+
 export interface AgentState {
   agentStateARN?: AgentStateARN;
   type: AgentStateType;
@@ -200,3 +202,106 @@ export interface AgentRoutingProfileChanged {
     autoDialTimeout: number;
     canDiscardPreview: boolean;
   };
+
+export type InstanceDetails = {
+  origin: string;
+  region: string;
+};
+
+
+/**
+ * Types of participants in a contact.
+ */
+export type ParticipantType =
+  | { value: "agent" }
+  | { value: "outbound" }
+  | { value: "inbound" }
+  | { value: "monitoring" }
+  | { value: "other"; actual: string };
+
+/**
+ * Information about a participant in a contact.
+ */
+export interface ParticipantData {
+  /** Unique identifier for the participant */
+  participantId: string;
+  /** Contact this participant belongs to */
+  contactId: string;
+  /** Type of participant */
+  type: ParticipantType;
+  /** Whether this is the initial participant */
+  isInitial: boolean;
+  /** Whether this participant is associated with the current user */
+  isSelf: boolean;
+}
+
+/**
+ * Detailed information about a contact.
+ */
+export interface ContactData {
+  /** Unique identifier for the contact */
+  contactId: string;
+  /** Type of contact (voice, chat, task) */
+  type: ContactType;
+  /** Subtype of contact providing additional classification */
+  subtype: string;
+  /** Initial contact ID for transferred contact */
+  initialContactId?: string;
+  /** Queue information */
+  queue: Queue;
+}
+
+/**
+ * @deprecated Use ContactData interface instead. This type will be removed in a future version.
+ */
+export type CoreContactData = Omit<ContactData, "queue">;
+
+// TEMPORARY CHANGE: Using CoreContactData[] instead of ContactData[]
+// TODO: This is a temporary measure while module changes are being implemented
+// Once the contact module is updated to properly support ContactData type,
+// this should be changed back to ContactData[] and CoreContactData (which is
+// already marked deprecated) should be removed from the codebase
+export type ListContactsResult = CoreContactData[];
+
+/**
+ * Event data for participant added notifications.
+ */
+export interface ParticipantAdded {
+  /** The participant that was added */
+  participant: ParticipantData;
+}
+
+/**
+ * Handler function for participant added events.
+ */
+export type ParticipantAddedHandler = SubscriptionHandler<ParticipantAdded>;
+
+/**
+ * Event data for participant disconnected notifications.
+ */
+export interface ParticipantDisconnected {
+  /** The participant that was disconnected */
+  participant: ParticipantData;
+}
+
+/**
+ * Handler function for participant disconnected events.
+ */
+export type ParticipantDisconnectedHandler = SubscriptionHandler<ParticipantDisconnected>;
+
+/**
+ * Event data for participant state change notifications.
+ */
+export interface ParticipantStateChanged {
+  /** The identifier of the participant that changed state */
+  participantId: string;
+  /** The identifier of the contact the participant belongs to */
+  contactId: string;
+  /** The new state of the participant */
+  state: ParticipantState;
+}
+
+/**
+ * Handler function for participant state change events.
+ */
+export type ParticipantStateChangedHandler = SubscriptionHandler<ParticipantStateChanged>;

@@ -21,11 +21,13 @@ export class ServiceLifecycleManager extends LifecycleManager<
       provider: this.provider,
       instanceId: msg.instanceId,
       config: msg.config as ServiceConfig,
+      region: msg.region,
     });
     this.state.appInstanceId = msg.appInstanceId;
     this.state.instanceId = msg.instanceId;
     this.state.appConfig = msg.appConfig;
     this.state.config = msg.config;
+    this.state.region = msg.region;
 
     const params: ServiceLifecycleChangeParams = { context };
 

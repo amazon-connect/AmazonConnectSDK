@@ -13,4 +13,8 @@ export enum AgentTopicKey {
   EnabledChannelListChanged = "agent/enabledChannelListChanged",
 }
 
-export enum ContactTopicKey {}
+export enum ContactTopicKey {
+  ParticipantAdded = "contact/participantAdded",
+  ParticipantDisconnected = "contact/participantDisconnected",
+  ParticipantStateChanged = "contact/participantStateChanged",
+}

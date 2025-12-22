@@ -49,6 +49,7 @@ export class AppLifecycleManager extends LifecycleManager<
       contactScope: msg.contactScope,
       scope: msg.scope,
       launchedBy: msg.launchedBy,
+      region: msg.region,
     });
 
     this.state.instanceId = msg.instanceId;
@@ -56,6 +57,7 @@ export class AppLifecycleManager extends LifecycleManager<
     this.state.config = msg.config as AppConfig;
     this.state.appConfig = msg.config as AppConfig;
     this.state.contactScope = msg.contactScope;
+    this.state.region = msg.region;
 
     const params: AppLifecycleChangeParams = { context };
 
@@ -220,6 +222,7 @@ export class AppLifecycleManager extends LifecycleManager<
         scope: this.state.scope,
         parameters: this.state.parameters,
         launchedBy: this.state.launchedBy,
+        region: this.state.region
       }),
     };
   }

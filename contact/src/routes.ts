@@ -30,4 +30,12 @@ export enum ContactRoutes {
   isPreviewMode = "contact/isPreviewMode",
   getPreviewConfiguration = "contact/getPreviewConfiguration",
   engagePreviewContact = "contact/engagePreviewContact",
+  getContactRegion = "contact/getContactRegion",
+  getInstanceDetails = "contact/getInstanceDetails",
+  listParticipants = "contact/listParticipants",
+  getParticipant = "contact/getParticipant",
+  getParticipantState = "contact/getParticipantState",
+  disconnectParticipant = "contact/disconnectParticipant",
+  getContact = "contact/getContact",
+  listContacts = "contact/listContacts",
 }
