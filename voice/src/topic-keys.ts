@@ -1,4 +1,5 @@
 export enum VoiceTopicKeys {
+  VoiceEnhancementModeChanged = "voice/voiceEnhancementModeChanged",
   ParticipantHold = "voice/participantHold",
   ParticipantResume = "voice/participantResume",
   SelfHold = "voice/selfHold",

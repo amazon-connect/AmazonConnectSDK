@@ -1,4 +1,7 @@
 # CHANGELOG.md
+## 1.0.11
+### Updated
+- Updated `@amazon-connect/voice` to support additional APIs
 
 ## 1.0.10
 ### Added

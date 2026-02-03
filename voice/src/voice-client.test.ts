@@ -113,9 +113,83 @@ describe("VoiceClient", () => {
       expect(actualResult).toBe(expectedResult);
     });
 
+    describe("voiceEnhancement", () => {
+      test("setVoiceEnhancementMode sends request to VoiceRoutes.setVoiceEnhancementMode", async () => {
+        // Arrange
+        const voiceEnhancementMode = "VOICE_ISOLATION";
+        moduleProxyMock.request.mockResolvedValueOnce({ voiceEnhancementMode });
+
+        // Act
+        await sut.setVoiceEnhancementMode(voiceEnhancementMode);
+
+        // Assert
+        expect(moduleProxyMock.request).toHaveBeenCalledWith(
+          VoiceRoutes.setVoiceEnhancementMode,
+          { voiceEnhancementMode },
+        );
+      });
+
+      test("getVoiceEnhancementMode returns result", async () => {
+        // Arrange
+        const voiceEnhancementMode = "VOICE_ISOLATION";
+        moduleProxyMock.request.mockResolvedValueOnce({ voiceEnhancementMode });
+
+        // Act
+        const actualResult = await sut.getVoiceEnhancementMode();
+
+        // Assert
+        expect(moduleProxyMock.request).toHaveBeenCalledWith(
+          VoiceRoutes.getVoiceEnhancementMode,
+        );
+        expect(actualResult).toEqual(voiceEnhancementMode);
+      });
+
+      test("getVoiceEnhancementPaths returns result", async () => {
+        // Arrange
+        const voiceEnhancementPaths = {
+          processors: "test-processors",
+          workers: "test-workers",
+          wasm: "test-wasm",
+          models: "test-models",
+        };
+        moduleProxyMock.request.mockResolvedValueOnce({
+          voiceEnhancementPaths,
+        });
+
+        // Act
+        const actualResult = await sut.getVoiceEnhancementPaths();
+
+        // Assert
+        expect(moduleProxyMock.request).toHaveBeenCalledWith(
+          VoiceRoutes.getVoiceEnhancementPaths,
+        );
+        expect(actualResult).toEqual(voiceEnhancementPaths);
+      });
+    });
   });
 
   describe("Subscriptions", () => {
+    test("onVoiceEnhancementModeChanged adds subscription", () => {
+      const handler = jest.fn();
+
+      sut.onVoiceEnhancementModeChanged(handler);
+
+      expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+        { key: VoiceTopicKeys.VoiceEnhancementModeChanged },
+        handler,
+      );
+    });
+
+    test("offVoiceEnhancementModeChanged removes subscription", () => {
+      const handler = jest.fn();
+
+      sut.offVoiceEnhancementModeChanged(handler);
+
+      expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+        { key: VoiceTopicKeys.VoiceEnhancementModeChanged },
+        handler,
+      );
+    });
 
     describe("conferenceParticipants", () => {
       test("requests with correct route and parameters", async () => {

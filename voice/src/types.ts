@@ -15,6 +15,30 @@ export type DialableCountry = {
   label: string;
 };
 
+export type VoiceEnhancementMode =
+  | "VOICE_ISOLATION"
+  | "NOISE_SUPPRESSION"
+  | "NONE";
+
+export interface VoiceEnhancementPaths {
+  processors: string;
+  workers: string;
+  wasm: string;
+  models: string;
+}
+
+/** Event data for voice enhancement mode changes */
+export interface VoiceEnhancementModeChanged {
+  voiceEnhancementMode: VoiceEnhancementMode;
+  previous: {
+    voiceEnhancementMode: VoiceEnhancementMode;
+  };
+}
+
+/** Handler for voice enhancement mode change events */
+export type VoiceEnhancementModeChangedHandler =
+  SubscriptionHandler<VoiceEnhancementModeChanged>;
+
 /** Base event data for participant hold status changes */
 export interface ParticipantHoldStatusChanged {
   /** The participant identifier */

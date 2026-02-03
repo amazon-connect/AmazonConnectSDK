@@ -15,6 +15,9 @@ import {
   DialableCountry,
   ParticipantHoldHandler,
   ParticipantResumeHandler,
+  VoiceEnhancementMode,
+  VoiceEnhancementModeChangedHandler,
+  VoiceEnhancementPaths,
 } from "./types";
 
 export class VoiceClient extends ConnectClientWithOptionalConfig {
@@ -91,6 +94,46 @@ export class VoiceClient extends ConnectClientWithOptionalConfig {
         options,
       },
     );
+  }
+
+  onVoiceEnhancementModeChanged(
+    handler: VoiceEnhancementModeChangedHandler,
+  ): void {
+    this.context.proxy.subscribe(
+      { key: VoiceTopicKeys.VoiceEnhancementModeChanged },
+      handler,
+    );
+  }
+
+  offVoiceEnhancementModeChanged(
+    handler: VoiceEnhancementModeChangedHandler,
+  ): void {
+    this.context.proxy.unsubscribe(
+      { key: VoiceTopicKeys.VoiceEnhancementModeChanged },
+      handler,
+    );
+  }
+
+  async getVoiceEnhancementMode(): Promise<VoiceEnhancementMode> {
+    const { voiceEnhancementMode } = await this.context.proxy.request<{
+      voiceEnhancementMode: VoiceEnhancementMode;
+    }>(VoiceRoutes.getVoiceEnhancementMode);
+    return voiceEnhancementMode;
+  }
+
+  setVoiceEnhancementMode(
+    voiceEnhancementMode: VoiceEnhancementMode,
+  ): Promise<void> {
+    return this.context.proxy.request(VoiceRoutes.setVoiceEnhancementMode, {
+      voiceEnhancementMode,
+    });
+  }
+
+  async getVoiceEnhancementPaths(): Promise<VoiceEnhancementPaths> {
+    const { voiceEnhancementPaths } = await this.context.proxy.request<{
+      voiceEnhancementPaths: VoiceEnhancementPaths;
+    }>(VoiceRoutes.getVoiceEnhancementPaths);
+    return voiceEnhancementPaths;
   }
 
   async conferenceParticipants(contactId: string): Promise<void> {

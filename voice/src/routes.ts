@@ -13,4 +13,7 @@ export enum VoiceRoutes {
   isSelfOnHold = "voice/isSelfOnHold",
   canResumeSelf = "voice/canResumeSelf",
   canResumeParticipant = "voice/canResumeParticipant",
+  getVoiceEnhancementMode = "voice/getVoiceEnhancementMode",
+  setVoiceEnhancementMode = "voice/setVoiceEnhancementMode",
+  getVoiceEnhancementPaths = "voice/getVoiceEnhancementPaths",
 }
