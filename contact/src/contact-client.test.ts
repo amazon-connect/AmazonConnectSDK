@@ -198,6 +198,96 @@ describe("ContactClient", () => {
         );
       });
     });
+
+    describe("CONNECTING", () => {
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
+
+        sut.onConnecting(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Connecting,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offConnecting(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Connecting,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+    });
+
+    describe("ERROR", () => {
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
+
+        sut.onError(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Error,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offError(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Error,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+    });
+
+    describe("PENDING", () => {
+      test("subscribes to event with handler", () => {
+        const handler = jest.fn();
+
+        sut.onPending(handler, currentContact);
+
+        expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Pending,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+
+      test("unsubscribes from event with handler", () => {
+        const handler = jest.fn();
+
+        sut.offPending(handler, currentContact);
+
+        expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+          {
+            key: ContactLifecycleTopicKey.Pending,
+            parameter: currentContact,
+          },
+          handler,
+        );
+      });
+    });
   });
 
   describe("Requests", () => {
@@ -401,6 +491,42 @@ describe("ContactClient", () => {
           contactId: testContactId,
         },
       );
+    });
+
+    test("reject sends request with contactId", async () => {
+      const contactId = "dummyContactId";
+
+      await sut.reject(contactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.reject,
+        { contactId },
+      );
+    });
+
+    test("disconnectSelf sends request with contactId", async () => {
+      const contactId = "dummyContactId";
+
+      await sut.disconnectSelf(contactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.disconnectSelf,
+        { contactId },
+      );
+    });
+
+    test("isAutoAcceptEnabled returns boolean for given contactId", async () => {
+      moduleProxyMock.request.mockResolvedValueOnce({
+        isAutoAcceptEnabled: true,
+      });
+
+      const result = await sut.isAutoAcceptEnabled(testContactId);
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        ContactRoutes.isAutoAcceptEnabled,
+        { contactId: testContactId },
+      );
+      expect(result).toBe(true);
     });
 
     test("addParticipant sends with request with contactId, quickConnect, and options", async () => {
@@ -742,5 +868,6 @@ describe("ContactClient", () => {
         );
       });
     });
+
   });
 });

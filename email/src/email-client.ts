@@ -15,7 +15,9 @@ import {
   EmailContact,
   EmailContactId,
   EmailThreadContact,
+  FromEmailAddress,
   GetEmailThreadParams,
+  ListFromEmailAddressesParams,
 } from "./types";
 
 export class EmailClient extends ConnectClientWithOptionalConfig {
@@ -108,6 +110,28 @@ export class EmailClient extends ConnectClientWithOptionalConfig {
    */
   sendEmail(emailContact: DraftEmailContact): Promise<void> {
     return this.context.proxy.request(EmailRoute.sendEmail, emailContact);
+  }
+
+  /**
+   * Lists available from email addresses for the current instance.
+   * 
+   * @param params - Parameters for listing from email addresses
+   * @returns Promise resolving to list of from email addresses
+   * 
+   * @example
+   * ```typescript
+   * const result = await emailClient.listFromEmailAddresses({
+   *   contactId: "contact-123",
+   *   maxResults: 50
+   * });
+   * console.log(`Found ${result.emailAddresses.length} email addresses`);
+   * ```
+   */
+  listFromEmailAddresses(params: ListFromEmailAddressesParams): Promise<{
+    emailAddresses: FromEmailAddress[];
+    nextToken?: string;
+  }> {
+    return this.context.proxy.request(EmailRoute.listFromEmailAddresses, params);
   }
 
   /**

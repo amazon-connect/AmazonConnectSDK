@@ -72,5 +72,35 @@ describe("UserClient", () => {
       UserRoutes.getUserRegion,
     );
   });
-});
+  });
+
+  describe("getUserArn", () => {
+    test("should return userArn", async () => {
+      const testUserArn = "test-user-arn";
+      moduleProxyMock.request.mockResolvedValueOnce({ userArn: testUserArn });
+
+      const result = await sut.getUserArn();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        UserRoutes.getUserArn,
+      );
+      expect(result).toEqual(testUserArn);
+    });
+  });
+
+  describe("getInstanceId", () => {
+    test("should return Connect instance id", async () => {
+      const testInstanceId = "123456789";
+      moduleProxyMock.request.mockResolvedValueOnce({
+        instanceId: testInstanceId,
+      });
+
+      const result = await sut.getInstanceId();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        UserRoutes.getInstanceId,
+      );
+      expect(result).toEqual(testInstanceId);
+    });
+  });
 });

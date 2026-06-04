@@ -52,12 +52,20 @@ export type EmailContact = {
   initiationTimestamp?: Date;
 
   /**
-   * The traffic type for a contact. This value could be undefined if this segment attribute is not set explicity during contact creation.
+   * The traffic type for a contact. This value could be undefined if this segment attribute is not set explicitly during contact creation.
+   * @deprecated use messageType instead
    */
   trafficType?: TrafficType;
+
+  /**
+   * The message type for a contact. This value could be undefined if this segment attribute is not set explicitly during contact creation.
+   */
+  messageType?: MessageType;
 };
 
 export type TrafficType = "REPLY_TO_CLOSED";
+
+export type MessageType = "FORWARD" | "REPLY_TO_CLOSED";
 
 export type EmailContactId = {
   contactId: string;
@@ -196,6 +204,14 @@ type CreateDraftEmailContactBase = Attributable &
      * default - 12 hours
      */
     expiryDurationInMinutes?: number;
+
+    /**
+     * MessageType for the email contact
+     *
+     * "REPLY_TO_CLOSED" - reply to closed email contact
+     * "FORWARD" - forward email contact
+     * */
+    messageType?: MessageType;
   };
 
 export type Attributable = {
@@ -224,5 +240,40 @@ export type GetEmailThreadParams = {
    */
   maxResults?: number;
 
+  nextToken?: string;
+};
+
+export interface FromEmailAddress extends EmailAddress {
+  /**
+   * Unique identifier for the from email address
+   */
+  id: string;
+
+  /**
+   * Description of the email address
+   */
+  description?: string;
+
+  /**
+   * Whether this is the default outbound email address
+   */
+  isDefaultOutboundEmail?: boolean;
+}
+
+export type ListFromEmailAddressesParams = {
+  /**
+   * The contact ID to retrieve email addresses.
+   */
+  contactId: string;
+
+  /**
+   * The max number of email addresses to return.
+   * Default maxResults is 50. Maximum value of 50.
+   */
+  maxResults?: number;
+  
+  /**
+   * The token for the next set of results returned in the previous response 
+   */
   nextToken?: string;
 };

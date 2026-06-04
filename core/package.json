@@ -1,19 +1,19 @@
 {
   "name": "@amazon-connect/core",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Core functionality of the Amazon Connect SDK",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build:esm": "tsc -p tsconfig.esm.json",
-    "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build": "npm run build:esm && npm run build:cjs",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "swc ./src --out-dir lib --config-file ../.swcrc.cjs.json --ignore '**/*.test.ts' --strip-leading-paths && tsc -p tsconfig.cjs.json --emitDeclarationOnly",
+    "build:esm": "swc ./src --out-dir lib-esm --config-file ../.swcrc.esm.json --ignore '**/*.test.ts' --strip-leading-paths && tsc -p tsconfig.esm.json --emitDeclarationOnly",
     "check-types": "tsc --noEmit",
     "clean": "rm -rf ./lib ./lib-esm ./build",
     "format": "npm run lint -- --fix",
     "lint": "eslint --cache .",
-    "prepack": "npm run build",
+    "prepack": "npx nx build:cjs && npx nx build:esm",
     "test": "jest --coverage"
   },
   "license": "Apache-2.0",

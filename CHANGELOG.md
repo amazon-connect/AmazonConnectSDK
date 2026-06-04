@@ -1,4 +1,16 @@
 # CHANGELOG.md
+
+## 1.0.12
+### Added
+- Initial release of `@amazon-connect/app-manager-agent`, providing the ability to integrate contact-scoped AWS-managed applications with Amazon Connect Streams
+- Initial release of `@amazon-connect/ai-agents`, providing the ability to interact with Connect Assistant functionality
+
+### Updated
+- Updated `@amazon-connect/contact`, `@amazon-connect/user` and `@amazon-connect/email` to support additional APIs
+
+### Bug Fix
+- Updated the `AgentRoutingProfileChannelTypes` type definition to use uppercase values ("VOICE", "CHAT", "TASK", "EMAIL") instead of lowercase, fixing a casing inconsistency
+
 ## 1.0.11
 ### Updated
 - Updated `@amazon-connect/voice` to support additional APIs

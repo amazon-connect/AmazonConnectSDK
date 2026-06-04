@@ -186,7 +186,7 @@ describe("destroyAllInstances", () => {
 });
 
 describe("clearAppManager", () => {
-  test("should clear all instances", async () => {
+  test("should clear all instances passing undefined when no options provided", async () => {
     const clearResult = mock<ClearAppManagerResult>();
     moduleProxyMock.request.mockResolvedValueOnce(clearResult);
 
@@ -195,6 +195,46 @@ describe("clearAppManager", () => {
     expect(result).toEqual(clearResult);
     expect(moduleProxyMock.request).toHaveBeenCalledWith(
       AppManagerRoutes.clear,
+      undefined,
+    );
+  });
+
+  test("should pass force false when specified", async () => {
+    const clearResult = mock<ClearAppManagerResult>();
+    moduleProxyMock.request.mockResolvedValueOnce(clearResult);
+
+    const result = await sut.clearAppManager({ force: false });
+
+    expect(result).toEqual(clearResult);
+    expect(moduleProxyMock.request).toHaveBeenCalledWith(
+      AppManagerRoutes.clear,
+      { force: false },
+    );
+  });
+
+  test("should pass waitForDestroy true when specified", async () => {
+    const clearResult = mock<ClearAppManagerResult>();
+    moduleProxyMock.request.mockResolvedValueOnce(clearResult);
+
+    const result = await sut.clearAppManager({ waitForDestroy: true });
+
+    expect(result).toEqual(clearResult);
+    expect(moduleProxyMock.request).toHaveBeenCalledWith(
+      AppManagerRoutes.clear,
+      { waitForDestroy: true },
+    );
+  });
+
+  test("should pass both force and waitForDestroy when both specified", async () => {
+    const clearResult = mock<ClearAppManagerResult>();
+    moduleProxyMock.request.mockResolvedValueOnce(clearResult);
+
+    const result = await sut.clearAppManager({ force: true, waitForDestroy: true });
+
+    expect(result).toEqual(clearResult);
+    expect(moduleProxyMock.request).toHaveBeenCalledWith(
+      AppManagerRoutes.clear,
+      { force: true, waitForDestroy: true },
     );
   });
 });

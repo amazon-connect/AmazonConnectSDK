@@ -1,0 +1,45 @@
+{
+  "$schema": "https://nx.dev/schemas/nx-schema.json",
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["production", "^production"]
+    },
+    "build:cjs": {
+      "dependsOn": ["^build:cjs"],
+      "cache": true,
+      "inputs": ["production", "^production"]
+    },
+    "build:esm": {
+      "dependsOn": ["^build:esm", "^build:cjs"],
+      "cache": true,
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/lib-esm"]
+    },
+    "clean": {
+      "cache": false
+    },
+    "lint": {
+      "cache": true,
+      "inputs": ["default"]
+    },
+    "prepack": {
+      "dependsOn": ["^prepack"],
+      "cache": true,
+      "inputs": ["production", "^production"]
+    },
+    "test": {
+      "dependsOn": ["build:cjs", "^build:cjs"],
+      "cache": true,
+      "inputs": ["default", "^production"]
+    }
+  },
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "!{projectRoot}/lib/**/*", "!{projectRoot}/lib-esm/**/*", "!{projectRoot}/build/**/*", "!{projectRoot}/coverage/**/*", "!{projectRoot}/.eslintcache"],
+    "production": ["default", "!{projectRoot}/**/*.test.ts", "!{projectRoot}/**/*.spec.ts"]
+  },
+  "useDaemonProcess": true,
+  "parallel": 8,
+  "cacheDirectory": ".nx/cache"
+}

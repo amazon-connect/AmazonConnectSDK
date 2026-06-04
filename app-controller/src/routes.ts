@@ -17,3 +17,5 @@ export enum AppControllerRoutes {
   focusApp = "app-instance/focus",
   closeApp = "app-instance/close",
 }
+
+export enum AppControllerTopicKey {}

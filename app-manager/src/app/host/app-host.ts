@@ -60,6 +60,8 @@ export abstract class AppHost<T extends AppConfig = AppConfig>
   readonly appManagerData: Readonly<AppManagerData> | undefined;
   readonly preventUserClose: boolean | undefined;
   readonly launchKey: string | undefined;
+  /** The current user-facing display name of the app instance. */
+  readonly displayName: string | undefined;
 
   protected readonly provider: AmazonConnectProvider;
 
@@ -85,6 +87,7 @@ export abstract class AppHost<T extends AppConfig = AppConfig>
     launchedBy,
     appManagerData,
     preventUserClose,
+    displayName,
   }: AppHostParams) {
     this.instanceId = instanceId ?? appInstanceId;
     this.config = (config ?? appConfig) as T;
@@ -114,6 +117,7 @@ export abstract class AppHost<T extends AppConfig = AppConfig>
 
     this.appManagerData = appManagerData;
     this.preventUserClose = preventUserClose;
+    this.displayName = displayName ?? this.config.name;
     this.provider = provider;
     this.destroyedHandler = this.handleDestroyed.bind(this);
     this.relays = new AppHostEventRelay(provider, this);

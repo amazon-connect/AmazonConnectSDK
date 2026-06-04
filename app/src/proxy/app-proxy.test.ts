@@ -32,7 +32,7 @@ const testSdkVersion = "test-sdk-version";
 
 jest.mock("@amazon-connect/core/lib/logging/connect-logger");
 jest.mock("@amazon-connect/core/lib/sdk-version", () => ({
-  sdkVersion: testSdkVersion,
+  sdkVersion: "test-sdk-version",
 }));
 jest.mock("@amazon-connect/core/lib/utility/id-generator");
 jest.mock("@amazon-connect/core/lib/utility/timeout-tracker");

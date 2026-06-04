@@ -10,7 +10,10 @@ import { AppConfig } from "@amazon-connect/workspace-types";
 import { AppInfo } from "./app-info";
 import { AppLaunchOptions } from "./launch/app-launch-options";
 import { AppControllerRoutes } from "./routes";
-import { AppFocusResult, LaunchAppRequest } from "./types";
+import {
+  AppFocusResult,
+  LaunchAppRequest,
+} from "./types";
 import { workspaceNamespace } from "./workspace-namespace";
 
 export class AppControllerClient extends ConnectClientWithOptionalConfig {
@@ -82,6 +85,19 @@ export class AppControllerClient extends ConnectClientWithOptionalConfig {
     });
   }
 
+  /**
+   * Gets all apps that share the AppManager of the caller.
+   *
+   * Returns all applications currently managed by the same AppManager instance
+   * as the caller. This is the standard method for retrieving apps in the current
+   * AppManager scope.
+   *
+   * @returns Promise resolving to an array of AppInfo objects
+   * @example
+   * ```typescript
+   * const apps = await appControllerClient.getApps();
+   * ```
+   */
   async getApps(): Promise<AppInfo[]> {
     const { apps } = await this.context.proxy.request<{ apps: AppInfo[] }>(
       AppControllerRoutes.getApps,

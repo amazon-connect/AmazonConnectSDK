@@ -8,5 +8,6 @@ export type {
   AppHostRemoved,
   AppHostRemovedHandler,
 } from "./host";
-export { AppHost, IFrameAppHost, SetIframeOptions } from "./host";
+export type { SetIframeOptions } from "./host";
+export { AppHost, IFrameAppHost } from "./host";
 export { createAppHost } from "./host";

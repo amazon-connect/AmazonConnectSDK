@@ -48,8 +48,8 @@ export type {
 } from "./messaging/subscription";
 export { SubscriptionMap, SubscriptionSet } from "./messaging/subscription";
 export * from "./metric";
+export type { AmazonConnectProvider } from "./provider";
 export {
-  AmazonConnectProvider,
   AmazonConnectProviderBase,
   getGlobalProvider,
   isAmazonConnectProvider,

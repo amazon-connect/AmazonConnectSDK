@@ -1,0 +1,13 @@
+{
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "decorators": false
+    },
+    "target": "es2021"
+  },
+  "module": {
+    "type": "es6"
+  },
+  "sourceMaps": true
+}

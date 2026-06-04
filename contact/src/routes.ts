@@ -11,6 +11,11 @@ export enum AgentRoutes {
   setOffline = "agent/setOffline",
   listAvailabilityStates = "agent/listAvailabilityStates",
   listQuickConnects = "agent/listQuickConnects",
+  getNetworkConnectionStatus = "agent/getNetworkConnectionStatus",
+  getDefaultOutboundQueue = "agent/getDefaultOutboundQueue",
+  getRoutingProfileQueues = "agent/getRoutingProfileQueues",
+  getAvailabilityState = "agent/getAvailabilityState",
+  listSecurityProfilePermissions = "agent/listSecurityProfilePermissions",
 }
 
 export enum ContactRoutes {
@@ -27,6 +32,9 @@ export enum ContactRoutes {
   transfer = "contact/transfer",
   accept = "contact/accept",
   clear = "contact/clear",
+  reject = "contact/reject",
+  disconnectSelf = "contact/disconnectSelf",
+  isAutoAcceptEnabled = "contact/isAutoAcceptEnabled",
   isPreviewMode = "contact/isPreviewMode",
   getPreviewConfiguration = "contact/getPreviewConfiguration",
   engagePreviewContact = "contact/engagePreviewContact",

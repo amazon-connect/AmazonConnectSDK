@@ -7,7 +7,9 @@ import { AppControllerClient } from "./app-controller-client";
 import { AppInfo } from "./app-info";
 import { AppLaunchOptions } from "./launch";
 import { AppControllerRoutes } from "./routes";
-import { AppFocusResult } from "./types";
+import {
+  AppFocusResult,
+} from "./types";
 import { workspaceNamespace } from "./workspace-namespace";
 
 jest.mock("@amazon-connect/core/lib/utility/deep-clone");

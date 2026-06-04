@@ -1,4 +1,6 @@
-import { LaunchAppRequest } from "@amazon-connect/app-controller";
+import {
+  LaunchAppRequest,
+} from "@amazon-connect/app-controller";
 import {
   ConnectClient,
   ConnectClientConfig,
@@ -6,7 +8,10 @@ import {
 } from "@amazon-connect/core";
 import { AppConfig } from "@amazon-connect/workspace-types";
 
-import { AppInstanceData, AppInstanceStateChangedHandler } from "./app";
+import {
+  AppInstanceData,
+  AppInstanceStateChangedHandler,
+} from "./app";
 import { AppLaunchOptions } from "./manager";
 import {
   AppInstanceRoutes,
@@ -15,7 +20,7 @@ import {
   WorkspaceRoutes,
 } from "./routes";
 import { AppStateTopicKey } from "./topic-keys";
-import { ClearAppManagerResult } from "./types";
+import { ClearAppManagerOptions, ClearAppManagerResult } from "./types";
 import { workspaceNamespace } from "./workspace-namespace";
 
 /**
@@ -75,9 +80,18 @@ export class AppManagerClient extends ConnectClient {
     );
   }
 
-  clearAppManager(): Promise<ClearAppManagerResult> {
+  /**
+   * Clears all app instances and services managed by this app manager.
+   *
+   * @param options - Optional configuration for the clear operation.
+   * @param options.waitForDestroy - When true, apps wait for their graceful
+   * shutdown lifecycle to complete before being destroyed. Defaults to false.
+   * @param options.force - @deprecated Use `waitForDestroy` instead.
+   */
+  clearAppManager(options?: ClearAppManagerOptions): Promise<ClearAppManagerResult> {
     return this.context.proxy.request<ClearAppManagerResult>(
       AppManagerRoutes.clear,
+      options,
     );
   }
 

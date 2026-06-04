@@ -261,4 +261,38 @@ describe("EmailClient", () => {
       );
     });
   });
+
+  describe("listFromEmailAddresses", () => {
+    test("should make proxy request with correct parameters", async () => {
+      const testParams = {
+        contactId: "test-contact-123",
+        maxResults: 25,
+        nextToken: "test-token"
+      };
+
+      const testResponse = {
+        emailAddresses: [
+          {
+            emailAddress: "test@example.com",
+            displayName: "Test User",
+            id: "email-123",
+            description: "Test email address",
+            isDefaultOutboundEmail: true
+          }
+        ],
+        nextToken: "next-token"
+      };
+
+      mockProxy.request.mockResolvedValueOnce(testResponse);
+
+      const result = await emailClient.listFromEmailAddresses(testParams);
+
+      expect(mockProxy.request).toHaveBeenCalledWith(
+        emailNamespace,
+        EmailRoute.listFromEmailAddresses,
+        testParams
+      );
+      expect(result).toEqual(testResponse);
+    });
+  });
 });

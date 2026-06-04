@@ -1,7 +1,7 @@
 export { QuickResponsesClient } from "./quick-responses-client";
 export { quickResponsesNamespace } from "./quick-responses-namespace";
 export { QuickResponsesRoute } from "./routes";
-export {
+export type {
   QuickResponseChannel,
   QuickResponseContents,
   QuickResponsesEnabledState,

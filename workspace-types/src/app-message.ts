@@ -65,6 +65,12 @@ export type LifecycleMessage = {
   launchedBy?: LaunchSource;
   region: string;
 
+  /** 
+   * The current user-facing display name of the app instance. 
+   * By default this will be the name initially configured for the application
+   */
+  displayName?: string;
+
   /**
    * @deprecated Use `scope` instead.
    */

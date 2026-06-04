@@ -30,6 +30,13 @@ export type AppInstanceData<TConfig extends AppConfig = AppConfig> =
     appManagerData?: Readonly<AppManagerData>;
     preventUserClose?: boolean;
 
+    /** 
+     * The current user-facing display name of the app instance. 
+     * By default it will be the same as the configuration name
+     * of the app instance.
+    */
+    displayName?: string;
+
     /**
      * @deprecated This property is deprecated. Use `launchedBy`. This
      * value will be removed after Agent Workspace is updated.

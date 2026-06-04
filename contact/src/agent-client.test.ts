@@ -8,6 +8,7 @@ import {
   AgentChannelConcurrency,
   AgentRoutingProfile,
   AgentState,
+  GetAvailabilityStateResult,
   Queue,
   QuickConnect,
   SetAvailabilityStateResult,
@@ -163,6 +164,21 @@ describe("AgentClient", () => {
       );
       expect(actualResult).toEqual(dialableCountries);
     });
+
+    test("getNetworkConnectionStatus returns result", async () => {
+      const connectionStatus = {
+        status: "connected" as const,
+        timestamp: 1700000000000,
+      };
+      moduleProxyMock.request.mockResolvedValueOnce(connectionStatus);
+
+      const actualResult = await sut.getNetworkConnectionStatus();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getNetworkConnectionStatus,
+      );
+      expect(actualResult).toEqual(connectionStatus);
+    });
   });
 
   test("setAvailabilityState sends request to AgentRoutes.setAvailabilityState", async () => {
@@ -287,6 +303,131 @@ describe("AgentClient", () => {
         { key: AgentTopicKey.RoutingProfileChanged },
         mockHandler,
       );
+    });
+
+    it("should subscribe to connection status changes", () => {
+      const mockHandler = jest.fn();
+      sut.onNetworkConnectionStatusChanged(mockHandler);
+
+      expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.NetworkConnectionStatusChanged },
+        mockHandler,
+      );
+    });
+
+    it("should unsubscribe from connection status changes", () => {
+      const mockHandler = jest.fn();
+      sut.offNetworkConnectionStatusChanged(mockHandler);
+
+      expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.NetworkConnectionStatusChanged },
+        mockHandler,
+      );
+    });
+
+    it("should subscribe to availability state changes", () => {
+      const mockHandler = jest.fn();
+      sut.onAvailabilityStateChanged(mockHandler);
+
+      expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.AvailabilityStateChanged },
+        mockHandler,
+      );
+    });
+
+    it("should unsubscribe from availability state changes", () => {
+      const mockHandler = jest.fn();
+      sut.offAvailabilityStateChanged(mockHandler);
+
+      expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.AvailabilityStateChanged },
+        mockHandler,
+      );
+    });
+
+    it("should subscribe to next availability state changes", () => {
+      const mockHandler = jest.fn();
+      sut.onNextAvailabilityStateChanged(mockHandler);
+
+      expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.NextAvailabilityStateChanged },
+        mockHandler,
+      );
+    });
+
+    it("should unsubscribe from next availability state changes", () => {
+      const mockHandler = jest.fn();
+      sut.offNextAvailabilityStateChanged(mockHandler);
+
+      expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+        { key: AgentTopicKey.NextAvailabilityStateChanged },
+        mockHandler,
+      );
+    });
+  });
+
+  describe("Availability state requests", () => {
+    test("getDefaultOutboundQueue returns result", async () => {
+      const queue: Queue = { name: "name", queueARN: "arn", queueId: "id" };
+      moduleProxyMock.request.mockResolvedValueOnce(queue);
+
+      const actualResult = await sut.getDefaultOutboundQueue();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getDefaultOutboundQueue,
+      );
+      expect(actualResult).toEqual(queue);
+    });
+
+    test("getRoutingProfileQueues returns result", async () => {
+      const queue: Queue = { name: "name", queueARN: "arn", queueId: "id" };
+      moduleProxyMock.request.mockResolvedValueOnce([queue]);
+
+      const actualResult = await sut.getRoutingProfileQueues();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getRoutingProfileQueues,
+      );
+      expect(actualResult).toEqual([queue]);
+    });
+
+    test("getAvailabilityState returns result", async () => {
+      const expectedResult: GetAvailabilityStateResult = {
+        agentStateARN: "agent-state-arn",
+        type: "routable",
+        name: "Available",
+      };
+      moduleProxyMock.request.mockResolvedValueOnce(expectedResult);
+
+      const actualResult = await sut.getAvailabilityState();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.getAvailabilityState,
+      );
+      expect(actualResult).toEqual(expectedResult);
+    });
+
+    test("listSecurityProfilePermissions returns permissions", async () => {
+      const permissions = ["Permission1", "Permission2", "Permission3"];
+      moduleProxyMock.request.mockResolvedValueOnce({ permissions });
+
+      const actualResult = await sut.listSecurityProfilePermissions();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.listSecurityProfilePermissions,
+      );
+      expect(actualResult).toEqual(permissions);
+    });
+
+    test("listSecurityProfilePermissions returns empty array when no permissions", async () => {
+      moduleProxyMock.request.mockResolvedValueOnce({ permissions: [] });
+
+      const actualResult = await sut.listSecurityProfilePermissions();
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        AgentRoutes.listSecurityProfilePermissions,
+      );
+      expect(actualResult).toEqual([]);
     });
   });
 });

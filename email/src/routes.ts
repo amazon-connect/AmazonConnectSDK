@@ -3,4 +3,5 @@ export enum EmailRoute {
   createDraftEmail = "create-draft-email",
   sendEmail = "send-email",
   getEmailThread = "get-email-thread",
+  listFromEmailAddresses = "list-from-email-addresses",
 }

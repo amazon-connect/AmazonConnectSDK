@@ -82,6 +82,15 @@ export type ContactConnectedHandler = SubscriptionHandler<ContactConnected>;
 export type ContactIncoming = BaseContactLifecycleEvent;
 export type ContactIncomingHandler = SubscriptionHandler<ContactIncoming>;
 
+export type ContactConnecting = BaseContactLifecycleEvent;
+export type ContactConnectingHandler = SubscriptionHandler<ContactConnecting>;
+
+export type ContactError = BaseContactLifecycleEvent;
+export type ContactErrorHandler = SubscriptionHandler<ContactError>;
+
+export type ContactPending = BaseContactLifecycleEvent;
+export type ContactPendingHandler = SubscriptionHandler<ContactPending>;
+
 export type SetAvailabilityStateResult =
   | {
       /**
@@ -98,6 +107,49 @@ export type SetAvailabilityStateResult =
       current: AgentState;
       next: AgentState;
     };
+
+/**
+ * Result of {@link AgentClient.getAvailabilityState}. The current availability
+ * state, plus an optional `nextState` set when the backend has queued a
+ * pending state transition until the agent's contacts are cleared.
+ */
+export type GetAvailabilityStateResult = AgentState & {
+  nextState?: AgentState;
+};
+
+/**
+ * Event payload for availability state change notifications.
+ */
+export type AgentAvailabilityStateChanged = {
+  state: AgentState;
+  previous?: {
+    state: AgentState;
+  };
+};
+
+/**
+ * Handler function for availability state change events.
+ */
+export type AvailabilityStateChangedHandler =
+  SubscriptionHandler<AgentAvailabilityStateChanged>;
+
+/**
+ * Event payload for next-availability-state change notifications.
+ * Fires when the agent has a pending state transition queued (e.g. due to
+ * active contacts) and that pending state changes.
+ */
+export type NextAgentAvailabilityStateChanged = {
+  nextState: AgentState | null;
+  previous?: {
+    nextState: AgentState;
+  };
+};
+
+/**
+ * Handler function for next-availability-state change events.
+ */
+export type NextAvailabilityStateChangedHandler =
+  SubscriptionHandler<NextAgentAvailabilityStateChanged>;
 
 export type VoiceChannelType = {
   type: "voice";
@@ -181,7 +233,7 @@ export type ContactClearedHandler = SubscriptionHandler<ContactCleared>;
 export type EnabledChannelListChangedHandler =
   SubscriptionHandler<EnabledChannelListChanged>;
 
-type AgentRoutingProfileChannelTypes = "voice" | "chat" | "task" | "email";
+export type AgentRoutingProfileChannelTypes = "VOICE" | "CHAT" | "TASK" | "EMAIL";
 export interface EnabledChannelListChanged {
   enabledChannels: AgentRoutingProfileChannelTypes[];
   previous?: {
@@ -305,3 +357,29 @@ export interface ParticipantStateChanged {
  * Handler function for participant state change events.
  */
 export type ParticipantStateChangedHandler = SubscriptionHandler<ParticipantStateChanged>;
+
+/**
+ * Connection health status indicating the current state of the agent's
+ * connection to Amazon Connect backend services.
+ */
+export type NetworkConnectionStatus =
+  | "connected"
+  | "connecting"
+  | "disconnected"
+  | "failed";
+
+/**
+ * Event data for network connection status change notifications.
+ */
+export interface NetworkConnectionStatusChanged {
+  /** The new connection health status */
+  status: NetworkConnectionStatus;
+  /** Epoch milliseconds when the status transition occurred */
+  timestamp: number;
+}
+
+/**
+ * Handler function for network connection status change events.
+ */
+export type NetworkConnectionStatusChangedHandler =
+  SubscriptionHandler<NetworkConnectionStatusChanged>;

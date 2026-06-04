@@ -1,0 +1,34 @@
+{
+  "name": "@amazon-connect/ai-agents",
+  "version": "1.0.12",
+  "description": "AI Agents functionality of the Amazon Connect SDK",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "swc ./src --out-dir lib --config-file ../.swcrc.cjs.json --ignore '**/*.test.ts' --strip-leading-paths && tsc -p tsconfig.cjs.json --emitDeclarationOnly",
+    "build:esm": "swc ./src --out-dir lib-esm --config-file ../.swcrc.esm.json --ignore '**/*.test.ts' --strip-leading-paths && tsc -p tsconfig.esm.json --emitDeclarationOnly",
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf ./lib ./lib-esm ./build",
+    "format": "npm run lint -- --fix",
+    "lint": "eslint --cache .",
+    "prepack": "npx nx build:cjs && npx nx build:esm",
+    "test": "jest --coverage"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git.amazon.com/pkg/AmazonConnectSDK"
+  },
+  "main": "lib/index.js",
+  "module": "lib-esm/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "lib-esm/**/*"
+  ],
+  "dependencies": {
+    "@amazon-connect/core": "1.0.12"
+  }
+}

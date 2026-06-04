@@ -2,7 +2,7 @@ export {
   ConnectClient,
   ConnectClientWithOptionalConfig,
 } from "./connect-client";
-export {
+export type {
   ConnectClientConfig,
   ConnectClientConfigDeprecated,
   ConnectClientConfigOptional,

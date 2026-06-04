@@ -64,6 +64,7 @@ const launchByName = "launch-by-name";
 const launchedBy = mock<LaunchSource>({ name: launchByName });
 const appManagerData = mock<AppManagerData>();
 const preventUserClose = true;
+const displayName = "Test Display Name";
 
 let sut: AppHost;
 let loggerMock: MockedObject<ConnectLogger>;
@@ -89,6 +90,7 @@ beforeEach(() => {
     preventUserClose,
     launchedBy,
     appManagerData,
+    displayName,
   });
 
   mocked(AppHostEventRelay).mockImplementation(
@@ -146,6 +148,21 @@ describe("constructor", () => {
     expect(sut.launchSource).toEqual(launchByName);
     expect(sut.appManagerData).toEqual(appManagerData);
     expect(sut.preventUserClose).toEqual(preventUserClose);
+    expect(sut.displayName).toEqual(displayName);
+  });
+
+  test("should fall back displayName to config.name when displayName is not provided", () => {
+    const sut = new TestAppHost(
+      mock<AppHostParams>({
+        provider,
+        instanceId: appInstanceId,
+        connectionId,
+        config: appConfig,
+        displayName: undefined,
+      }),
+    );
+
+    expect(sut.displayName).toEqual(appName);
   });
 
   test("should set the instanceId values via depreciated appInstanceId", () => {

@@ -1,6 +1,7 @@
 node_modules/
 .npmrc
 .cache/
+.nx/
 coverage/
 lib/*
 lib-esm/*

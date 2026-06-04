@@ -57,6 +57,7 @@ module.exports = [
         KeyboardEvent: "readonly",
         MediaDeviceInfo: "readonly",
         SharedWorker: "readonly",
+        Worker: "readonly",
         addEventListener: "readonly",
         self: "readonly",
         crypto: "readonly",
@@ -215,6 +216,9 @@ module.exports = [
       // OS generated files
       "**/.DS_Store",
       "**/Thumbs.db",
+
+      // Mock files
+      "**/__mocks__/**",
     ],
   },
 ];

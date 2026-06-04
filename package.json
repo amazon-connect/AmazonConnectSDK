@@ -1,25 +1,30 @@
 {
   "name": "@amazon-connect/sdk",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "",
   "scripts": {
-    "build": "npm run --ws build",
-    "check-types": "npm run --ws check-types",
-    "clean": "rm -rf ./build && npm run --ws clean",
-    "format": "npm run --ws format",
-    "lint": "npm run --ws lint",
+    "build": "nx run-many -t build:cjs build:esm --parallel=8 --nxBail=true --output-style=stream",
+    "cache-reset": "nx reset",
+    "check-types": "nx run-many -t check-types --parallel=8 --nxBail=true --output-style=stream",
+    "clean": "rm -rf ./build .nx && nx run-many -t clean --parallel=8 --output-style=stream",
+    "format": "nx run-many -t format --parallel=8 --output-style=stream",
+    "graph": "nx graph",
+    "lint": "nx run-many -t lint --parallel=8 --nxBail=true --output-style=stream",
     "prepare": "husky",
-    "test": "npm run --ws build:cjs && npm run --ws check-types && npm run --ws test"
+    "prepublishOnly": "npm run lint",
+    "release": "npm run build && npm run test && npm run test-report",
+    "test": "nx run-many -t test --parallel=8 --nxBail=true --output-style=stream",
+    "test-report": "node test-report.js",
+    "prepack": "nx run-many -t prepack --parallel=8 --nxBail=true --output-style=stream"
   },
   "devDependencies": {
-    "@babel/core": "7.28.5",
-    "@babel/preset-env": "7.28.5",
-    "@babel/preset-typescript": "7.28.5",
+    "@swc/cli": "0.8.0",
+    "@swc/core": "1.11.29",
+    "@swc/jest": "0.2.38",
     "@types/jest": "30.0.0",
     "@types/node": "24.10.1",
     "@typescript-eslint/eslint-plugin": "8.48.1",
     "@typescript-eslint/parser": "8.48.1",
-    "babel-jest": "30.2.0",
     "baseline-browser-mapping": "2.9.4",
     "eslint": "9.39.1",
     "eslint-config-prettier": "10.1.8",
@@ -34,9 +39,14 @@
     "jest": "30.2.0",
     "jest-mock-extended": "4.0.0",
     "lint-staged": "16.2.7",
+    "nx": "20.8.0",
     "prettier": "3.7.3",
     "ts-loader": "9.5.4",
     "typescript": "5.9.3"
+  },
+  "optionalDependencies": {
+    "@swc/core-darwin-arm64": "1.11.29",
+    "@swc/core-linux-x64-gnu": "1.11.29"
   },
   "workspaces": [
     "core",
@@ -54,6 +64,8 @@
     "message-template",
     "quick-responses",
     "activity",
-    "app-manager"
+    "app-manager",
+    "app-manager-agent",
+    "ai-agents"
   ]
 }

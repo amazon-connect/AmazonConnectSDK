@@ -8,7 +8,13 @@ import {
 import { userNamespace } from "./namespace";
 import { UserRoutes } from "./routes";
 import { UserTopicKey } from "./topic-keys";
-import { Locale, UserLanguageChangedHandler } from "./types";
+import {
+  Locale,
+  SetLanguageResult,
+  UserLanguageChangedHandler,
+  VisualMode,
+  VisualModeChangedHandler,
+} from "./types";
 
 export class SettingsClient extends ConnectClientWithOptionalConfig {
   /**
@@ -61,4 +67,30 @@ export class SettingsClient extends ConnectClientWithOptionalConfig {
     );
   }
 
+  setLanguage(language: Locale): Promise<SetLanguageResult> {
+    return this.context.proxy.request<SetLanguageResult>(
+      UserRoutes.setLanguage,
+      { language },
+    );
+  }
+
+  async setVisualMode(visualMode: VisualMode): Promise<void> {
+    await this.context.proxy.request(UserRoutes.setVisualMode, {
+      visualMode,
+    });
+  }
+
+  onVisualModeChange(handler: VisualModeChangedHandler): void {
+    this.context.proxy.subscribe(
+      { key: UserTopicKey.VisualModeChanged },
+      handler,
+    );
+  }
+
+  offVisualModeChange(handler: VisualModeChangedHandler): void {
+    this.context.proxy.unsubscribe(
+      { key: UserTopicKey.VisualModeChanged },
+      handler,
+    );
+  }
 }

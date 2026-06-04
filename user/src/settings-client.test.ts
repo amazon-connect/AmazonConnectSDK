@@ -41,6 +41,7 @@ describe("SettingsClient", () => {
         handler,
       );
     });
+
   });
 
   describe("Requests", () => {
@@ -56,5 +57,49 @@ describe("SettingsClient", () => {
       expect(actualResult).toEqual(language);
     });
 
+    test("setLanguage returns result", async () => {
+      moduleProxyMock.request.mockResolvedValueOnce({ language: "en_US" });
+
+      const actualResult = await sut.setLanguage("en_US");
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        UserRoutes.setLanguage,
+        { language: "en_US" },
+      );
+      expect(actualResult).toEqual({ language: "en_US" });
+    });
+
+    test("setVisualMode sends request with visualMode", async () => {
+      moduleProxyMock.request.mockResolvedValue({});
+
+      await sut.setVisualMode("dark");
+
+      expect(moduleProxyMock.request).toHaveBeenCalledWith(
+        UserRoutes.setVisualMode,
+        { visualMode: "dark" },
+      );
+    });
+
+    test("onVisualModeChange adds subscription", () => {
+      const handler = jest.fn();
+
+      sut.onVisualModeChange(handler);
+
+      expect(moduleProxyMock.subscribe).toHaveBeenCalledWith(
+        { key: UserTopicKey.VisualModeChanged },
+        handler,
+      );
+    });
+
+    test("offVisualModeChange removes subscription", () => {
+      const handler = jest.fn();
+
+      sut.offVisualModeChange(handler);
+
+      expect(moduleProxyMock.unsubscribe).toHaveBeenCalledWith(
+        { key: UserTopicKey.VisualModeChanged },
+        handler,
+      );
+    });
   });
 });

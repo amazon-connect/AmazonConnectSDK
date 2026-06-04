@@ -21,3 +21,18 @@ export type UserLanguageChanged = {
 
 export type UserLanguageChangedHandler =
   SubscriptionHandler<UserLanguageChanged>;
+
+export type SetLanguageResult = {
+  language?: Locale;
+};
+
+export type VisualMode = "light" | "dark" | "auto";
+
+export type VisualModeChanged = {
+  visualMode: VisualMode;
+  previous: {
+    visualMode: VisualMode | null;
+  };
+};
+
+export type VisualModeChangedHandler = SubscriptionHandler<VisualModeChanged>;

@@ -16,10 +16,13 @@ import {
   ContactChannelType,
   ContactClearedHandler,
   ContactConnectedHandler,
+  ContactConnectingHandler,
   ContactData,
   ContactDestroyedHandler,
+  ContactErrorHandler,
   ContactIncomingHandler,
   ContactMissedHandler,
+  ContactPendingHandler,
   ContactStartingAcwHandler,
   ContactType,
   GetAttributesRequest,
@@ -196,6 +199,75 @@ export class ContactClient extends ConnectClientWithOptionalConfig {
     );
   }
 
+  /**
+   * Subscribes to events fired while a contact is being connected.
+   *
+   * @param handler - Event handler invoked when a contact transitions into the connecting state
+   * @param contactId - Optional contact ID to filter events for a specific contact
+   */
+  onConnecting(handler: ContactConnectingHandler, contactId?: string): void {
+    this.context.proxy.subscribe(
+      { key: ContactLifecycleTopicKey.Connecting, parameter: contactId },
+      handler,
+    );
+  }
+
+  /**
+   * Unsubscribes from contact connecting events.
+   */
+  offConnecting(handler: ContactConnectingHandler, contactId?: string): void {
+    this.context.proxy.unsubscribe(
+      { key: ContactLifecycleTopicKey.Connecting, parameter: contactId },
+      handler,
+    );
+  }
+
+  /**
+   * Subscribes to events fired when a contact enters the error state.
+   *
+   * @param handler - Event handler invoked when a contact transitions into the error state
+   * @param contactId - Optional contact ID to filter events for a specific contact
+   */
+  onError(handler: ContactErrorHandler, contactId?: string): void {
+    this.context.proxy.subscribe(
+      { key: ContactLifecycleTopicKey.Error, parameter: contactId },
+      handler,
+    );
+  }
+
+  /**
+   * Unsubscribes from contact error events.
+   */
+  offError(handler: ContactErrorHandler, contactId?: string): void {
+    this.context.proxy.unsubscribe(
+      { key: ContactLifecycleTopicKey.Error, parameter: contactId },
+      handler,
+    );
+  }
+
+  /**
+   * Subscribes to events fired when a contact enters the pending state.
+   *
+   * @param handler - Event handler invoked when a contact transitions into the pending state
+   * @param contactId - Optional contact ID to filter events for a specific contact
+   */
+  onPending(handler: ContactPendingHandler, contactId?: string): void {
+    this.context.proxy.subscribe(
+      { key: ContactLifecycleTopicKey.Pending, parameter: contactId },
+      handler,
+    );
+  }
+
+  /**
+   * Unsubscribes from contact pending events.
+   */
+  offPending(handler: ContactPendingHandler, contactId?: string): void {
+    this.context.proxy.unsubscribe(
+      { key: ContactLifecycleTopicKey.Pending, parameter: contactId },
+      handler,
+    );
+  }
+
   async getChannelType(contactId: string): Promise<ContactChannelType> {
     return await this.context.proxy.request(ContactRoutes.getChannelType, {
       contactId,
@@ -240,6 +312,44 @@ export class ContactClient extends ConnectClientWithOptionalConfig {
     return this.context.proxy.request(ContactRoutes.accept, {
       contactId,
     });
+  }
+
+  /**
+   * Rejects an incoming contact.
+   *
+   * @param contactId - The unique identifier for the contact
+   */
+  reject(contactId: string): Promise<void> {
+    return this.context.proxy.request<void>(ContactRoutes.reject, {
+      contactId,
+    });
+  }
+
+  /**
+   * Disconnects the current user from the contact.
+   *
+   * @param contactId - The unique identifier for the contact
+   */
+  disconnectSelf(contactId: string): Promise<void> {
+    return this.context.proxy.request<void>(ContactRoutes.disconnectSelf, {
+      contactId,
+    });
+  }
+
+  /**
+   * Returns whether the contact is configured for auto-accept.
+   *
+   * @param contactId - The unique identifier for the contact
+   * @returns Promise resolving to `true` when auto-accept is enabled
+   */
+  async isAutoAcceptEnabled(contactId: string): Promise<boolean> {
+    const { isAutoAcceptEnabled } = await this.context.proxy.request<{
+      isAutoAcceptEnabled: boolean;
+    }>(ContactRoutes.isAutoAcceptEnabled, {
+      contactId,
+    });
+
+    return isAutoAcceptEnabled;
   }
 
   clear(contactId: string): Promise<void> {
