@@ -1,5 +1,9 @@
 # CHANGELOG.md
 
+## 1.0.13
+### Added
+- Initial release of `@amazon-connect/extensibility`, providing the generic extensibility framework and interceptor API of the Amazon Connect SDK
+
 ## 1.0.12
 ### Added
 - Initial release of `@amazon-connect/app-manager-agent`, providing the ability to integrate contact-scoped AWS-managed applications with Amazon Connect Streams

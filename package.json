@@ -1,6 +1,6 @@
 {
   "name": "@amazon-connect/sdk",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "",
   "scripts": {
     "build": "nx run-many -t build:cjs build:esm --parallel=8 --nxBail=true --output-style=stream",
@@ -66,6 +66,7 @@
     "activity",
     "app-manager",
     "app-manager-agent",
-    "ai-agents"
+    "ai-agents",
+    "extensibility"
   ]
 }
