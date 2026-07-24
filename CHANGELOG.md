@@ -1,5 +1,9 @@
 # CHANGELOG.md
 
+## 1.0.14
+### Added
+- Initial release of `@amazon-connect/contact-ui`, providing contact-scoped UI action interceptors built on the extensibility framework
+
 ## 1.0.13
 ### Added
 - Initial release of `@amazon-connect/extensibility`, providing the generic extensibility framework and interceptor API of the Amazon Connect SDK
